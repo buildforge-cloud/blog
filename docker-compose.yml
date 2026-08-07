@@ -1,0 +1,19 @@
+services:
+  blog_app:
+    build: .
+    container_name: blog_app
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8082:80"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.blog.rule=Host(`blog.buildforge.cloud`)
+      - traefik.http.routers.blog.entrypoints=websecure
+      - traefik.http.routers.blog.tls=true
+      - traefik.http.routers.blog.tls.certresolver=mytlschallenge
+    networks:
+      - web
+
+networks:
+  web:
+    external: true

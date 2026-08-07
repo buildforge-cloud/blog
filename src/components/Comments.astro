@@ -1,0 +1,71 @@
+---
+import { GISCUS } from "@/utils/giscus";
+---
+
+<div id="giscus-comments" class="mt-8"></div>
+
+<script is:inline define:vars={{ GISCUS }} data-astro-rerun>
+  // Plain-JS giscus embed (not the @giscus/react component) — this theme's
+  // dynamicOgImage feature uses satori's own JSX-like object literals, which
+  // conflicts with @astrojs/react's global JSX types the moment that
+  // integration is added, breaking `astro check` on the unrelated
+  // og.png.ts/[...slug]/index.png.ts files. Live theme sync is done here via
+  // giscus's own postMessage API instead of React state.
+  //
+  // `data-astro-rerun` is required, matching the pattern this theme already
+  // uses for its shared post-page script block just above in
+  // [...slug]/index.astro: this script's static text is byte-identical on
+  // every post, so without it the ClientRouter only ever runs it once per
+  // SPA session and comments would stop reloading after the first post.
+
+  function currentGiscusTheme() {
+    const stored = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    ).matches;
+    const theme = stored ?? (prefersDark ? "dark" : "light");
+    return theme === "dark" ? "transparent_dark" : "light";
+  }
+
+  function mountGiscus() {
+    const container = document.getElementById("giscus-comments");
+    if (!container) return;
+    container.innerHTML = "";
+
+    const script = document.createElement("script");
+    script.src = "https://giscus.app/client.js";
+    script.setAttribute("data-repo", GISCUS.repo);
+    script.setAttribute("data-repo-id", GISCUS.repoId);
+    script.setAttribute("data-category", GISCUS.category);
+    script.setAttribute("data-category-id", GISCUS.categoryId);
+    script.setAttribute("data-mapping", GISCUS.mapping);
+    script.setAttribute("data-strict", GISCUS.strict);
+    script.setAttribute("data-reactions-enabled", GISCUS.reactionsEnabled);
+    script.setAttribute("data-emit-metadata", GISCUS.emitMetadata);
+    script.setAttribute("data-input-position", GISCUS.inputPosition);
+    script.setAttribute("data-theme", currentGiscusTheme());
+    script.setAttribute("data-lang", GISCUS.lang);
+    script.setAttribute("crossorigin", "anonymous");
+    script.async = true;
+    container.appendChild(script);
+  }
+
+  function syncGiscusTheme() {
+    const iframe = document.querySelector("iframe.giscus-frame");
+    if (!iframe || !iframe.contentWindow) return;
+    iframe.contentWindow.postMessage(
+      { giscus: { setConfig: { theme: currentGiscusTheme() } } },
+      "https://giscus.app"
+    );
+  }
+
+  mountGiscus();
+
+  document
+    .querySelector("#theme-btn")
+    ?.addEventListener("click", () => setTimeout(syncGiscusTheme, 0));
+
+  window
+    .matchMedia("(prefers-color-scheme: dark)")
+    .addEventListener("change", syncGiscusTheme);
+</script>
