@@ -240,6 +240,18 @@ post" section — re-read it if unsure, don't assume the schema from memory):
   only public one), that's fine per the site's `/colophon` page — don't link to
   or quote from any other buildforge.cloud repo, since those are private and the
   colophon explicitly says raw session/repo detail isn't published here.
+- **Don't link a reader straight at a live app that's gated behind Cloudflare
+  Access** (`budget.buildforge.cloud`, `luna.buildforge.cloud`, and any future
+  app on the same pattern — see the global CLAUDE.md's "Multi-user identity
+  via the Access header" section for which apps this applies to). A reader
+  without Stefan's login just hits an auth wall, which is a bad link to hand
+  someone. Fine to write about these projects narratively, just don't link
+  out to the live instance. The two projects that are actually public and
+  safe to link directly are ps·db (`https://ps-db.buildforge.cloud`) and ISO
+  Pathfinder Buddy (`https://iso-pathfinder-buddy.lovable.app/roadmap`) — both
+  listed on [buildforge.cloud](https://buildforge.cloud), which is also a fine
+  generic fallback link. Recheck this list before linking anything new; it'll
+  drift as projects go public or get gated.
 - Before treating the draft as done, run it against the "AI writing tells to
   avoid" section above — check for em dashes specifically, since they're easy
   to drop in without noticing.

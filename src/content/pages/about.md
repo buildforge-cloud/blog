@@ -7,7 +7,7 @@ I'm Stefan, and I build small apps end to end, mostly with AI doing the heavy li
 
 ## What to expect
 
-Posts about shipping real apps ([budget tracker](https://budget.buildforge.cloud), [cycle tracker](https://luna.buildforge.cloud), and whatever comes next), the infrastructure that runs them, and the parts of working with AI tools day to day that don't make it into the marketing copy.
+Posts about shipping real apps ([ps·db](https://ps-db.buildforge.cloud), a PS5 game discovery tool, [ISO Pathfinder Buddy](https://iso-pathfinder-buddy.lovable.app/roadmap), an ISO 27001 compliance guide, and whatever comes next), the infrastructure that runs them, and the parts of working with AI tools day to day that don't make it into the marketing copy.
 
 ## Why write this down
 
