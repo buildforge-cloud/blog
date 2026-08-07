@@ -11,6 +11,6 @@ Posts about shipping real apps ([budget tracker](https://budget.buildforge.cloud
 
 ## Why write this down
 
-Most of what I build is already AI-assisted. Writing publicly about the process, including the parts that didn't work on the first try, felt more useful than staying quiet about it.
+Most of what I build is already AI-assisted. Writing publicly about the process, including the parts that didn't work on the first try, felt more useful than staying quiet about it. See the [colophon](/colophon) for how that actually works, for both the apps and this blog itself.
 
 Comments are open on every post via GitHub Discussions.

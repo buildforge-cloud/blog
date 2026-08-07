@@ -1,0 +1,36 @@
+---
+import { getEntry, render } from "astro:content";
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Breadcrumb from "@/components/Breadcrumb.astro";
+import Main from "@/components/Main.astro";
+import Footer from "@/components/Footer.astro";
+import config from "@/config";
+
+const colophon = await getEntry("pages", "colophon");
+
+if (!colophon) {
+  throw new Error(
+    "Missing content entry: `colophon.md` or `colophon.mdx` in `src/content/pages/`"
+  );
+}
+
+const { Content } = await render(colophon);
+---
+
+<Layout
+  title={`${colophon.data.title} | ${config.site.title}`}
+  description={colophon.data.description}
+  ogImage={colophon.data.ogImage}
+  canonicalURL={colophon.data.canonicalURL}
+>
+  <Header />
+
+  <Breadcrumb />
+
+  <Main pageTitle={colophon.data.title} class="app-prose">
+    <Content />
+  </Main>
+
+  <Footer />
+</Layout>
