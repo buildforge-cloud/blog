@@ -32,9 +32,11 @@ don't anchor them first.
   pressure to "finish the series."
 - **Voice**: personal journal style. First person, informal, reflective — not a
   writeup addressed to a reader who needs onboarding.
-- **What a reader should walk away with**: informed. Not persuaded, not sold, not
-  taught a skill step by step — just an honest account of what happened and what it
-  was actually like.
+- **What a reader should walk away with**: knowing what the work was actually like,
+  and what I now think that I didn't think before. Not persuaded, not sold, not
+  taught a skill step by step. "Informed" is a byproduct, not the target — aiming
+  at it directly is what quietly turns a post into a report, because it gives every
+  true fact a claim to be included (see "Structural tells" below).
 - **Source material**: anything relevant — a real incident from a buildforge.cloud
   project, a decision and why it was made, a struggle that isn't resolved yet, a
   more general reflection with no specific project event behind it at all.
@@ -67,10 +69,13 @@ and predictable: collapsing into an unfiltered operational dump, or drifting int
 an instructional/tutorial tone without meaning to (the second one is the harder
 trap given the subject matter looks like technical documentation from a distance).
 
-- **Lead with the point.** Open with the actual outcome, mistake, or takeaway in
-  the first paragraph — don't build up to it chronologically. A reader (including
-  future-Stefan skimming for something specific) should get the point before the
-  blow-by-blow.
+- **Open where the tension is, not with a summary of conclusions.** Don't build up
+  chronologically ("first I did X, then Y") — but don't open with an executive
+  summary of the findings either. That's an abstract, and it's the fastest way to
+  make a post read like a report. Open at the moment something stopped making
+  sense, or where the stakes actually were, and let the reader arrive at the
+  conclusion roughly the way I did. One striking number can open a post; three of
+  them stacked with supporting detail cannot.
 - **No second person.** Never write "you should..." or "if you want to do this,
   first...". Stay in first person, describing what *I* did and decided. This is the
   mechanical enforcement of "not a tutorial" — tone alone drifts, this rule doesn't.
@@ -78,10 +83,22 @@ trap given the subject matter looks like technical documentation from a distance
   diffs, or verbose logs don't belong pasted into the narrative — link to the
   commit/PR (only for this repo, the one public one — see the colophon note below)
   or summarize the shape of it in prose instead of dumping it.
-- **Actively include what went wrong, not just that something did.** Every
-  substantial post should have a real "this didn't work the first time" or "I got
-  this wrong" beat — not as a checkbox disclaimer, but as actual content. Good raw
-  material to mine for it:
+- **Select facts by what they changed, not by whether they're true.** A detail
+  earns its place if it changed my thinking, or if it shows what the work actually
+  felt like. Not because it was hard-won, not because it's interesting on its own,
+  not because it took ages to find out. Everything else already lives in the
+  project's own log and issues, and belongs there instead. Watch precision
+  specifically: a timestamp to the minute, a duration to the tenth of a second, an
+  exact worker count — that level of precision is report register. Unless the
+  precision *is* the point, round it or cut it.
+- **Wrong turns must be load-bearing, never collected into a section.** Every
+  substantial post needs real "this didn't work the first time" or "I got this
+  wrong" content. But if it all ends up under one heading ("Where I got it wrong,"
+  "Mistakes made"), the rule has been satisfied as a checkbox while the narrative
+  stayed untouched. **The test: if that block can be deleted and nothing else in
+  the post needs rewriting, the structure is wrong.** A wrong turn belongs at the
+  point in the story where it actually misled me, so the reader is wrong alongside
+  me and gets corrected alongside me. Good raw material to mine for it:
   - Where a high-level instruction got interpreted differently than intended.
   - A specific hallucination, regression, or wrong assumption the agent produced,
     and how it actually got caught.
@@ -117,6 +134,30 @@ recognizably a model's. Run every draft against this before calling it done.
 If a full draft comes back clean on every other rule in this file but still
 *reads* like AI wrote it, that's a real problem worth fixing before it ships,
 not a nitpick to skip.
+
+## Structural tells — the report failure mode
+
+The list above catches prose that *sounds* machine-written. This one catches a
+draft where every sentence passes and the **shape** is still a report. This is the
+more common failure on this blog, because the source material (engineering logs,
+issues, commit history) is genuinely report-shaped and that shape transfers
+without anyone deciding to transfer it.
+
+Any one of these is worth a restructure, not a tweak:
+
+- **Section headers that are topic labels rather than moments.** "Search Console
+  API access" is a bucket. "The number that made me stop" is a moment.
+- **Sections of roughly uniform length**, each opening a subject and closing it
+  cleanly before the next. Real narrative sections are lopsided.
+- **An opening that summarises the findings** before anything is at stake.
+- **Enumerated findings** — "Three worth recording," "Two things worth noting."
+  Nobody talks like that. It's the register of a status update.
+- **A "Still open" / "Next steps" close.** Ending on unresolved things is honest
+  and good; ending on a *checklist* of them is bookkeeping. Say what's still
+  nagging, not what's still on the list.
+- **The post is a survey** — several incidents each getting a fair share of space.
+  That means it has no spine. Several incidents can absolutely appear in one post,
+  but as evidence for one thread, never as a catalogue.
 
 ## Workflow
 
@@ -204,7 +245,32 @@ structure, but don't let Gemini's suggestions override the hard boundaries above
 if its structure suggestion reads like a tutorial or a listicle, that's a signal to
 push back, not to follow it because it came from research.
 
-### 4. Draft the post — organize, don't originate
+### 4. Find the spine before writing a word
+
+**Do this explicitly, in the conversation, before drafting.** State the spine back
+to the user and get agreement if there's any doubt. Skipping this step is what
+produces a competent report instead of a post.
+
+Write one sentence naming what the post is *about* — not its topic, but the change
+in understanding or the experience underneath it. Two shapes that reliably work:
+
+- "I believed X. Then Y happened. Now I think Z."
+- "Here is what it is actually like to do W."
+
+"SEO problems on ps·db" is a topic, not a spine. "SEO is the first thing I've built
+where I can't see whether I'm right" is a spine.
+
+Then test every candidate section against it: does this earn its place as evidence
+for that one sentence? Material that is true, interesting and unrelated gets **cut**,
+not demoted into a smaller section. Nearly all of it is already recorded in the
+project's own log, which is where it belongs.
+
+**If the research step was skipped** (the user asked for a draft directly, which
+they're entitled to do), this step is not optional — it's the compressed version of
+what step 2's prompt existed to settle. Do it inline and say which spine was
+chosen, so the user can redirect before there's a whole draft to argue with.
+
+### 5. Draft the post — organize, don't originate
 
 **This step is about structuring the user's own account, not generating journal
 voice from scratch.** Handing a topic and some research to an LLM and asking it to
@@ -223,6 +289,20 @@ Concretely:
   **ask for it** rather than inventing plausible-sounding reflections, emotional
   beats, or opinions to fill the gap. A generated "what this felt like" is exactly
   the failure mode to avoid.
+- **Not all source material is a safe backbone, and the difference matters far
+  more than it looks.** Raw notes, a scratchpad, a chat log, or the user talking
+  through what happened are *unstructured* — organizing those is exactly right. An
+  engineering log, a GitHub issue body, a CLAUDE.md section or a commit history is
+  **already a report**, written deliberately in report register. Reorganizing one
+  produces a report every time, and it happens invisibly: the section structure and
+  the flat evidentiary tone transfer with no decision to transfer them. Mine those
+  for **facts only**, and build structure from the spine (step 4), never from the
+  document. **Explicit check before calling the draft done: line the post's section
+  headers up against the source doc's. If they map onto each other, the source's
+  structure was inherited and the post needs restructuring, however good the
+  individual sentences are.** This is a real observed failure, not a hypothetical —
+  the first SEO post drafted off ps·db's `ENGINEERING_LOG.md` reproduced that
+  entry's section order almost one-to-one.
 - When describing what the AI agent did on a project, keep a critical, evaluative
   distance from its output — describe and assess it like reviewing someone else's
   work, not just narrating "I built X."
@@ -234,6 +314,21 @@ post" section — re-read it if unsure, don't assume the schema from memory):
   template and `src/content.config.ts` for the authoritative schema.
 - `draft: true` by default — never flip to `false` without the user confirming
   the post is actually ready.
+- **Tags**: before finalizing frontmatter, check what tags are already in use
+  across published posts (`grep -h "  - " src/content/posts/*.md` under each
+  `tags:` block, or just check `/tags` on the live site) so the taxonomy stays
+  coherent instead of fragmenting into near-duplicates (`ai-agent` vs.
+  `ai-agents` vs. `agents`). Tags are the mechanism this blog uses *instead of*
+  numbered series (see "Throughline" above) — a project-name tag (`ps-db`,
+  `budget-tracker`) lets a reader follow one project's thread across posts
+  without forcing a linear "part 3 of" structure, and a theme tag (`meta`,
+  `directing-ai`, `infrastructure`) groups cross-project reflections. Reuse an
+  existing tag when the post genuinely fits it; introduce a new one when the
+  post covers real new ground, don't force-fit the nearest existing tag just
+  to avoid adding one. Usually 1-3 tags is enough — resist tagging a single
+  post with everything it loosely touches. The schema defaults to `["others"]`
+  if none are given; treat that as a sign no real tag was chosen yet, not an
+  acceptable resting state.
 - Watch the underscore-prefix build gotcha documented in CLAUDE.md if the post
   goes in a subdirectory.
 - If the post links to a specific commit/PR in this blog's own repo (the org's
@@ -247,16 +342,19 @@ post" section — re-read it if unsure, don't assume the schema from memory):
   without Stefan's login just hits an auth wall, which is a bad link to hand
   someone. Fine to write about these projects narratively, just don't link
   out to the live instance. The two projects that are actually public and
-  safe to link directly are ps·db (`https://ps-db.buildforge.cloud`) and ISO
+  safe to link directly are ps·db (`https://ps-db.cloud` — note it moved off
+  `ps-db.buildforge.cloud` in the 2026-07-23 domain migration; the old
+  subdomain only 301s now) and ISO
   Pathfinder Buddy (`https://iso-pathfinder-buddy.lovable.app/roadmap`) — both
   listed on [buildforge.cloud](https://buildforge.cloud), which is also a fine
   generic fallback link. Recheck this list before linking anything new; it'll
   drift as projects go public or get gated.
-- Before treating the draft as done, run it against the "AI writing tells to
-  avoid" section above — check for em dashes specifically, since they're easy
-  to drop in without noticing.
+- Before treating the draft as done, run it against **both** the "AI writing tells
+  to avoid" and the "Structural tells" sections above — check for em dashes
+  specifically, since they're easy to drop in without noticing, and check the
+  section headers against the spine and against the source doc.
 
-### 5. Wrap
+### 6. Wrap
 
 Point the user at `npm run dev` → `https://dev.buildforge.cloud/absproxy/5177/` (or
 `astro dev --background` per this repo's dev-server convention) to preview before
