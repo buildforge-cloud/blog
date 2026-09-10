@@ -3,14 +3,38 @@
 @import "./typography.css";
 @import "rehype-callouts/theme/obsidian";
 
-@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
-
 @layer base {
+  /**
+   * `light only` and no dark tokens, together. The studio site learned this the
+   * hard way: `color-scheme: light` on its own next to a
+   * prefers-color-scheme override meant it claimed light and shipped dark.
+   * Keep these two facts in one place so they cannot drift apart.
+   */
+  :root {
+    color-scheme: light only;
+  }
+
   * {
     @apply border-border outline-accent/75;
     scrollbar-width: auto;
-    scrollbar-color: var(--color-muted) transparent;
+    scrollbar-color: var(--color-muted-foreground) transparent;
   }
+
+  /**
+   * Space Grotesk carries every heading, as on buildforge.cloud. Set here
+   * rather than per-component so a heading in prose, in a card and in a page
+   * header are the same object.
+   */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.02em;
+  }
+
   a,
   button,
   #main-content {
@@ -19,6 +43,11 @@
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
+  }
+
+  ::selection {
+    background-color: var(--accent-fill);
+    color: var(--accent-foreground);
   }
 }
 
@@ -30,8 +59,25 @@
   @apply max-w-app mx-auto w-full px-4;
 }
 
+/**
+ * Active nav item. AstroPaper's original was a wavy underline; the paper system
+ * draws straight rules only, so this is a solid ember bar under ember text.
+ */
 @utility active-nav {
-  @apply underline decoration-wavy decoration-2 underline-offset-8;
+  @apply text-accent decoration-accent-fill underline decoration-2 underline-offset-8;
+}
+
+/**
+ * The small uppercase mono label buildforge.cloud uses for every eyebrow, date
+ * and category — the one place mono survives now that body copy is IBM Plex
+ * Sans.
+ */
+@utility label-mono {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 :target {

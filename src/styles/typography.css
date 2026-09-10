@@ -13,8 +13,11 @@
       @apply text-foreground mb-3;
     }
 
+    /* AstroPaper italicised h3 to separate it from h2. Space Grotesk ships no
+       italic here, so the browser would synthesise a slanted face; the paper
+       system separates levels with weight and tracking instead. */
     h3 {
-      @apply italic;
+      @apply font-semibold tracking-tight;
     }
 
     p,
@@ -28,7 +31,7 @@
     }
 
     a {
-      @apply text-foreground hover:text-accent wrap-break-word decoration-dashed underline-offset-4 focus-visible:no-underline;
+      @apply text-accent hover:decoration-accent-fill wrap-break-word underline decoration-1 underline-offset-4 focus-visible:no-underline;
     }
 
     ul {
@@ -60,9 +63,13 @@
     }
 
     table {
+      /* The outer frame is ink; the cell grid is the receding hairline, or a
+         five-row table reads as a solid block of rules. */
+      @apply border-border border;
+
       th,
       td {
-        @apply border-border border p-2;
+        @apply border-divider border p-2;
       }
 
       th {
@@ -86,7 +93,7 @@
     }
 
     code {
-      @apply bg-muted/75 text-foreground rounded p-1 wrap-break-word before:content-none after:content-none;
+      @apply bg-muted text-foreground rounded-none p-1 font-mono wrap-break-word before:content-none after:content-none;
     }
 
     .astro-code code {
@@ -94,7 +101,7 @@
     }
 
     blockquote {
-      @apply border-s-accent/80 wrap-break-word opacity-80;
+      @apply border-s-accent-fill border-s-4 wrap-break-word not-italic opacity-100;
     }
 
     details:not(.callout) {
@@ -110,13 +117,13 @@
     }
   }
 
-  /* ===== Code Blocks & Syntax Highlighting ===== */
+  /* ===== Code Blocks & Syntax Highlighting =====
+     Shiki runs in single-theme mode (see astro.config.ts), so it sets the
+     syntax colours inline and there are no --shiki-light/--shiki-dark vars to
+     read. All that is left here is the frame: an ink border on the warm panel
+     colour, which is how every drawn box on buildforge.cloud is built. */
   .astro-code {
-    @apply outline-border flex border bg-(--shiki-light-bg) text-(--shiki-light) [&_span]:text-(--shiki-light);
-  }
-
-  html[data-theme="dark"] .astro-code {
-    @apply bg-(--shiki-dark-bg) text-(--shiki-dark) [&_span]:text-(--shiki-dark);
+    @apply border-border bg-surface! flex border;
   }
 
   /* Styles for Shiki transformers */

@@ -90,12 +90,48 @@ React anywhere in the project. Tried once (2026-08-07), reverted. **Don't re-add
 `@astrojs/react`/`@giscus/react` without first either disabling
 `features.dynamicOgImage` or finding a real fix for that type conflict** — it's not
 a one-off fluke, it's structural to how this theme's OG image generation works.
-`Comments.astro` gets the same live light/dark theme sync (via giscus's own
-`postMessage` API, see its comments) that the React version would have, without the
-dependency. It also needs the `data-astro-rerun` attribute — this theme's own
+`Comments.astro` used to carry a live light/dark theme sync via giscus's own
+`postMessage` API; that is gone as of 2026-09-10, because the site is paper-only
+and giscus is pinned to its `light` theme (see "Design" below). It still needs
+the `data-astro-rerun` attribute — this theme's own
 `[...slug]/index.astro` script block sets the same precedent (see its comment): a
 script whose text content is byte-identical across every post only runs once per SPA
 session under Astro's ClientRouter unless marked to re-run.
+
+## Design — the paper system
+
+Adopted 2026-09-10. The blog wears the same design as
+[buildforge.cloud](https://buildforge.cloud), the studio site that owns it: warm
+paper (`#f5f2ea`), near-black ink (`#141a22`) for text and drawn structure, and
+one ember accent (`#c2410c` for text and links, `#e8542a` for solid fills and
+rules). Type is Space Grotesk for headings, IBM Plex Sans for body copy, IBM Plex
+Mono for the small uppercase labels (dates, nav items) — the `label-mono` utility
+in `global.css`. The canonical version of these tokens lives in
+`profile-homepage/assets/css/variables.css`; `src/styles/theme.css` is this
+repo's copy of it, so change both together or they drift.
+
+**There is no dark mode, deliberately** — the studio site made that call and the
+blog follows it. That means several things are gone that AstroPaper ships by
+default, and none of them should come back one at a time:
+
+- `features.lightAndDarkMode` is `false`, which only hides the toggle button.
+- `src/scripts/theme.ts` and the inline FOUC script in `Layout.astro` are
+  deleted; nothing sets `data-theme` on `<html>` any more.
+- `global.css` has no `@custom-variant dark`, so a `dark:` Tailwind prefix
+  anywhere in this repo silently does nothing. Don't write one.
+- Shiki runs in single-`theme` mode (`astro.config.ts`), so there are no
+  `--shiki-light-*` / `--shiki-dark-*` CSS variables to read.
+- `<meta name="theme-color">` is the literal paper hex, not filled at runtime.
+
+The failure this ordering prevents is the one the studio site hit first: a
+`color-scheme: light` declaration sitting next to a `prefers-color-scheme: dark`
+token override, so the site claimed light and shipped dark to anyone whose OS was
+in dark mode. If a dark variant is ever wanted, design it; do not let it fall out
+of a token override.
+
+The favicon and the header wordmark share the BuildForge hexagon mark
+(`public/favicon.svg`, `src/assets/icons/IconBuildforge.svg`), copied from
+`profile-homepage/favicon.svg`.
 
 ## Analytics
 

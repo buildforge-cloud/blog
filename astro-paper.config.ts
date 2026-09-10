@@ -18,7 +18,10 @@ export default defineAstroPaperConfig({
     scheduledPostMargin: 15 * 60 * 1000,
   },
   features: {
-    lightAndDarkMode: true,
+    // Paper only, matching buildforge.cloud. This hides the toggle button;
+    // the tokens in src/styles/theme.css are what actually make the site
+    // light-only, so do not flip this back without adding a dark palette.
+    lightAndDarkMode: false,
     dynamicOgImage: true,
     showArchives: true,
     showBackButton: true,

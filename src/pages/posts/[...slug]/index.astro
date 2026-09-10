@@ -140,13 +140,13 @@ const ogImage = ogImageUrl
       class:list={[
         "mt-8 w-full",
         "app-prose max-w-app",
-        "prose-pre:bg-(--shiki-light-bg) dark:prose-pre:bg-(--shiki-dark-bg)",
+        "prose-pre:bg-surface",
       ]}
     >
       <Content />
     </article>
 
-    <hr class="my-8 border-dashed" />
+    <hr class="border-divider my-8" />
 
     <EditPost class="sm:hidden" {hideEditPost} {post} />
 
@@ -158,11 +158,11 @@ const ogImage = ogImageUrl
 
     <ShareLinks />
 
-    <hr class="my-8 border-dashed" />
+    <hr class="border-divider my-8" />
 
     <Comments />
 
-    <hr class="my-8 border-dashed" />
+    <hr class="border-divider my-8" />
 
     <AdjacentPostNav {prevPost} {nextPost} />
   </main>

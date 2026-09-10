@@ -130,9 +130,10 @@ const t = useTranslations(locale);
     --pagefind-ui-border: var(--border);
     --pagefind-ui-primary: var(--accent);
     --pagefind-ui-tag: var(--background);
-    --pagefind-ui-border-radius: 0.375rem;
+    /* Square, like every other drawn box in the paper system. */
+    --pagefind-ui-border-radius: 0;
     --pagefind-ui-border-width: 1px;
-    --pagefind-ui-image-border-radius: 8px;
+    --pagefind-ui-image-border-radius: 0;
     --pagefind-ui-image-box-ratio: 3 / 2;
 
     form::before {
@@ -152,7 +153,7 @@ const t = useTranslations(locale);
       color: var(--accent);
       outline-offset: 1px;
       outline-color: var(--accent);
-      text-decoration-style: dashed;
+      text-decoration-style: solid;
       text-underline-offset: 4px;
     }
 

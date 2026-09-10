@@ -6,8 +6,8 @@ import { getFontPathByWeight } from "@/utils/getFontPathByWeight";
 import config from "@/config";
 
 export const GET: APIRoute = async context => {
-  const fonts = fontData["--font-google-sans-code"];
-  const regularFontPath = getFontPathByWeight(fonts, 400);
+  const fonts = fontData["--font-space-grotesk"];
+  const regularFontPath = getFontPathByWeight(fonts, 500);
   const boldFontPath = getFontPathByWeight(fonts, 700);
 
   if (regularFontPath === undefined || boldFontPath === undefined) {
@@ -28,13 +28,13 @@ export const GET: APIRoute = async context => {
       type: "div",
       props: {
         style: {
-          background: "#fefbfb",
+          background: "#f5f2ea",
           width: "100%",
           height: "100%",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontFamily: "Google Sans Code",
+          fontFamily: "Space Grotesk",
         },
         children: [
           {
@@ -44,10 +44,10 @@ export const GET: APIRoute = async context => {
                 position: "absolute",
                 top: "-1px",
                 right: "-1px",
-                border: "4px solid #000",
-                background: "#ecebeb",
+                border: "4px solid #141a22",
+                background: "#efeade",
                 opacity: "0.9",
-                borderRadius: "4px",
+                borderRadius: "0px",
                 display: "flex",
                 justifyContent: "center",
                 margin: "2.5rem",
@@ -60,9 +60,9 @@ export const GET: APIRoute = async context => {
             type: "div",
             props: {
               style: {
-                border: "4px solid #000",
-                background: "#fefbfb",
-                borderRadius: "4px",
+                border: "4px solid #141a22",
+                background: "#f5f2ea",
+                borderRadius: "0px",
                 display: "flex",
                 justifyContent: "center",
                 margin: "2rem",
@@ -145,13 +145,13 @@ export const GET: APIRoute = async context => {
       embedFont: true,
       fonts: [
         {
-          name: "Google Sans Code",
+          name: "Space Grotesk",
           data: regularData,
-          weight: 400,
+          weight: 500,
           style: "normal",
         },
         {
-          name: "Google Sans Code",
+          name: "Space Grotesk",
           data: boldData,
           weight: 700,
           style: "normal",

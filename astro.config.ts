@@ -58,8 +58,13 @@ export default defineConfig({
       rehypePlugins: [rehypeCallouts],
     }),
     shikiConfig: {
-      themes: { light: "min-light", dark: "night-owl" },
-      defaultColor: false,
+      // Single light theme, deliberately. The site is paper-only (see
+      // src/styles/theme.css) so the dual light/dark `themes` + `defaultColor:
+      // false` machinery — which emits --shiki-light/--shiki-dark CSS vars for
+      // a runtime swap — has nothing to swap between. A single `theme` makes
+      // Shiki emit plain inline colours instead, so typography.css styles the
+      // block's frame and lets Shiki own the syntax colours.
+      theme: "min-light",
       wrap: false,
       transformers: [
         transformerFileName({ style: "v2", hideDot: false }),
@@ -72,14 +77,37 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
   },
+  // Type stack copied from buildforge.cloud (see profile-homepage's
+  // assets/css/variables.css): Space Grotesk for headings, IBM Plex Sans for
+  // body copy, IBM Plex Mono for the small uppercase labels. The blog used to
+  // ship a single mono face for everything; the studio site is the parent
+  // brand, so the blog follows it rather than the other way round.
   fonts: [
     {
-      name: "Google Sans Code",
-      cssVariable: "--font-google-sans-code",
+      name: "Space Grotesk",
+      cssVariable: "--font-space-grotesk",
+      provider: fontProviders.google(),
+      fallbacks: ["Helvetica Neue", "Arial", "sans-serif"],
+      weights: [500, 600, 700],
+      styles: ["normal"],
+      formats: ["woff", "ttf"],
+    },
+    {
+      name: "IBM Plex Sans",
+      cssVariable: "--font-ibm-plex-sans",
+      provider: fontProviders.google(),
+      fallbacks: ["system-ui", "sans-serif"],
+      weights: [400, 500, 600, 700],
+      styles: ["normal", "italic"],
+      formats: ["woff", "ttf"],
+    },
+    {
+      name: "IBM Plex Mono",
+      cssVariable: "--font-ibm-plex-mono",
       provider: fontProviders.google(),
       fallbacks: ["monospace"],
-      weights: [300, 400, 500, 600, 700],
-      styles: ["normal", "italic"],
+      weights: [400, 500, 600],
+      styles: ["normal"],
       formats: ["woff", "ttf"],
     },
   ],

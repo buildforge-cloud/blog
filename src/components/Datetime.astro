@@ -47,13 +47,13 @@ const date = datetime.format("D MMM, YYYY");
   />
   {
     isModified && (
-      <span class:list={["text-sm", { "sm:text-base": size === "lg" }]}>
+      <span class:list={["label-mono", { "sm:text-sm": size === "lg" }]}>
         {t.post.updatedAt}:
       </span>
     )
   }
   <time
-    class:list={["text-sm", { "sm:text-base": size === "lg" }]}
+    class:list={["label-mono", { "sm:text-sm": size === "lg" }]}
     datetime={datetime.toISOString()}
   >
     {date}

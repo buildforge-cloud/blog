@@ -1,34 +1,57 @@
+/**
+ * Design tokens — the buildforge.cloud "paper" system.
+ *
+ * Adopted 2026-09-10. This blog used to ship AstroPaper's stock indigo-on-white
+ * palette with a light/dark toggle. buildforge.cloud (the studio site, see
+ * profile-homepage/assets/css/variables.css) is warm paper, ink structure and a
+ * single ember accent, and the blog is part of that site, so it follows it.
+ *
+ * Two things to know before changing a colour here:
+ *
+ * - `--border` is INK at full strength, not a pale grey. Structure on this site
+ *   is drawn, not implied. A hairline that should recede uses `--divider`.
+ * - `--accent` is the ember for TEXT and links (#c2410c). `--accent-fill` is the
+ *   brighter ember for solid shapes (#e8542a). They are not interchangeable:
+ *   ember at 500 on paper is about 3:1 and fails AA for body-sized type.
+ */
+
 /* Register design tokens for Tailwind v4 */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-accent: var(--accent);
+  --color-accent-fill: var(--accent-fill);
   --color-accent-foreground: var(--accent-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-surface: var(--surface);
   --color-border: var(--border);
-  --font-app: var(--font-google-sans-code);
+  --color-divider: var(--divider);
+
+  --font-app: var(--font-ibm-plex-sans);
+  --font-heading: var(--font-space-grotesk);
+  --font-mono: var(--font-ibm-plex-mono);
 }
 
-/* Light theme values */
-:root,
-[data-theme="light"] {
-  --background: #fdfdfd;
-  --foreground: #282728;
-  --accent: #6366f1;
-  --accent-foreground: #ffffff;
-  --muted: #e6e6e6;
-  --muted-foreground: #6b7280;
-  --border: #ece9e9;
-}
+/**
+ * One committed look. There is no [data-theme="dark"] block and no
+ * prefers-color-scheme override on purpose — the studio site made that call
+ * deliberately (its variables.css has the note) and the blog matches it. If a
+ * dark variant is ever wanted, design it; do not let it fall out of a token
+ * override, which is how a site ends up shipping a version nobody reviewed.
+ */
+:root {
+  --background: #f5f2ea; /* Paper */
+  --foreground: #141a22; /* Ink — body copy and headings */
+  --surface: #fffefb; /* Panel, a touch warmer than white */
 
-/* Dark theme values */
-[data-theme="dark"] {
-  --background: #212737;
-  --foreground: #eaedf3;
-  --accent: #818cf8;
+  --accent: #c2410c; /* Ember for text and links (4.5:1+ on paper) */
+  --accent-fill: #e8542a; /* Ember for solid fills, strips, marks */
   --accent-foreground: #ffffff;
-  --muted: #343f60;
-  --muted-foreground: #afb9ca;
-  --border: #4c4f8f;
+
+  --muted: #efeade; /* Alternating band, code chips */
+  --muted-foreground: #556170; /* Muted ink — labels, dates (4.5:1 on paper) */
+
+  --border: #141a22; /* Ink. Structure is drawn. */
+  --divider: rgba(20, 26, 34, 0.14); /* Hairlines that should recede */
 }
