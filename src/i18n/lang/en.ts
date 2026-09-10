@@ -36,6 +36,7 @@ export default {
   footer: {
     copyright: "Copyright",
     allRightsReserved: "All rights reserved.",
+    partOf: "Part of BuildForge",
   },
   pages: {
     tagTitle: "Tag",

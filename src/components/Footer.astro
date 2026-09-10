@@ -25,6 +25,17 @@ const currentYear = new Date().getFullYear();
       <span>{t.footer.copyright} &#169; {currentYear}</span>
       <span class="hidden sm:inline">&nbsp;|&nbsp;</span>
       <span>{t.footer.allRightsReserved}</span>
+      <span class="hidden sm:inline">&nbsp;|&nbsp;</span>
+      {
+        /*
+        Site-wide link home to the studio. Nothing on this blog linked to
+        buildforge.cloud before 2026-09-10, which is the whole point: a link in
+        the footer is on every page, where an about-page mention is on one.
+      */
+      }
+      <a class="hover:text-accent" href="https://buildforge.cloud"
+        >{t.footer.partOf}</a
+      >
     </div>
   </div>
 </footer>
