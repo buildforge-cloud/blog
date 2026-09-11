@@ -31,7 +31,7 @@
     }
 
     a {
-      @apply text-accent hover:decoration-accent-fill wrap-break-word underline decoration-1 underline-offset-4 focus-visible:no-underline;
+      @apply text-accent hover:text-accent-strong wrap-break-word underline decoration-1 underline-offset-4 focus-visible:no-underline;
     }
 
     ul {

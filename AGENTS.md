@@ -133,6 +133,25 @@ The favicon and the header wordmark share the BuildForge hexagon mark
 (`public/favicon.svg`, `src/assets/icons/IconBuildforge.svg`), copied from
 `profile-homepage/favicon.svg`.
 
+⚠️ **Issue #4's spec table disagrees with `profile-homepage`'s actual CSS in
+three places, and the CSS is the one that was followed.** The issue is the
+design brief; it was written before the site shipped and three of its figures
+never matched what was built. Body ink is `#141a22` here, not the `#4a5766` the
+table lists — `profile-homepage`'s `body` rule uses `--color-text-primary`,
+which is `#141a22`, and `#4a5766` is its *tertiary* text. Label tracking is
+`0.12em`, not `0.16em`, because `--letter-spacing-widest` is `0.12em` and the
+studio nav uses it. And the 5px ember strip exists above the footer only; the
+studio has no strip at the top of the page, despite the brief calling for one.
+If a fourth divergence turns up, check `variables.css` before assuming the brief
+is right.
+
+**Contrast has no automated check yet — that is #6.** Every run of text on the
+shipped palette was measured by hand at adoption and passes AA, but ember
+`#c2410c` on paper clears it by 0.13, so a token nudge could drop it under
+without anything looking wrong. Measure, don't review by eye. The one recorded
+exception is `::selection`, which paints white on ember-fill at 3.66:1,
+inherited verbatim from the studio site's own `::selection`.
+
 ## Analytics
 
 PostHog Cloud (EU), reusing the buildforge.cloud org's existing "Default project"

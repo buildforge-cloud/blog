@@ -10,9 +10,10 @@
  *
  * - `--border` is INK at full strength, not a pale grey. Structure on this site
  *   is drawn, not implied. A hairline that should recede uses `--divider`.
- * - `--accent` is the ember for TEXT and links (#c2410c). `--accent-fill` is the
- *   brighter ember for solid shapes (#e8542a). They are not interchangeable:
- *   ember at 500 on paper is about 3:1 and fails AA for body-sized type.
+ * - `--accent` is the ember for TEXT and links (#c2410c), `--accent-strong` its
+ *   hover (#7c2d12), and `--accent-fill` the brighter ember for solid shapes
+ *   (#e8542a). They are not interchangeable: white on ember-fill measures
+ *   3.66:1 and fails AA, so no run of text sits on it.
  */
 
 /* Register design tokens for Tailwind v4 */
@@ -21,6 +22,7 @@
   --color-foreground: var(--foreground);
   --color-accent: var(--accent);
   --color-accent-fill: var(--accent-fill);
+  --color-accent-strong: var(--accent-strong);
   --color-accent-foreground: var(--accent-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
@@ -47,6 +49,7 @@
 
   --accent: #c2410c; /* Ember for text and links (4.5:1+ on paper) */
   --accent-fill: #e8542a; /* Ember for solid fills, strips, marks */
+  --accent-strong: #7c2d12; /* Deepest ember — link hover */
   --accent-foreground: #ffffff;
 
   --muted: #efeade; /* Alternating band, code chips */
