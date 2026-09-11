@@ -39,8 +39,12 @@ const rssHref = getRelativeLocaleUrl(
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {
+      /* SVG only. There is no favicon.ico in public/ and there never was, so
+         the .ico link that stood here 404'd on every page load. A JS comment,
+         not an HTML one, so the note does not ship to every reader. */
+    }
     <link rel="icon" type="image/svg+xml" href={getAssetPath("favicon.svg")} />
-    <link rel="icon" href={getAssetPath("favicon.ico")} />
     <link rel="canonical" href={canonicalURL} />
     <meta name="generator" content={Astro.generator} />
 

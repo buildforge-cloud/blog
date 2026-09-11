@@ -103,8 +103,8 @@ session under Astro's ClientRouter unless marked to re-run.
 Adopted 2026-09-10. The blog wears the same design as
 [buildforge.cloud](https://buildforge.cloud), the studio site that owns it: warm
 paper (`#f5f2ea`), near-black ink (`#141a22`) for text and drawn structure, and
-one ember accent (`#c2410c` for text and links, `#e8542a` for solid fills and
-rules). Type is Space Grotesk for headings, IBM Plex Sans for body copy, IBM Plex
+one ember accent (`#c2410c` for text and links, `#7c2d12` for link hover,
+`#e8542a` for solid fills and rules). Type is Space Grotesk for headings, IBM Plex Sans for body copy, IBM Plex
 Mono for the small uppercase labels (dates, nav items) — the `label-mono` utility
 in `global.css`. The canonical version of these tokens lives in
 `profile-homepage/assets/css/variables.css`; `src/styles/theme.css` is this
