@@ -15,8 +15,9 @@ The second rejection arrived a few hours after the first one, and it cited the
 same guideline. 3.1.2 both times. I read it twice before I accepted that Apple
 wasn't repeating itself.
 
-This is the first app I've put on the App Store.
-[Vedlikeholdsloggen](https://apps.apple.com/no/app/vedlikeholdsloggen/id6812536099),
+This is the first app I've
+[put on the App Store](https://apps.apple.com/no/app/vedlikeholdsloggen/id6812536099).
+[Vedlikeholdsloggen](https://vedlikeholdsloggen.buildforge.no/),
 a Norwegian thing that reminds me when to do the maintenance on a house and a
 cabin and keeps a log of what got done. Seven days of building, mostly by
 agents under my direction, and then it went into a queue.
