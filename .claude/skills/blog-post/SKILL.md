@@ -312,8 +312,23 @@ post" section — re-read it if unsure, don't assume the schema from memory):
 
 - New file under `src/content/posts/`, using `hello-world.md` as the frontmatter
   template and `src/content.config.ts` for the authoritative schema.
-- `draft: true` by default — never flip to `false` without the user confirming
-  the post is actually ready.
+- `draft: false` from the start, always. This looks backwards and is not: this
+  theme filters drafts out of the content collection in `npm run dev` too, so a
+  post with `draft: true` is invisible in the preview and Stefan cannot read it
+  at all. Setting it true does not make the post safer, it makes it
+  unreviewable. The real gate is the merge to `main`, which deploys, so write
+  the file with `draft: false` and do not push to `main` until the post is
+  confirmed ready. (Corrected 2026-09-10 by Stefan, after a draft was handed
+  over unreadable. The correction then sat uncommitted in one checkout until
+  blog#7, so every worktree went on reading the old `draft: true` rule.)
+- `pubDatetime` must be a time that has already passed, unless the issue
+  schedules the post on purpose. `postFilter.ts` treats a future date as a
+  scheduled post, and the two builds disagree about it: `npm run dev` shows the
+  post as normal, while a production build leaves it out entirely (no page, no
+  index or tag entry; only its OG image is built). So the preview cannot catch
+  a wrong date. Check `date -u` and use it, do not round the hour up.
+  (Measured 2026-09-25 on blog#7: the same post dated one day ahead was on the
+  dev home page and had no page in `dist/`.)
 - **Tags**: before finalizing frontmatter, check what tags are already in use
   across published posts (`grep -h "  - " src/content/posts/*.md` under each
   `tags:` block, or just check `/tags` on the live site) so the taxonomy stays
@@ -358,7 +373,7 @@ post" section — re-read it if unsure, don't assume the schema from memory):
 
 Point the user at `npm run dev` → `https://dev.buildforge.cloud/absproxy/5177/` (or
 `astro dev --background` per this repo's dev-server convention) to preview before
-they flip `draft: false` and push.
+the post is merged. The push to `main` is what publishes it.
 
 ## Inspiration, not a template
 
