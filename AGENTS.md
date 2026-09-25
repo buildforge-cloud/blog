@@ -211,6 +211,15 @@ astro dev --background
 
 Manage the background server with `astro dev stop`, `astro dev status`, and `astro dev logs`.
 
+**Building from a worktree** (how a dispatched worker runs): a fresh worktree
+has no `node_modules`, and a symlink to the main checkout's copy is enough for
+`npm run build`, `lint` and `format:check`, with no install. Two catches, both
+hit on blog#8 (2026-09-25). `.gitignore`'s `node_modules/` matches only a
+directory, so the link shows as untracked: stage files by name, and delete the
+link before the worktree is cleaned up. And `astro dev --port N` from a
+worktree still serves under `/absproxy/5177/`, because the config's `base`
+wins over `--base`; fetch it at `http://localhost:N/absproxy/5177/...`.
+
 ## Documentation
 
 Full documentation: https://docs.astro.build
