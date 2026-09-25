@@ -51,12 +51,12 @@ back with a whole stack: a chat interface, a graph engine to route work
 between agents, a vector database for long-term memory, containers inside
 containers as sandboxes for the workers, and a second issue tracker living in
 git. Every piece came with a reason. The chat interface and the graph engine
-alone wanted around 6 GB of memory. The server that already runs all my apps
+alone wanted around 5 GB of memory. The server that already runs all my apps
 had 2.7 GB free, and its disk was 96% full.
 
 So almost none of it survived. What already worked was a terminal manager that
 keeps one Claude session per project, a phone front-end for it that buzzes when
-a session gets stuck, GitHub issues and pull requests as the record of what's
+a session finishes, GitHub issues and pull requests as the record of what's
 been done, and git worktrees, so a worker gets its own copy of a repo to make a
 mess in. The boss became a thin layer on top of those: one more Claude session,
 in its own project, with a handful of small scripts.
@@ -72,7 +72,7 @@ already said. The point that actually changed the design was smaller. It warned
 that a worker started headless, with no terminal attached, dies the first time
 it hits a permission prompt, because nobody is there to answer. So the workers
 are ordinary interactive sessions in a terminal pane. When one gets stuck on a
-prompt it shows up as blocked and reaches my phone like any other session.
+prompt it shows up as blocked in the terminal manager.
 
 It also assumed habits I don't have. It wanted the blog side fed from `feat:`
 and `fix:` prefixes in commit messages. One commit in a sample of 375, across
