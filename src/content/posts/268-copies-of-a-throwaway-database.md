@@ -27,11 +27,12 @@ That's where I slowed down. Unattached volumes on a server that also runs
 production databases are not something I delete on a hunch. A volume can be a
 database, and stopped staging data would look exactly like this.
 
-## Every one was 49 MB
+## All but one were 49 MB
 
-They were all the same size. Not roughly the same. Every single one was 49 MB,
-and every one was less than three weeks old. Real data doesn't come in
-identical slices. Something was stamping these out.
+They were nearly all the same size. Not roughly the same: all but one were
+exactly 49 MB, and the odd one out was empty. Every one was less than three
+weeks old. Real data doesn't come in identical slices. Something was stamping
+these out.
 
 The dates gave it away. Counted per day, the volumes lined up with the staging
 deploys of two projects, cvtailor and ps·db, almost exactly. One busy day in
