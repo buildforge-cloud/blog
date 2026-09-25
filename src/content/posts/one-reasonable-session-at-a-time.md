@@ -78,14 +78,14 @@ the explanation to move anything. The verdict at the end was to adopt nothing
 and delete nothing.
 
 The grader was wrong three times before it was right, and all three errors
-ran the same direction. It counted the word "score", so an output saying *no
-score anywhere on the screen* graded as showing a score. It measured refusals
+ran the same direction. It counted the word "score", so an output saying _no
+score anywhere on the screen_ graded as showing a score. It measured refusals
 from an arm that couldn't answer for lack of file access. It counted
 `async def` inside a comment saying not to use `async def`.
 
 That last one flipped a headline. It made the rules-with-justification arm
-look three times worse than the bare rule, which reads as *explaining a rule
-makes compliance worse*, a striking claim that happens to match what the
+look three times worse than the bare rule, which reads as _explaining a rule
+makes compliance worse_, a striking claim that happens to match what the
 skill I was evaluating argues. I nearly reported it. All six of those
 handlers were plain sync functions, and the only reason it got caught was
 reading raw output instead of the summary, which is how all three were
