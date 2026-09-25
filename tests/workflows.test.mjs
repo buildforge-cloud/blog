@@ -32,7 +32,9 @@ test("deploy.yml rebuilds every day at 07:05 UTC, so scheduled posts go live", (
 // The scheduled run builds the same commit as the day before, and the build's
 // output depends on the clock. Docker's layer cache cannot see the clock, so
 // `RUN npm run build` needs a cache key that changes on every run, or the
-// rebuild can hand back yesterday's site.
+// rebuild can hand back yesterday's site. A re-run keeps its `run_id` and only
+// `run_attempt` changes, so the key needs both: a failed 07:05 run re-run at
+// 09:00 must not get the 07:05 build back.
 test("every deploy run builds the site fresh, not from Docker's cache", () => {
   const lines = read("Dockerfile")
     .split("\n")
@@ -54,9 +56,9 @@ test("every deploy run builds the site fresh, not from Docker's cache", () => {
   assert.match(
     runs,
     new RegExp(
-      `docker compose build [^\\n]*--build-arg ${arg}=\\$\\{\\{ github\\.run_id \\}\\}`
+      `docker compose build [^\\n]*--build-arg ${arg}=\\$\\{\\{ github\\.run_id \\}\\}-\\$\\{\\{ github\\.run_attempt \\}\\}`
     ),
-    `deploy.yml must pass --build-arg ${arg}=\${{ github.run_id }}`
+    `deploy.yml must pass --build-arg ${arg}=\${{ github.run_id }}-\${{ github.run_attempt }}`
   );
   assert.doesNotMatch(
     runs,

@@ -207,8 +207,10 @@ at the top of this file for why that distinction matters here specifically.
 the clock.** The scheduled run builds the same commit as the day before, so
 `RUN npm run build` could come back from cache with yesterday's site. The
 Dockerfile's `ARG BUILD_ID` sits just above that step, and `deploy.yml` passes
-`--build-arg BUILD_ID=${{ github.run_id }}` to `docker compose build`, so the step
-re-runs every time. That is why the deploy is two steps (`build`, then `up -d`
+`--build-arg BUILD_ID=${{ github.run_id }}-${{ github.run_attempt }}` to
+`docker compose build`, so the step re-runs every time. Both parts are needed: a
+re-run keeps its `run_id`, and only `run_attempt` changes, so a failed 07:05 run
+re-run at 09:00 would otherwise get the 07:05 build back. That is why the deploy is two steps (`build`, then `up -d`
 without `--build`): `up --build` would build again without the arg. Before blog#9
 nothing needed this, because every deploy was a push with new content, and new
 content already changes the `COPY . .` layer.

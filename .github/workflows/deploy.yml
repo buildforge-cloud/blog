@@ -26,9 +26,10 @@ jobs:
       - uses: actions/checkout@v4
 
       # A new BUILD_ID on every run makes Docker re-run `npm run build` (see the
-      # ARG in the Dockerfile). `up` then starts that image; `up --build` would
-      # build again without the arg.
-      - run: docker compose build --build-arg BUILD_ID=${{ github.run_id }} blog_app
+      # ARG in the Dockerfile). A re-run keeps its run_id, so run_attempt is part
+      # of it too. `up` then starts that image; `up --build` would build again
+      # without the arg.
+      - run: docker compose build --build-arg BUILD_ID=${{ github.run_id }}-${{ github.run_attempt }} blog_app
 
       - run: docker compose up -d blog_app
 
