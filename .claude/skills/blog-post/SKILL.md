@@ -346,6 +346,11 @@ post" section — re-read it if unsure, don't assume the schema from memory):
   acceptable resting state.
 - Watch the underscore-prefix build gotcha documented in CLAUDE.md if the post
   goes in a subdirectory.
+- **Scheduling**: a future `pubDatetime` schedules a post. `deploy.yml`
+  rebuilds every day at 07:05 UTC, and the post goes live at the first
+  production build after its time. Until then production has no page for it
+  at all, while `npm run dev` shows it as normal. CLAUDE.md's "Writing a post"
+  section has the details and the 15-minute margin; read it before scheduling.
 - If the post links to a specific commit/PR in this blog's own repo (the org's
   only public one), that's fine per the site's `/colophon` page — don't link to
   or quote from any other buildforge.cloud repo, since those are private and the

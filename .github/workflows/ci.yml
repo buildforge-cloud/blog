@@ -34,6 +34,9 @@ jobs:
       - name: "🔎 Lint code"
         run: npm run lint
 
+      - name: "🧪 Test workflows"
+        run: npm test
+
       - name: "📝 Checking code format"
         run: npm run format:check
 

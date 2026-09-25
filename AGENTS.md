@@ -27,10 +27,31 @@ No admin panel / CMS — this is a git-based static site. To publish:
    `tags`, `description` — see `src/content.config.ts` for the full schema).
 2. Preview: `npm run dev` → https://dev.buildforge.cloud/absproxy/5177/ (live reload),
    or `npm run build && npm run preview` for an exact production build.
-3. Set `draft: true` to keep a post out of the build while it's unfinished; flip to
-   `false` when ready.
+3. Write it with `draft: false` from the start. This theme hides drafts in
+   `npm run dev` too, so a `draft: true` post cannot be previewed at all. The real
+   gate is the push to `main`: do not push until the post is ready. (Stefan's
+   correction, 2026-09-10.)
 4. Commit and push to `main` — `deploy.yml` rebuilds and redeploys automatically via
    the org's self-hosted runner, live within about a minute.
+
+**To schedule a post**, set `pubDatetime` to the future time and merge it as
+normal. `deploy.yml` also rebuilds every day at **07:05 UTC** (blog#9), and the
+post goes live at the first production build after its `pubDatetime`. The theme's
+15-minute `scheduledPostMargin` counts too, so a post dated 07:00 UTC goes live at
+that day's 07:05 run, and one dated 09:00 waits for the next push or the next
+day's run.
+
+Until then a production build leaves the post out completely: no page, no index,
+tag or RSS entry. Only its OG image (`/posts/<slug>/index.png`) is built early,
+because that route filters drafts but not dates. So the title and description can
+be seen at that `.png` URL, but the page itself cannot. Measured 2026-09-25 on
+blog#8: `dist/posts/<slug>/` held only `index.png`. `npm run dev` shows a
+future-dated post as normal (`import.meta.env.DEV ||` in `postFilter.ts`), so the
+preview cannot tell you a date is wrong.
+
+GitHub can start a scheduled run late when Actions is busy, and it turns schedules
+off in a public repo after 60 days with no repository activity. If a scheduled
+post has not appeared, check the Actions tab for the 07:05 run first.
 
 Organizing posts into subdirectories under `src/content/posts/` is fine (the
 subdirectory name becomes part of the post URL) — just don't use a leading
@@ -176,10 +197,30 @@ an existing `*.buildforge.cloud` wildcard record, confirmed live 2026-08-07 — 
 per-subdomain DNS step was needed.
 
 `.github/workflows/deploy.yml` (self-hosted runner, Pattern A) redeploys on every
-push to `main`. `.github/workflows/ci.yml` (from the AstroPaper scaffold, adapted
-pnpm→npm) runs lint/format/build on PRs, deliberately on GitHub-hosted
+push to `main`, and on a daily `schedule` at 07:05 UTC so scheduled posts publish
+(see "Writing a post"). `.github/workflows/ci.yml` (from the AstroPaper scaffold, adapted
+pnpm→npm) runs lint/test/format/build on PRs, deliberately on GitHub-hosted
 `ubuntu-latest` rather than `self-hosted` — see the "public repo" runner-policy note
 at the top of this file for why that distinction matters here specifically.
+
+⚠️ **The build's output depends on the clock, and Docker's layer cache cannot see
+the clock.** The scheduled run builds the same commit as the day before, so
+`RUN npm run build` could come back from cache with yesterday's site. The
+Dockerfile's `ARG BUILD_ID` sits just above that step, and `deploy.yml` passes
+`--build-arg BUILD_ID=${{ github.run_id }}-${{ github.run_attempt }}` to
+`docker compose build`, so the step re-runs every time. Both parts are needed: a
+re-run keeps its `run_id`, and only `run_attempt` changes, so a failed 07:05 run
+re-run at 09:00 would otherwise get the 07:05 build back. That is why the deploy is two steps (`build`, then `up -d`
+without `--build`): `up --build` would build again without the arg. Before blog#9
+nothing needed this, because every deploy was a push with new content, and new
+content already changes the `COPY . .` layer.
+
+`npm test` (`tests/workflows.test.mjs`, Node's built-in runner plus the `yaml`
+package) pins what the workflows must keep doing: the 07:05 UTC cron, the
+per-run `BUILD_ID`, deploy on push to `main`, no `cancel-in-progress` on the
+production deploy, and no workflow where a `pull_request` can start a
+`self-hosted` job. A workflow only runs on GitHub, so without this a cron typo
+stays silent until the morning a post fails to appear.
 
 Dev server pinned to port **5177** with the `/absproxy/5177/` convention (see
 `astro.config.ts` — Astro's own `defineConfig` doesn't take a Vite-style
