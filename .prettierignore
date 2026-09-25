@@ -5,6 +5,7 @@
 !/src
 !/public
 !/.github
+!/tests
 !tsconfig.json
 !astro.config.ts
 !package.json

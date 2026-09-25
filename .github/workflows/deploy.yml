@@ -4,6 +4,20 @@ on:
   push:
     branches:
       - main
+  # Scheduled posts (blog#9). `postFilter.ts` leaves out a post whose
+  # `pubDatetime` is still in the future, and it decides at BUILD time. Without
+  # this rebuild, a post merged early stays off the site until the next push.
+  # 07:05 UTC publishes a post dated 07:00 UTC. The theme's 15-minute
+  # `scheduledPostMargin` means this run also takes posts dated up to 07:20.
+  #
+  # Safe for a self-hosted job in this public repo: a `schedule` run starts
+  # only from the default branch, and no pull request can trigger it.
+  #
+  # GitHub can start a scheduled run late when Actions is busy, and it turns
+  # schedules off in a public repo after 60 days with no repository activity.
+  # So "live within minutes" is the usual case, not a promise.
+  schedule:
+    - cron: "5 7 * * *"
 
 jobs:
   deploy:
@@ -11,7 +25,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - run: docker compose up -d --build blog_app
+      # A new BUILD_ID on every run makes Docker re-run `npm run build` (see the
+      # ARG in the Dockerfile). `up` then starts that image; `up --build` would
+      # build again without the arg.
+      - run: docker compose build --build-arg BUILD_ID=${{ github.run_id }} blog_app
+
+      - run: docker compose up -d blog_app
 
       - name: Health check
         run: |
