@@ -19,17 +19,37 @@ on:
   schedule:
     - cron: "5 7 * * *"
 
+# blog#2. A new run waits for the one in progress and never cancels it: a
+# production deploy stopped inside `docker compose up` leaves the site down
+# until the next run. The org has one runner, so runs take turns anyway; this
+# writes the rule down, and it holds if a second runner is added. (A new run
+# that is still waiting does replace an older waiting one. That is safe, because
+# every run deploys the newest `main`.)
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: self-hosted
+    # blog#3. A hang detector, not a budget. GitHub's default is 6 hours, and
+    # this runner deploys every repo in the org. Measured 2026-09-28 over 23
+    # runs: 51s median, 102s max, not counting queue wait.
+    timeout-minutes: 30
     steps:
+      # The steps before `up` have their own bounds, 25 minutes together. A
+      # hang there fails that step, and `up` never runs. So the job's bound
+      # always leaves 5 minutes for `up` and the health check (8s at most in
+      # the same runs), and does not stop a deploy halfway through `up`.
       - uses: actions/checkout@v4
+        timeout-minutes: 5
 
       # A new BUILD_ID on every run makes Docker re-run `npm run build` (see the
       # ARG in the Dockerfile). A re-run keeps its run_id, so run_attempt is part
       # of it too. `up` then starts that image; `up --build` would build again
       # without the arg.
       - run: docker compose build --build-arg BUILD_ID=${{ github.run_id }}-${{ github.run_attempt }} blog_app
+        timeout-minutes: 20
 
       - run: docker compose up -d blog_app
 
