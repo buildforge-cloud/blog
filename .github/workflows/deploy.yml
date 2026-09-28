@@ -22,9 +22,13 @@ on:
 # blog#2. A new run waits for the one in progress and never cancels it: a
 # production deploy stopped inside `docker compose up` leaves the site down
 # until the next run. The org has one runner, so runs take turns anyway; this
-# writes the rule down, and it holds if a second runner is added. (A new run
-# that is still waiting does replace an older waiting one. That is safe, because
-# every run deploys the newest `main`.)
+# writes the rule down, and it holds if a second runner is added.
+#
+# ⚠️ A new run that is still waiting does replace an older waiting one, and a
+# re-run counts as new. Checkout builds the run's own commit, not the newest
+# `main`. So re-running an OLD Deploy run can cancel a newer waiting run and
+# roll the site back until the next push or 07:05 run. Re-run only the newest
+# Deploy run, or push again after re-running an old one.
 concurrency:
   group: production-deploy
   cancel-in-progress: false
