@@ -12,6 +12,10 @@ import { parse } from "yaml";
 const root = new URL("../", import.meta.url);
 const read = path => readFileSync(new URL(path, root), "utf8");
 const workflow = name => parse(read(`.github/workflows/${name}`));
+const workflowFiles = () =>
+  readdirSync(new URL(".github/workflows/", root)).filter(f =>
+    /\.ya?ml$/.test(f)
+  );
 
 // YAML 1.1 reads a bare `on:` key as `true`; the `yaml` package (YAML 1.2)
 // keeps it as the string "on". Accept both so a parser change cannot hide
@@ -75,10 +79,7 @@ test("a push to main still deploys", () => {
 // self-hosted job that a pull request can start would run a stranger's code
 // on the shared server.
 test("no pull request can start a self-hosted job", () => {
-  const names = readdirSync(new URL(".github/workflows/", root)).filter(f =>
-    /\.ya?ml$/.test(f)
-  );
-  for (const name of names) {
+  for (const name of workflowFiles()) {
     const wf = workflow(name);
     const on = triggers(wf);
     const events =
@@ -96,6 +97,19 @@ test("no pull request can start a self-hosted job", () => {
   }
 });
 
+// blog#2. With one runner for the whole org, runs already take turns, so a
+// group that queues changes nothing today; it writes the rule down, and it
+// holds if a second runner is ever added. It must not cancel (the test below).
+test("deploy.yml runs in one concurrency group that queues", () => {
+  const group = workflow("deploy.yml").concurrency;
+  assert.ok(group?.group, "deploy.yml has no concurrency group");
+  assert.equal(
+    group["cancel-in-progress"],
+    false,
+    "deploy.yml's concurrency group must say `cancel-in-progress: false`, so the decision to queue is written down"
+  );
+});
+
 test("the production deploy is never cancelled by a newer run", () => {
   const wf = workflow("deploy.yml");
   const groups = [
@@ -109,4 +123,76 @@ test("the production deploy is never cancelled by a newer run", () => {
       `deploy.yml ${where}: cancel-in-progress is ${cancel}`
     );
   }
+});
+
+// blog#3. A job with no `timeout-minutes` runs for up to GitHub's default of
+// 6 hours, and this org has one self-hosted runner for every repo, so a stalled
+// deploy here holds everybody's deploys. A job that only `uses:` a reusable
+// workflow cannot take the key (GitHub rejects it) and gets the callee's
+// bounds, so that is the one exemption, and a job claiming it must really have
+// `uses:`.
+const unboundedJobs = wf =>
+  Object.entries(wf.jobs ?? {})
+    .filter(([, job]) => (job.steps ? !job["timeout-minutes"] : !job.uses))
+    .map(([id]) => id);
+
+test("every job that runs steps declares timeout-minutes", () => {
+  for (const name of workflowFiles()) {
+    assert.deepEqual(
+      unboundedJobs(workflow(name)),
+      [],
+      `${name}: these jobs have no timeout-minutes, so GitHub's 6-hour default applies`
+    );
+  }
+});
+
+test("the timeout check exempts a reusable-workflow call and nothing else", () => {
+  const wf = {
+    jobs: {
+      bounded: { "timeout-minutes": 5, steps: [{ run: "true" }] },
+      unbounded: { steps: [{ run: "true" }] },
+      caller: { uses: "./.github/workflows/ci.yml" },
+      neither: { "runs-on": "ubuntu-latest" },
+    },
+  };
+  assert.deepEqual(unboundedJobs(wf), ["unbounded", "neither"]);
+});
+
+// Measured 2026-09-28 over all 23 Deploy runs: the job took 51s at the median
+// and 102s at most. The 867s "tail" in blog#3 was queue wait on the shared
+// runner (829s of it), and `timeout-minutes` does not count queue wait. So the
+// bound is a hang detector, not a budget: 20 minutes clears a build from a
+// cold Docker cache many times over, and 30 caps how long a hang can hold the
+// runner.
+test("the deploy job's bound is a hang detector: 20 to 30 minutes", () => {
+  const minutes = workflow("deploy.yml").jobs.deploy["timeout-minutes"];
+  assert.ok(
+    minutes >= 20 && minutes <= 30,
+    `deploy.yml deploy: timeout-minutes is ${minutes}; want 20 to 30`
+  );
+});
+
+// A job that times out is stopped wherever it is. If that lands inside
+// `docker compose up`, the old container can be gone and the new one not yet
+// started. So every step before the recreate has its own, smaller bound: a
+// hang there fails that step, and the steps after it never run. What is left
+// of the job's bound is for the recreate and the health check (2s and 6s at
+// most in the same measurement).
+test("a timeout cannot land between the container recreate and the health check", () => {
+  const job = workflow("deploy.yml").jobs.deploy;
+  const up = job.steps.findIndex(s => /docker compose up/.test(s.run ?? ""));
+  assert.ok(up > 0, "deploy.yml has no `docker compose up` step");
+  const before = job.steps.slice(0, up);
+  assert.deepEqual(
+    before.filter(s => !s["timeout-minutes"]).map(s => s.uses ?? s.run),
+    [],
+    "these steps before the recreate have no timeout-minutes of their own"
+  );
+  const left =
+    job["timeout-minutes"] -
+    before.reduce((sum, s) => sum + s["timeout-minutes"], 0);
+  assert.ok(
+    left >= 5,
+    `${left} min of the job's bound is left for the recreate and the health check; want at least 5`
+  );
 });
