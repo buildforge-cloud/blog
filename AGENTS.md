@@ -218,9 +218,28 @@ content already changes the `COPY . .` layer.
 `npm test` (`tests/workflows.test.mjs`, Node's built-in runner plus the `yaml`
 package) pins what the workflows must keep doing: the 07:05 UTC cron, the
 per-run `BUILD_ID`, deploy on push to `main`, no `cancel-in-progress` on the
-production deploy, and no workflow where a `pull_request` can start a
-`self-hosted` job. A workflow only runs on GitHub, so without this a cron typo
-stays silent until the morning a post fails to appear.
+production deploy, no workflow where a `pull_request` can start a
+`self-hosted` job, a `timeout-minutes` on every job that runs steps, a 20 to
+30 minute bound on the deploy job, and one concurrency group that queues. A
+workflow only runs on GitHub, so without this a cron typo stays silent until
+the morning a post fails to appear.
+
+The deploy job's `timeout-minutes: 30` (blog#3) replaces GitHub's 6-hour
+default, because this runner deploys every repo in the org. It detects a hang;
+it is not a budget. Over 23 runs to 2026-09-28 the job took 51s at the median
+and 102s at most. The 867s "tail" in blog#3 was 829s of queue wait on the
+shared runner, and `timeout-minutes` does not count queue wait, so size a bound
+from the job's `started_at` to `completed_at`, never from the run's. Checkout
+(5) and build (20) have their own bounds, so a hang fails before the container
+is touched, and 5 minutes of the job's bound are always left for `up` and the
+health check. Raise the build bound and the job bound together: `npm test`
+fails if less than 5 minutes are left. The workflow runs in one `concurrency`
+group, `production-deploy`, with `cancel-in-progress: false` written out
+(blog#2): a new run waits and never cancels a deploy in progress. A new
+*waiting* run still replaces an older waiting one, and a re-run counts as new
+but builds its own old commit. So re-run only the newest Deploy run: a re-run
+of an old one can cancel a newer waiting run and roll the site back until the
+next push or 07:05 run.
 
 Dev server pinned to port **5177** with the `/absproxy/5177/` convention (see
 `astro.config.ts` — Astro's own `defineConfig` doesn't take a Vite-style
