@@ -133,11 +133,21 @@ for (const path of pages) {
 
 // The search page holds only a text box until someone searches. Search for a
 // word from a post's own URL, so there is always at least one result.
+//
+// Pagefind shows each result at once as grey placeholder rows
+// (`.pagefind-ui__loading`, text the colour of its ground: 1.00:1), and fills
+// it in when the result's fragment arrives. The fragments are held back here,
+// so every run meets that state, not only a run on a slow machine.
 test("text in search results meets AA", async ({ page }) => {
+  await page.route("**/pagefind/fragment/**", async route => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    await route.continue();
+  });
   const slug = pages.find(p => isPost.test(p)).split("/")[2];
   const word = slug.split("-").sort((a, b) => b.length - a.length)[0];
   await page.goto(`/search/?q=${word}`);
   await expect(page.locator(".pagefind-ui__result").first()).toBeVisible();
+  await expect(page.locator(".pagefind-ui__loading")).toHaveCount(0);
   await checkPage(page, "/search/");
 });
 
