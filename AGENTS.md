@@ -166,12 +166,26 @@ studio has no strip at the top of the page, despite the brief calling for one.
 If a fourth divergence turns up, check `variables.css` before assuming the brief
 is right.
 
-**Contrast has no automated check yet — that is #6.** Every run of text on the
-shipped palette was measured by hand at adoption and passes AA, but ember
-`#c2410c` on paper clears it by 0.13, so a token nudge could drop it under
-without anything looking wrong. Measure, don't review by eye. The one recorded
-exception is `::selection`, which paints white on ember-fill at 3.66:1,
-inherited verbatim from the studio site's own `::selection`.
+**`npm run test:pages` measures contrast (blog#6).** Playwright walks every page
+in the built sitemap, search with results, and the 404 page, at desktop and at
+390 px. For each run of text it reads the computed colour and every background
+and `opacity` above it, and asserts AA (4.5:1, or 3:1 for 24px text and 18.67px
+bold). Build first: it serves `dist/` with `astro preview` on 4177.
+`tests/contrast.mjs` does the arithmetic, and `npm test` checks it. The check
+never fixes a failure: the failure goes in the spec's `known` list with its
+ratio, and Stefan picks the fix. A record covers one colour pair on its own
+pages, and fails the check once the failure is gone. The list is empty since
+blog#15: its one record, the previous/next post titles at `text-accent/85`
+(3.72:1), became deep ember `text-accent-strong` (8.38:1, and 4.60:1 under the
+link's `hover:opacity-75`). Two things pass by rule: a disabled control (WCAG
+sets no floor; the post list's Prev/Next measure 3.27:1), and `::selection`,
+white on ember-fill, pinned at 3.66:1 as the one named exception because the
+studio site's own `::selection` is the same. Ember `#c2410c` clears AA by only
+0.13: a lighten to `#c5440f` (4.46:1) fails every ember link. Hover is not
+measured; Tailwind 4 puts `hover:` inside `@media (hover: hover)`, so a phone
+never shows it. Shiki's `min-light` has three colours under AA that no post uses
+yet (comments 1.75:1, parameters 2.14:1, warn tokens 2.58:1): the first post
+with a code comment will fail the check.
 
 ## Analytics
 
@@ -215,14 +229,20 @@ without `--build`): `up --build` would build again without the arg. Before blog#
 nothing needed this, because every deploy was a push with new content, and new
 content already changes the `COPY . .` layer.
 
-`npm test` (`tests/workflows.test.mjs`, Node's built-in runner plus the `yaml`
-package) pins what the workflows must keep doing: the 07:05 UTC cron, the
+`npm test` (every `tests/*.test.mjs`, Node's built-in runner; the workflow
+checks in `tests/workflows.test.mjs` read the YAML with the `yaml` package)
+pins what the workflows must keep doing: the 07:05 UTC cron, the
 per-run `BUILD_ID`, deploy on push to `main`, no `cancel-in-progress` on the
 production deploy, no workflow where a `pull_request` can start a
 `self-hosted` job, a `timeout-minutes` on every job that runs steps, a 20 to
-30 minute bound on the deploy job, and one concurrency group that queues. A
+30 minute bound on the deploy job, one concurrency group that queues, and
+`ci.yml` running `npm run test:pages` after `npm run build`. A
 workflow only runs on GitHub, so without this a cron typo stays silent until
 the morning a post fails to appear.
+
+`ci.yml` installs Chromium after the build and then runs the contrast check
+(see "Design"), on `ubuntu-latest`, so a pull request starts it. That raised
+its job bound from 3 to 8 minutes.
 
 The deploy job's `timeout-minutes: 30` (blog#3) replaces GitHub's 6-hour
 default, because this runner deploys every repo in the org. It detects a hang;
@@ -279,6 +299,16 @@ directory, so the link shows as untracked: stage files by name, and delete the
 link before the worktree is cleaned up. And `astro dev --port N` from a
 worktree still serves under `/absproxy/5177/`, because the config's `base`
 wins over `--base`; fetch it at `http://localhost:N/absproxy/5177/...`.
+
+When an AI agent runs it, Astro 7 starts `astro dev` and `astro preview` as a
+detached background server by itself (it detects the agent). A Playwright
+`webServer` then fails with "exited early", and the detached copy keeps the
+port. `playwright.config.mjs` sets `ASTRO_PREVIEW_BACKGROUND=1` for its server,
+which keeps it in the foreground. A worktree needs its own `npm install` when
+the main checkout's `node_modules` lacks a package the branch uses (such as
+`@playwright/test` before the main checkout is reinstalled). `npm ci` refuses
+this lockfile, which lacks two `@emnapi/*` entries under npm 10 and 11: run
+`npm install` as CI does, then `git restore package-lock.json`.
 
 ## Documentation
 
