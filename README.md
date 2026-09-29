@@ -17,8 +17,8 @@ npm run build            # astro check && astro build && pagefind index
 npm run preview          # serve dist/ locally
 npm run lint              # eslint
 npm run format:check      # prettier --check
-npm test                  # Node checks: workflows, contrast arithmetic
-npm run test:pages        # Playwright: text contrast on every built page (build first)
+npm test                  # Node checks: workflows, contrast arithmetic, analytics rule
+npm run test:pages        # Playwright: contrast, and no analytics, on every built page (build first)
 ```
 
 `npm run test:pages` needs Chromium once: `npx playwright install chromium`.
@@ -41,8 +41,8 @@ can't get branch protection anyway).
 
 ## Analytics
 
-PostHog Cloud (EU), reusing the buildforge.cloud org's existing project rather than a
-dedicated one (snippet in `src/layouts/Layout.astro`, production builds only).
+None, by choice (blog#17). `npm run test:pages` fails if a built page loads a
+tracker. Search Console gives the search numbers.
 
 ## Deployment
 
