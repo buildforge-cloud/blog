@@ -189,15 +189,22 @@ with a code comment will fail the check.
 
 ## Analytics
 
-PostHog Cloud (EU), reusing the buildforge.cloud org's existing "Default project"
-(see `~/.claude/CLAUDE.md`'s PostHog section for the org/project IDs) rather than a
-dedicated project — snippet lives in `src/layouts/Layout.astro`'s `<head>`, gated
-behind `import.meta.env.PROD` so `npm run dev` browsing never pollutes real pageview
-data. Because Astro's `ClientRouter` does client-side view-transition navigation
-(not a full page reload between posts), `capture_pageview` is explicitly turned off
-in `posthog.init` and re-armed via an `astro:page-load` listener instead — that
-event fires on both the very first load and every subsequent transition, so a
-pageview fires exactly once per navigation either way.
+None, by Stefan's choice (blog#17, 2026-09-29). buildforge.cloud dropped its
+analytics on 2026-09-11 so it needs no cookie banner, and the blog matches it.
+Search Console still gives the search numbers. Do not add a tracker back
+without asking him.
+
+The snippet the blog carried from 2026-08-07 never ran. It was a `{...}`
+expression inside `<script is:inline>`, and Astro prints an expression there as
+text, so the browser met a string. Code in an inline script goes in as the
+script's plain text, never as `{}`.
+
+`tests/analytics.spec.mjs` runs in `npm run test:pages` and fails when a built
+page's scripts, `src` URLs or `<link>` tags, or any built `.js` file, name a
+tracker. Prose and JSON-LD are not checked, so a post may name one.
+`tests/analytics.mjs` holds the rule; `tests/analytics.test.mjs` (in
+`npm test`) checks it, and fails if `nginx.conf` names a tracker's host. The
+evidence is in `docs/ENGINEERING_LOG.md`.
 
 ## Deployment
 
