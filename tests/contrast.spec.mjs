@@ -26,15 +26,9 @@ const isPost = /^\/posts\/(?!\d+\/$)[^/]+\/$/;
 // the site looks, so a failure found by this check is listed with its ratio
 // and the fix is his call. A record passes only its own colour pair, on its
 // own pages, and fails the check once the failure is gone, so delete it with
-// the fix.
-const known = [
-  {
-    what: "previous/next post titles under each post: ember at 85% (`text-accent/85` in AdjacentPostNav.astro), 3.72:1, found by blog#6",
-    text: "#ca5b2d",
-    ground: "#f5f2ea",
-    on: isPost,
-  },
-];
+// the fix. Each record is { what, text, ground, on }: what failed and its
+// ratio, the two colours as the check prints them, and a RegExp of the pages.
+const known = [];
 
 // Runs in the page. Every visible run of text, with its colour, its size and
 // the elements it sits in, from <html> down.
