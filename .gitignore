@@ -26,6 +26,9 @@ pnpm-debug.log*
 # pagefind
 public/pagefind
 
+# playwright
+test-results/
+
 # pnpm
 .pnpm-store
 

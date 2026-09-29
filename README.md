@@ -17,7 +17,11 @@ npm run build            # astro check && astro build && pagefind index
 npm run preview          # serve dist/ locally
 npm run lint              # eslint
 npm run format:check      # prettier --check
+npm test                  # Node checks: workflows, contrast arithmetic
+npm run test:pages        # Playwright: text contrast on every built page (build first)
 ```
+
+`npm run test:pages` needs Chromium once: `npx playwright install chromium`.
 
 **Dev access URL:** `https://dev.buildforge.cloud/absproxy/5177/`
 

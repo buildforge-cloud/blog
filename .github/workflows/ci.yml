@@ -16,7 +16,7 @@ jobs:
   build:
     name: Code standards & build
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 8
 
     steps:
       - name: "☁️ Checkout repository"
@@ -42,3 +42,9 @@ jobs:
 
       - name: "🚀 Build the project"
         run: npm run build
+
+      - name: "🎭 Install Chromium for Playwright"
+        run: npx playwright install --with-deps chromium
+
+      - name: "🎨 Check text contrast on the built site"
+        run: npm run test:pages

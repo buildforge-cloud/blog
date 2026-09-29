@@ -97,6 +97,24 @@ test("no pull request can start a self-hosted job", () => {
   }
 });
 
+// blog#6. The contrast check reads the built site, so it runs after the build.
+// Without this pin, a CI edit that drops the step turns the check off with
+// every run still green. (A pull request starts it, so the test above keeps
+// it off the self-hosted runner.)
+test("ci.yml checks text contrast on the built site", () => {
+  const runs = job => (job.steps ?? []).map(s => (s.run ?? "").trim());
+  const job = Object.values(workflow("ci.yml").jobs).find(j =>
+    runs(j).includes("npm run test:pages")
+  );
+  assert.ok(job, "no ci.yml job runs `npm run test:pages`");
+  const build = runs(job).indexOf("npm run build");
+  const check = runs(job).indexOf("npm run test:pages");
+  assert.ok(
+    build >= 0 && build < check,
+    "ci.yml must run `npm run test:pages` after `npm run build`"
+  );
+});
+
 // blog#2. With one runner for the whole org, runs already take turns, so a
 // group that queues changes nothing today; it writes the rule down, and it
 // holds if a second runner is ever added. It must not cancel (the test below).
