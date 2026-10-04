@@ -10,6 +10,7 @@ sees a rule that no page matches today.
 Usage:
     python3 css_tokens.py src/*.css src/components/*.css
     python3 css_tokens.py index.html
+    python3 css_tokens.py src/styles/*.css src/components/*.astro
     python3 css_tokens.py src/*.css --defined=--font-inter --defined=--font-mono
 
 The rule, over the files of ONE call, read together as one cascade:
@@ -23,9 +24,14 @@ The rule, over the files of ONE call, read together as one cascade:
   framework's theme), by its exact name, never a prefix. ⚠️ Write it with
   `=`: after a space, argparse reads `--NAME` as an option of its own.
 
-A `.html` file is read for its `<style>` blocks and `style` attributes only;
-any other file is read whole, as CSS. ⚠️ A page with its own `<style>` is its
-own call: its tokens are not another page's.
+A page (`.html`, `.astro`, `.vue`, `.svelte`) is read for its `<style>`
+blocks, its `style` attributes and its `class` values only: never its text,
+its `<script>` blocks or its front matter (`---` ... `---` at the top). A
+class is read as Tailwind reads it: `p-(--gap)` and `text-(length:--gap)` use
+`--gap`, as `p-[var(--gap)]` does, and `[--gap:1rem]` defines it. Any other
+file is read whole, as CSS. ⚠️ A page with its own `<style>` is its own call:
+its tokens are not another page's. ⚠️ An attribute written as an expression
+(`style={...}`, `:style`, `class:list`, `style:padding`) is not read.
 
 Prints `OK: <n> files ...` and exits 0, or one `FAIL: <file> <token>` line
 per finding and exits 1. A path that is not a readable file is a FAIL line too.
@@ -35,12 +41,17 @@ per finding and exits 1. A path that is not a readable file is a FAIL line too.
 A shared part, pinned like `cf_access`: a release of buildforge-starter, byte
 for byte, never edited in place. A child places it once, beside its tests:
 
-    python3 scripts/shared_checks.py update css_tokens 1.0.0 --into tests
+    python3 scripts/shared_checks.py update css_tokens 1.1.0 --into tests
 
 and the lock remembers the folder, so moving is `update css_tokens
 <version>`. stdlib only. Its tests live in buildforge-starter
 (`parts/tests/test_css_tokens.py`); buildforge-starter#94 says where it came
 from.
+
+⚠️ A child that runs vulture's dead-code ratchet over this folder lists
+`HTMLParser`'s three callbacks here as known: `handle_starttag`,
+`handle_data` and `handle_endtag`. The stdlib calls them, so vulture sees no
+caller (ps-db#420).
 """
 
 from __future__ import annotations
@@ -50,7 +61,7 @@ import re
 from html.parser import HTMLParser
 from pathlib import Path
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 # Whichever starts first: an escape (`\'` in a selector is part of a name, as
 # in Tailwind's `.\[font\:\'SF_Mono\'\]`), a comment (to its end, or the
@@ -63,10 +74,18 @@ _ESCAPE_COMMENT_OR_STRING = re.compile(
 # Not after a word character or `-`: `.card--open:hover` defines nothing.
 _DEFINITION = re.compile(r"(?<![\w-])(--[\w-]+)\s*:|@property\s+(--[\w-]+)")
 _USE = re.compile(r"var\(\s*(--[\w-]+)\s*(,)?")
+# A file with these suffixes is a page: its CSS is in its markup.
+_PAGES = {".html", ".astro", ".vue", ".svelte"}
+# `---` ... `---` at the top: an Astro component's script, not markup.
+_FRONT_MATTER = re.compile(r"\A---\n.*?^---\n", re.DOTALL | re.MULTILINE)
+# Tailwind's `p-(--gap)` and `text-(length:--size)`: a `var()` with no `var(`.
+_TAILWIND_VAR = re.compile(r"-\((?:[\w-]+:)?(--[\w-]+)\)")
 
 
 class _PageCss(HTMLParser):
-    """A page's `<style>` blocks and `style` attributes: its CSS, and nothing else."""
+    """A page's `<style>` blocks, `style` attributes and `class` values: its CSS,
+    and nothing else. A class is read as CSS, so `[--gap:1rem]` defines `--gap`
+    and `p-[var(--gap)]` uses it, as Tailwind reads them."""
 
     def __init__(self) -> None:
         super().__init__()
@@ -75,6 +94,7 @@ class _PageCss(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         self.parts += [value for name, value in attrs if name == "style" and value]
+        self.parts += [_TAILWIND_VAR.sub(r" var(\1) ", value) for name, value in attrs if name == "class" and value]
         if tag == "style":
             self._in_style = True
             self.parts.append("")
@@ -90,7 +110,7 @@ class _PageCss(HTMLParser):
 
 def _page_css(html: str) -> str:
     page = _PageCss()
-    page.feed(html)
+    page.feed(_FRONT_MATTER.sub("", html, count=1))
     page.close()
     return "\n".join(page.parts)
 
@@ -108,7 +128,7 @@ def _read(path: Path) -> tuple[str, str | None]:
         text = path.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as error:
         return "", f"cannot be read: {error}"
-    return _code(_page_css(text) if path.suffix == ".html" else text), None
+    return _code(_page_css(text) if path.suffix in _PAGES else text), None
 
 
 def failures(paths, defined=()) -> list[str]:

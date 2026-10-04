@@ -5,9 +5,8 @@
 Without `NGINX_RIG=1` every test skips, so CI never fetches nginx. With it,
 `tests/nginx_rig.py` (buildforge-starter's shared part, pinned in
 `scripts/shared-checks.lock`, never edited here) extracts Ubuntu's nginx 1.24
-into `~/.cache/nginx_rig/`, with no docker and no install, and
-`tests/serve_dist.py` serves the real `nginx.conf` on 127.0.0.1 over a stub
-site.
+into `~/.cache/nginx_rig/`, with no docker and no install, and its
+`serve_dir()` serves the real `nginx.conf` on 127.0.0.1 over a stub site.
 
 Every kind of answer carries the security headers: a page, an `/_astro/`
 file, a `/pagefind/` file, an image, `robots.txt` and the 404 page. Before
@@ -26,8 +25,8 @@ import unittest
 from pathlib import Path
 
 import nginx_rig
-import serve_dist
-from serve_dist import CONF
+
+CONF = Path(__file__).resolve().parent.parent / "nginx.conf"
 
 # A stub of the built site: what each test asks for, and a hidden file.
 SITE = {
@@ -88,7 +87,7 @@ class NginxConf(unittest.TestCase):
             (site / name).parent.mkdir(parents=True, exist_ok=True)
             (site / name).write_text(body, encoding="utf-8")
         cls.port = nginx_rig.free_port()
-        cls.enterClassContext(serve_dist.serve(site, cls.port))
+        cls.enterClassContext(nginx_rig.serve_dir(CONF.read_text(encoding="utf-8"), site, cls.port))
 
     def get(self, path: str) -> tuple[int, http.client.HTTPMessage, str]:
         connection = http.client.HTTPConnection("127.0.0.1", self.port, timeout=10)

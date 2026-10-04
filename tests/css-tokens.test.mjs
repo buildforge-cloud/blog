@@ -6,11 +6,10 @@
 // never edited here); it reads the stylesheets and every `.astro` file as one
 // cascade. Run with `npm test`.
 //
-// ⚠️ It reads an `.astro` file as plain CSS, so it skips quoted text: a
-// `var()` in a `style="..."` or `class="..."` value is not seen, and nor is a
-// Tailwind `top-(--name)` class, which has no `var(` at all. It does see a
-// `<style>` block and a backtick string, which is where every `var()` in an
-// `.astro` file sat on 2026-10-04.
+// ⚠️ In an `.astro` file it reads only the `<style>` blocks, the `style="..."`
+// attributes and the `class` values, a Tailwind `top-(--name)` class among
+// them (css_tokens 1.1.0, blog#23). A `var()` in a `<script>` or the front
+// matter is not checked: BackToTopButton's `var(--accent)` is one.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";

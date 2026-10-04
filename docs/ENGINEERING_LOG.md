@@ -3,6 +3,32 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-04 — blog#23: nginx_rig 1.1.0's serve-dir replaces tests/serve_dist.py
+
+**What.** Three shared parts moved up with the pin tool: nginx_rig 1.0.0 →
+1.1.0, css_tokens 1.0.0 → 1.1.0 and psi 1.0.0 → 1.0.1. `tests/serve_dist.py`
+(blog#21) is gone. buildforge-starter#109 built the same thing once, as
+nginx_rig's `serve_dir()` and `serve-dir` command, and fixed two faults the
+copy here still had: a signal during nginx's start could leave nginx running,
+and a path with a space failed `nginx -t`.
+
+- `tests/test_nginx.py` serves its stub site with `nginx_rig.serve_dir()`. On
+  1.0.0 it failed (`module 'nginx_rig' has no attribute 'serve_dir'`); on
+  1.1.0 the same 8 tests pass. With the hidden-file `deny` cut from
+  `nginx.conf`, only `test_a_hidden_file_is_refused` failed.
+- `NGINX_RIG=1 npm run test:pages` runs
+  `python3 tests/nginx_rig.py serve-dir nginx.conf dist --port 4177` as
+  Playwright's server, still stopped with SIGTERM. Result: 112 passed, 0
+  skipped, the same count as blog#21's run, and no rig nginx left after it.
+  CI still serves the build with `astro preview` and adds the CSP itself.
+- css_tokens 1.1.0 reads an `.astro` file's `<style>` blocks, `style="..."`
+  attributes and `class` values, Tailwind's `-(--name)` among them. It passes
+  on this repo with no new `--defined`. A `var(--no-such-token)` put in a
+  footer `style` attribute, and then a `p-(--no-such-token)` class, each
+  failed `npm test`. ⚠️ It no longer reads `<script>` blocks, which 1.0.0
+  read as CSS: BackToTopButton's `var(--accent)` in a backtick string is now
+  unchecked. `--accent` is defined, so nothing is hidden today.
+
 ## 2026-10-04 — blog#21: the security headers on every page, with a CSP that fits
 
 **Why.** Live pages had no CSP, no Referrer-Policy and no HSTS. nginx drops a
