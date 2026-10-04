@@ -217,6 +217,16 @@ plain public Traefik domain, **not** routed through the Cloudflare Tunnel (unlik
 an existing `*.buildforge.cloud` wildcard record, confirmed live 2026-08-07 — no
 per-subdomain DNS step was needed.
 
+⚠️ **No page gets `nginx.conf`'s security headers.** They are `add_header` at
+`server` level, and nginx drops those in any `location` that sets its own
+`add_header`. The `.html` location sets `Cache-Control`, so pages go out with
+no CSP and no `Referrer-Policy`, while `/robots.txt` has both (`curl -sI`,
+2026-09-29). So a header added at `server` level does not reach a page. Before
+making the CSP reach them, widen it: its `script-src` has no
+`'unsafe-inline'`, and every page has inline scripts (Astro's modules, giscus,
+two `data-astro-rerun` blocks) that it would block. Evidence in
+`docs/ENGINEERING_LOG.md` (blog#17).
+
 `.github/workflows/deploy.yml` (self-hosted runner, Pattern A) redeploys on every
 push to `main`, and on a daily `schedule` at 07:05 UTC so scheduled posts publish
 (see "Writing a post"). `.github/workflows/ci.yml` (from the AstroPaper scaffold, adapted
