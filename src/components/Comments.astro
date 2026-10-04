@@ -1,10 +1,6 @@
----
-import { GISCUS } from "@/utils/giscus";
----
-
 <div id="giscus-comments" class="mt-8"></div>
 
-<script is:inline define:vars={{ GISCUS }} data-astro-rerun>
+<script>
   // Plain-JS giscus embed (not the @giscus/react component) — this theme's
   // dynamicOgImage feature uses satori's own JSX-like object literals, which
   // conflicts with @astrojs/react's global JSX types the moment that
@@ -16,11 +12,12 @@ import { GISCUS } from "@/utils/giscus";
   // prefers-color-scheme change) is gone: the site is paper-only as of
   // 2026-09-10, so there is one giscus theme and nothing to sync.
   //
-  // `data-astro-rerun` is required, matching the pattern this theme already
-  // uses for its shared post-page script block just above in
-  // [...slug]/index.astro: this script's static text is byte-identical on
-  // every post, so without it the ClientRouter only ever runs it once per
-  // SPA session and comments would stop reloading after the first post.
+  // A bundled module, not `is:inline define:vars`: nginx.conf's CSP runs no
+  // inline script (blog#21). A module runs once per visit, so it mounts giscus
+  // on each `astro:page-load`, which a full load and a client-side link both
+  // fire. The inline version lost its `data-astro-rerun` to `define:vars`, so
+  // a post reached from another post by a link had no comments.
+  import { GISCUS } from "@/utils/giscus";
 
   function mountGiscus() {
     const container = document.getElementById("giscus-comments");
@@ -45,5 +42,5 @@ import { GISCUS } from "@/utils/giscus";
     container.appendChild(script);
   }
 
-  mountGiscus();
+  document.addEventListener("astro:page-load", mountGiscus);
 </script>

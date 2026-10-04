@@ -76,6 +76,14 @@ export default defineConfig({
   },
   vite: {
     plugins: [tailwindcss()],
+    build: {
+      // nginx.conf's CSP runs no inline script (blog#21), and Astro inlines
+      // a bundled `<script>` under 4 KB into the page by itself. So a script
+      // is always its own file in /_astro/. Every other asset (a small
+      // stylesheet, an image) keeps Vite's default rule.
+      assetsInlineLimit: filePath =>
+        filePath.endsWith(".js") ? false : undefined,
+    },
   },
   // Type stack copied from buildforge.cloud (see profile-homepage's
   // assets/css/variables.css): Space Grotesk for headings, IBM Plex Sans for

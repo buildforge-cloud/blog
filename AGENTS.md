@@ -257,6 +257,23 @@ production deploy, no workflow where a `pull_request` can start a
 workflow only runs on GitHub, so without this a cron typo stays silent until
 the morning a post fails to appear.
 
+**Shared parts (blog#19).** `scripts/shared_checks.py`,
+`tests/css_tokens.py`, `tests/nginx_rig.py` and `tools/psi.py` are
+buildforge-starter releases, pinned byte for byte in
+`scripts/shared-checks.lock`. Do not edit one here: `npm test` runs the pin
+tool and fails on a hand edit. Take a fix with
+`python3 scripts/shared_checks.py update <name> <version>`.
+`tests/css-tokens.test.mjs` checks each `var()` in `src/styles/*.css` and in
+the `<style>` blocks and backtick strings of `src/**/*.astro`. It cannot see a
+`var()` in a quoted attribute (`style="..."`, `class="..."`) or a Tailwind
+`-(--name)` class, so put a token you want checked in a `<style>` block. Astro
+sets the font tokens from `astro.config.ts`, so the test names them with
+`--defined`, and a new font needs a line there too. `tests/test_nginx.py`
+serves the real `nginx.conf` on a real nginx, only with `NGINX_RIG=1` (never
+in CI): run it after any `nginx.conf` change. The rig's nginx is 1.24, so a
+newer directive (such as `add_header_inherit`, 1.29.3) fails `nginx -t` there
+even where the image's nginx takes it.
+
 `ci.yml` installs Chromium after the build and then runs the contrast check
 (see "Design"), on `ubuntu-latest`, so a pull request starts it. That raised
 its job bound from 3 to 8 minutes.
