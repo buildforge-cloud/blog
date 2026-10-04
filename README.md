@@ -17,11 +17,32 @@ npm run build            # astro check && astro build && pagefind index
 npm run preview          # serve dist/ locally
 npm run lint              # eslint
 npm run format:check      # prettier --check
-npm test                  # Node checks: workflows, contrast arithmetic, analytics rule
+npm test                  # Node checks: workflows, contrast arithmetic, analytics rule, CSS tokens, shared parts
 npm run test:pages        # Playwright: contrast, and no analytics, on every built page (build first)
+
+python3 scripts/shared_checks.py   # the shared parts are the releases their pins name
+NGINX_RIG=1 python3 -m unittest discover -s tests -p "test_nginx.py"   # nginx.conf on a real nginx
+python3 tools/psi.py https://blog.buildforge.cloud/   # PageSpeed medians, measured by Google
 ```
 
 `npm run test:pages` needs Chromium once: `npx playwright install chromium`.
+
+`tools/psi.py` needs `google-auth`, installed by hand (`pip install google-auth`),
+and a Google service account key at `~/.gsc/service-account.json` (`--key` names
+another). Nothing in CI runs it.
+
+The nginx test skips unless `NGINX_RIG=1`. With it, it serves the real
+`nginx.conf` over a stub site, on Ubuntu's nginx 1.24 extracted into
+`~/.cache/nginx_rig/` (no docker, no install), and checks the cache headers,
+the 404 page, the hidden-file block and the CSP on `/robots.txt`.
+
+### Shared parts
+
+`scripts/shared_checks.py`, `tests/css_tokens.py`, `tests/nginx_rig.py` and
+`tools/psi.py` are releases of the org's buildforge-starter repo, pinned byte
+for byte in `scripts/shared-checks.lock`. Never edit them here: `npm test` fails
+on a hand edit. A fix is released in the starter, then taken here with
+`python3 scripts/shared_checks.py update <name> <version>`.
 
 **Dev access URL:** `https://dev.buildforge.cloud/absproxy/5177/`
 

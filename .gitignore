@@ -29,6 +29,9 @@ public/pagefind
 # playwright
 test-results/
 
+# python (the shared parts under scripts/, tests/ and tools/)
+__pycache__/
+
 # pnpm
 .pnpm-store
 
