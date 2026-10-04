@@ -10,6 +10,31 @@ import { defineConfig, devices } from "@playwright/test";
 // server it did not start, which may be another project's.
 const port = 4177;
 
+// `NGINX_RIG=1 npm run test:pages` serves the build with the real nginx.conf
+// on a real nginx instead (tests/serve_dist.py), so the checks meet the
+// headers production sends. By hand only: CI has no nginx. Without it,
+// tests/csp.spec.mjs adds nginx.conf's CSP to each page itself.
+const nginx = process.env.NGINX_RIG === "1";
+
+const astroPreview = {
+  command: `astro preview --host 127.0.0.1 --port ${port}`,
+  // When Astro 7 sees an AI agent in the environment, `astro preview`
+  // re-launches itself as a detached background server and exits. Playwright
+  // then reports that its server "exited early", and the detached copy keeps
+  // the port after the run. The detached copy is told apart by this
+  // variable, so setting it keeps the server in the foreground, where
+  // Playwright can stop it. Without an agent (CI) it changes nothing.
+  env: { ASTRO_PREVIEW_BACKGROUND: "1" },
+};
+
+const nginxRig = {
+  command: `python3 tests/serve_dist.py ${port}`,
+  // Playwright's default stop is a SIGKILL, which would leave nginx serving
+  // (it runs in its own session). SIGTERM lets serve_dist.py stop it; nginx
+  // gets 10 s to finish, so 15 s here.
+  gracefulShutdown: { signal: "SIGTERM", timeout: 15_000 },
+};
+
 export default defineConfig({
   testDir: "./tests",
   testMatch: "*.spec.mjs",
@@ -24,14 +49,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `astro preview --host 127.0.0.1 --port ${port}`,
-    // When Astro 7 sees an AI agent in the environment, `astro preview`
-    // re-launches itself as a detached background server and exits. Playwright
-    // then reports that its server "exited early", and the detached copy keeps
-    // the port after the run. The detached copy is told apart by this
-    // variable, so setting it keeps the server in the foreground, where
-    // Playwright can stop it. Without an agent (CI) it changes nothing.
-    env: { ASTRO_PREVIEW_BACKGROUND: "1" },
+    ...(nginx ? nginxRig : astroPreview),
     url: `http://127.0.0.1:${port}/`,
     reuseExistingServer: false,
   },

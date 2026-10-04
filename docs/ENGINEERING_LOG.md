@@ -3,6 +3,83 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-04 — blog#21: the security headers on every page, with a CSP that fits
+
+**Why.** Live pages had no CSP, no Referrer-Policy and no HSTS. nginx drops a
+level's `add_header` lines in any block that sets one of its own, and 4 blocks
+did: `/_astro/`, `/pagefind/`, images and `\.html$`. Every page went through
+the last one.
+
+**nginx: a `map`, not an `include`.** Two `map`s at the top of `nginx.conf`
+pick `Cache-Control` and `Pragma` by `$uri`, and only the `server` level calls
+`add_header`. The locations keep `expires` and their logging. The `.html`
+location had nothing left, so it is gone. This needs no second file, so the
+`Dockerfile` is unchanged, and no block can drop a header by forgetting an
+`include`. The cost: a cache rule's path is written twice, in the map and in
+its location. `map` must sit at `http` level, which a `conf.d` file is.
+
+- `tests/check_nginx_headers.py` is buildforge-starter's check, pinned at
+  1.0.0. `tests/nginx-headers.test.mjs` runs it in `npm test`. Before the fix
+  it named the 4 blocks; after it, 0.
+- `tests/test_nginx.py` asks for the 3 headers on `/`, `/posts/x/`,
+  `/_astro/x.css`, `/pagefind/x.js`, `/x.png`, `/robots.txt` and a 404. Before
+  the fix: 18 misses (6 paths × 3 headers; only `robots.txt` had them).
+- The cache headers are as before: `/_astro/` and images
+  `max-age=31536000, public, immutable`, `/pagefind/` `max-age=86400, public`,
+  pages `no-cache, must-revalidate` and `Pragma: no-cache`, `robots.txt` none,
+  and a 404 none. Those tests passed before the fix, so each was seen to fail
+  on a broken copy of `nginx.conf`: one map line cut, or the map's default
+  changed. Each break failed only its own test.
+
+**The inline scripts.** The built site had 6 kinds of inline script that run,
+not the issue's 5. `Layout.astro:118` was the PostHog snippet blog#17 removed.
+Astro had inlined 3 more by itself (`Header`, `Main`, `BackButton`): it puts a
+bundled `<script>` under 4 KB into the page. The other 3 were `is:inline`:
+`BackToTopButton`, `Comments` (`define:vars`) and the post page's script. The
+JSON-LD blocks are data, which a CSP does not block. The only outside origin
+the code calls is `giscus.app`.
+
+- `astro.config.ts` sets `vite.build.assetsInlineLimit` so a `.js` file is
+  never inlined. Small stylesheets and images keep Vite's rule.
+- The 3 `is:inline` scripts are bundled modules now. A module runs once per
+  visit, so each one does its work on `astro:page-load`, which a full load and
+  a client-side link both fire. The post page's script moved to
+  `src/pages/posts/[...slug]/_scripts/post.js` as it was, as plain JS, so
+  `astro check` does not type it. Only its start-up changed, and 2 `window`
+  globals became module variables.
+
+⚠️ **Found: a post reached from another post had no comments.**
+`define:vars` makes Astro print the script without its `data-astro-rerun`, and
+Astro 7 runs a script without it once per visit. So after a link from one post
+to the next, the giscus loader did not run. The new check found it with no CSP
+at all, on the code before this change. It is fixed by the move to
+`astro:page-load`.
+
+**The CSP.** Two additions, each found by a failed check:
+
+- `'wasm-unsafe-eval'` in `script-src`: Pagefind compiles WebAssembly. It
+  allows no JavaScript `eval`. ⚠️ Chromium reports this block only as a
+  console line, with no `securitypolicyviolation` event, so the check reads the
+  console too. And Pagefind searches in a worker, which takes the CSP of its
+  own script's answer, so the check adds the CSP to every answer, as nginx
+  does, not only to pages.
+- `https://giscus.app` in `style-src`: giscus loads `default.css`. Only the
+  run on a real nginx found this, because CI blocks giscus.app.
+
+The PostHog hosts the issue names were already gone (blog#17).
+
+**The browser check.** `tests/csp.spec.mjs` opens every page in the sitemap
+and the 404 page under the CSP, and fails on any violation. It also checks
+that search finds a post, and that a post's scripts work: the progress bar,
+the heading links, the copy buttons, the giscus loader and back-to-top. It
+does so on a full load, after links home → post → post, after Back, and on a
+tag page afterwards (which must get none of them). In CI it runs on
+`astro preview` with the CSP added from `nginx.conf`. With `NGINX_RIG=1`,
+`tests/serve_dist.py` serves `dist/` on a real nginx, and giscus loads for
+real. Result on 2026-10-04: 112 passed (desktop and 390 px), and no nginx was
+left running. Playwright stops its server with SIGKILL by default, which would
+leave nginx serving, so the config asks for SIGTERM.
+
 ## 2026-10-04 — blog#19: adopt the starter's shared parts (psi, css_tokens, nginx_rig)
 
 **What.** Three parts of buildforge-starter, each pinned byte for byte in

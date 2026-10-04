@@ -35,12 +35,18 @@ const t = useTranslations(Astro.currentLocale);
   </button>
 </div>
 
-<script is:inline data-astro-rerun>
+<script>
+  // A bundled module, not `is:inline`: nginx.conf's CSP runs no inline
+  // script (blog#21). A module runs once per visit, so it sets the button up
+  // on each `astro:page-load`, which a full load and a client-side link both
+  // fire.
   function backToTop() {
     const rootElement = document.documentElement;
     const btnContainer = document.querySelector("#btt-btn-container");
     const backToTopBtn = document.querySelector("[data-button='back-to-top']");
-    const progressIndicator = document.querySelector("#progress-indicator");
+    const progressIndicator = document.querySelector<HTMLElement>(
+      "#progress-indicator"
+    );
 
     if (!rootElement || !btnContainer || !backToTopBtn || !progressIndicator)
       return;
@@ -50,8 +56,8 @@ const t = useTranslations(Astro.currentLocale);
       document.documentElement.scrollTop = 0;
     });
 
-    let lastVisible = null;
-    function handleScroll() {
+    let lastVisible: boolean | null = null;
+    const handleScroll = () => {
       const scrollTotal = rootElement.scrollHeight - rootElement.clientHeight;
       const scrollTop = rootElement.scrollTop;
       const scrollPercent = Math.floor((scrollTop / scrollTotal) * 100);
@@ -70,7 +76,7 @@ const t = useTranslations(Astro.currentLocale);
         btnContainer.classList.toggle("translate-y-14", !isVisible);
         lastVisible = isVisible;
       }
-    }
+    };
 
     let ticking = false;
     document.addEventListener("scroll", () => {
@@ -83,5 +89,5 @@ const t = useTranslations(Astro.currentLocale);
       }
     });
   }
-  backToTop();
+  document.addEventListener("astro:page-load", backToTop);
 </script>
