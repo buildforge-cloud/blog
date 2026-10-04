@@ -22,7 +22,7 @@ npm run test:pages        # Playwright: contrast, no analytics, and the CSP, on 
 
 python3 scripts/shared_checks.py   # the shared parts are the releases their pins name
 NGINX_RIG=1 python3 -m unittest discover -s tests -p "test_nginx.py"   # nginx.conf on a real nginx
-NGINX_RIG=1 npm run test:pages     # the browser checks on the build, served by a real nginx (build first)
+NGINX_RIG=1 npm run test:pages     # the browser checks on the build, served by a real nginx (nginx_rig's serve-dir; build first)
 python3 tools/psi.py https://blog.buildforge.cloud/   # PageSpeed medians, measured by Google
 ```
 

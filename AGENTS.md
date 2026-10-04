@@ -113,11 +113,11 @@ React anywhere in the project. Tried once (2026-08-07), reverted. **Don't re-add
 a one-off fluke, it's structural to how this theme's OG image generation works.
 `Comments.astro` used to carry a live light/dark theme sync via giscus's own
 `postMessage` API; that is gone as of 2026-09-10, because the site is paper-only
-and giscus is pinned to its `light` theme (see "Design" below). It still needs
-the `data-astro-rerun` attribute — this theme's own
-`[...slug]/index.astro` script block sets the same precedent (see its comment): a
-script whose text content is byte-identical across every post only runs once per SPA
-session under Astro's ClientRouter unless marked to re-run.
+and giscus is pinned to its `light` theme (see "Design" below).
+`Comments.astro` is a bundled module that mounts giscus on each
+`astro:page-load` (blog#21). Its old `is:inline define:vars` script lost
+`data-astro-rerun` to `define:vars`, so a post reached from another post by a
+link had no comments.
 
 ## Design — the paper system
 
@@ -217,15 +217,23 @@ plain public Traefik domain, **not** routed through the Cloudflare Tunnel (unlik
 an existing `*.buildforge.cloud` wildcard record, confirmed live 2026-08-07 — no
 per-subdomain DNS step was needed.
 
-⚠️ **No page gets `nginx.conf`'s security headers.** They are `add_header` at
-`server` level, and nginx drops those in any `location` that sets its own
-`add_header`. The `.html` location sets `Cache-Control`, so pages go out with
-no CSP and no `Referrer-Policy`, while `/robots.txt` has both (`curl -sI`,
-2026-09-29). So a header added at `server` level does not reach a page. Before
-making the CSP reach them, widen it: its `script-src` has no
-`'unsafe-inline'`, and every page has inline scripts (Astro's modules, giscus,
-two `data-astro-rerun` blocks) that it would block. Evidence in
-`docs/ENGINEERING_LOG.md` (blog#17).
+⚠️ **No `location` in `nginx.conf` may call `add_header`.** nginx drops a
+level's `add_header` lines in any block that sets one of its own, so until
+blog#21 no page got the CSP, the Referrer-Policy or HSTS. Now two `map`s pick
+`Cache-Control` and `Pragma` by path, and only the `server` level sends
+headers. A new cache rule is a map line (plus an `expires` in its location).
+`npm test` fails on a block that drops a header
+(`tests/check_nginx_headers.py`, a pinned shared part).
+
+⚠️ **The CSP runs no inline script.** Write a page script as a bundled
+`<script>` that does its work on `astro:page-load` (a module runs once per
+visit), never `is:inline` or `define:vars`. JSON-LD is data and is fine.
+`astro.config.ts` stops Astro from inlining a small bundled script.
+`npm run test:pages` opens every page under `nginx.conf`'s CSP and fails on
+any violation. Run `NGINX_RIG=1 npm run test:pages` after a change to
+`nginx.conf` or the CSP: only then does a real nginx send the headers and
+giscus load (CI blocks giscus.app). Evidence in `docs/ENGINEERING_LOG.md`
+(blog#21).
 
 `.github/workflows/deploy.yml` (self-hosted runner, Pattern A) redeploys on every
 push to `main`, and on a daily `schedule` at 07:05 UTC so scheduled posts publish
@@ -258,19 +266,23 @@ workflow only runs on GitHub, so without this a cron typo stays silent until
 the morning a post fails to appear.
 
 **Shared parts (blog#19).** `scripts/shared_checks.py`,
-`tests/css_tokens.py`, `tests/nginx_rig.py` and `tools/psi.py` are
-buildforge-starter releases, pinned byte for byte in
+`tests/check_nginx_headers.py`, `tests/css_tokens.py`, `tests/nginx_rig.py`
+and `tools/psi.py` are buildforge-starter releases, pinned byte for byte in
 `scripts/shared-checks.lock`. Do not edit one here: `npm test` runs the pin
 tool and fails on a hand edit. Take a fix with
 `python3 scripts/shared_checks.py update <name> <version>`.
-`tests/css-tokens.test.mjs` checks each `var()` in `src/styles/*.css` and in
-the `<style>` blocks and backtick strings of `src/**/*.astro`. It cannot see a
-`var()` in a quoted attribute (`style="..."`, `class="..."`) or a Tailwind
-`-(--name)` class, so put a token you want checked in a `<style>` block. Astro
-sets the font tokens from `astro.config.ts`, so the test names them with
+`tests/css-tokens.test.mjs` checks each `var()` in `src/styles/*.css` and,
+in `src/**/*.astro`, in `<style>` blocks, `style="..."` attributes and
+`class` values, a Tailwind `-(--name)` class among them (css_tokens 1.1.0,
+blog#23). It reads no `<script>` and no front matter, so a token used only
+there is not checked (BackToTopButton's `var(--accent)` is one). Astro sets
+the font tokens from `astro.config.ts`, so the test names them with
 `--defined`, and a new font needs a line there too. `tests/test_nginx.py`
-serves the real `nginx.conf` on a real nginx, only with `NGINX_RIG=1` (never
-in CI): run it after any `nginx.conf` change. The rig's nginx is 1.24, so a
+serves the real `nginx.conf` on a real nginx with the part's `serve_dir()`,
+only with `NGINX_RIG=1` (never in CI): run it after any `nginx.conf` change.
+`NGINX_RIG=1 npm run test:pages` serves `dist/` the same way, with the
+part's `serve-dir` as Playwright's server; there is no serve script of this
+repo's own. The rig's nginx is 1.24, so a
 newer directive (such as `add_header_inherit`, 1.29.3) fails `nginx -t` there
 even where the image's nginx takes it.
 

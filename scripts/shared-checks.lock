@@ -11,18 +11,18 @@
     },
     "tests/css_tokens.py": {
       "placed": true,
-      "sha256": "137fb9a0b99b73d63fca685082ff2cff0cbf4e5a9b202fb08e6d20c6c2ae5a3d",
-      "version": "1.0.0"
+      "sha256": "839ff3368377c3d96e410a1329e5bffebef58d740b451c490fedbdc06b9542a9",
+      "version": "1.1.0"
     },
     "tests/nginx_rig.py": {
       "placed": true,
-      "sha256": "d1fb4d8d825674ab5df7eb416b7906bfab1ce92293ac6304884204a8ace8d7d0",
-      "version": "1.0.0"
+      "sha256": "a65cdd0cbfb0759c87cf4b9c051a4b552f691787f10c9f3fc45384e337adf2e0",
+      "version": "1.1.0"
     },
     "tools/psi.py": {
       "placed": true,
-      "sha256": "ac7b7bc35f0cc04edb8d1cb90cbf2391b32d47e3d086dc7752220dcd9b14e64c",
-      "version": "1.0.0"
+      "sha256": "f53dfb5f73dccd25cd34b29be37ec5df95f8bd24557535a13083f493377d708c",
+      "version": "1.0.1"
     }
   },
   "source": "https://github.com/buildforge-cloud/buildforge-starter.git"

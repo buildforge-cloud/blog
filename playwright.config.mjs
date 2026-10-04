@@ -11,8 +11,8 @@ import { defineConfig, devices } from "@playwright/test";
 const port = 4177;
 
 // `NGINX_RIG=1 npm run test:pages` serves the build with the real nginx.conf
-// on a real nginx instead (tests/serve_dist.py), so the checks meet the
-// headers production sends. By hand only: CI has no nginx. Without it,
+// on a real nginx instead (`serve-dir` of tests/nginx_rig.py, a pinned shared
+// part), so the checks meet the headers production sends. By hand only: CI has no nginx. Without it,
 // tests/csp.spec.mjs adds nginx.conf's CSP to each page itself.
 const nginx = process.env.NGINX_RIG === "1";
 
@@ -28,9 +28,9 @@ const astroPreview = {
 };
 
 const nginxRig = {
-  command: `python3 tests/serve_dist.py ${port}`,
+  command: `python3 tests/nginx_rig.py serve-dir nginx.conf dist --port ${port}`,
   // Playwright's default stop is a SIGKILL, which would leave nginx serving
-  // (it runs in its own session). SIGTERM lets serve_dist.py stop it; nginx
+  // (it runs in its own session). SIGTERM lets serve-dir stop it; nginx
   // gets 10 s to finish, so 15 s here.
   gracefulShutdown: { signal: "SIGTERM", timeout: 15_000 },
 };
