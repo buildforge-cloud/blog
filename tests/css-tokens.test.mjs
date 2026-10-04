@@ -5,6 +5,12 @@
 // is buildforge-starter's shared part (pinned in `scripts/shared-checks.lock`,
 // never edited here); it reads the stylesheets and every `.astro` file as one
 // cascade. Run with `npm test`.
+//
+// ⚠️ It reads an `.astro` file as plain CSS, so it skips quoted text: a
+// `var()` in a `style="..."` or `class="..."` value is not seen, and nor is a
+// Tailwind `top-(--name)` class, which has no `var(` at all. It does see a
+// `<style>` block and a backtick string, which is where every `var()` in an
+// `.astro` file sat on 2026-10-04.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";

@@ -25,6 +25,17 @@ to a part fails CI.
 Astro's font API sets them from `astro.config.ts` (`cssVariable`), outside any
 CSS, so the test names them with `--defined`. Then 0 misses.
 
+⚠️ **It sees only part of an `.astro` file** (found in the PR's self-review).
+The part reads any file not named `.html` as plain CSS, and plain CSS drops
+quoted text. So a `var()` in a `style="..."` or `class="..."` value is never
+read, and a Tailwind `-(--name)` class has no `var(` to read at all.
+`<style>` blocks and backtick strings are read. On 2026-10-04 every `var()` in
+an `.astro` file sat in one of those (`src/pages/search.astro`'s `<style>`,
+`BackToTopButton.astro`'s template string), so nothing is hidden today. The
+one `-(--name)` class, `top-(--file-name-offset)`, names a token set inline by
+`src/utils/transformers/fileName.js`. A wider read belongs in
+buildforge-starter's part.
+
 **nginx.** The test checks that `/` and `/posts/x/` answer
 `no-cache, must-revalidate`, that `/_astro/x.css` is immutable, that an unknown
 path is a 404 with `404.html`, that `/.env` is a 403, and that `/robots.txt`
