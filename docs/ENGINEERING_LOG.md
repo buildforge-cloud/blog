@@ -3,6 +3,23 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-08 — blog#25: psi 1.0.1 → 1.1.0
+
+**What.** `python3 scripts/shared_checks.py update psi 1.1.0`, nothing else:
+no page, CSS or app file changed. psi 1.1.0 (buildforge-starter#112) signs in
+with `PSI_API_KEY` when it is set, with no `google-auth`, and masks the key in
+all it prints or saves. `--category` adds accessibility, best-practices and
+seo scores beside performance. The README's psi lines say both.
+
+**Evidence.** Nothing in this repo's suites runs psi; its tests live in the
+starter. So the starter's `parts/tests/test_psi.py` at tag `psi-v1.1.0` ran
+against this repo's file, with the starter's parts venv. On psi 1.0.1 from
+`main`: 15 failed, 30 passed (`AssertionError: a token was fetched with
+PSI_API_KEY set`, `unrecognized arguments: --category`). On the bumped
+`tools/psi.py`: 45 passed. `npm test`: 32 pass, the same names as on `main`.
+A one-constant hand edit to the new `tools/psi.py` failed `every shared part
+is the release its pin names`; the restore passed it.
+
 ## 2026-10-04 — blog#23: nginx_rig 1.1.0's serve-dir replaces tests/serve_dist.py
 
 **What.** Three shared parts moved up with the pin tool: nginx_rig 1.0.0 →

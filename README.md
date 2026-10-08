@@ -24,13 +24,18 @@ python3 scripts/shared_checks.py   # the shared parts are the releases their pin
 NGINX_RIG=1 python3 -m unittest discover -s tests -p "test_nginx.py"   # nginx.conf on a real nginx
 NGINX_RIG=1 npm run test:pages     # the browser checks on the build, served by a real nginx (nginx_rig's serve-dir; build first)
 python3 tools/psi.py https://blog.buildforge.cloud/   # PageSpeed medians, measured by Google
+python3 tools/psi.py https://blog.buildforge.cloud/ --category accessibility best-practices seo   # and the other three Lighthouse scores
 ```
 
 `npm run test:pages` needs Chromium once: `npx playwright install chromium`.
 
-`tools/psi.py` needs `google-auth`, installed by hand (`pip install google-auth`),
-and a Google service account key at `~/.gsc/service-account.json` (`--key` names
-another). Nothing in CI runs it.
+`tools/psi.py` signs in one of two ways. With `PSI_API_KEY` set (an API key,
+best restricted to the PageSpeed Insights API), it needs nothing more, and it
+masks the key in all it prints or saves. Otherwise it uses a Google service
+account key at `~/.gsc/service-account.json` (`--key` names another), and then
+it needs `google-auth[requests]` in a venv (`python3 -m venv ~/.venvs/psi`,
+then `~/.venvs/psi/bin/pip install "google-auth[requests]"`). With neither,
+Google answers 429. Nothing in CI runs it.
 
 The nginx test skips unless `NGINX_RIG=1`. With it, it serves the real
 `nginx.conf` over a stub site, on Ubuntu's nginx 1.24 extracted into
