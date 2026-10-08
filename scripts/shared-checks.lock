@@ -21,8 +21,8 @@
     },
     "tools/psi.py": {
       "placed": true,
-      "sha256": "f53dfb5f73dccd25cd34b29be37ec5df95f8bd24557535a13083f493377d708c",
-      "version": "1.0.1"
+      "sha256": "5b422c465cbe23cca866aa4cb58be52595c26d29937d5672f6dfb7b61edef3e4",
+      "version": "1.1.0"
     }
   },
   "source": "https://github.com/buildforge-cloud/buildforge-starter.git"
