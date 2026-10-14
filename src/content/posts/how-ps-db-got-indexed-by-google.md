@@ -12,8 +12,8 @@ description: In August Google knew one page of ps·db, my PS5 game database. By 
 ---
 
 On 8 August 2026, Google knew one page of [ps·db](https://ps-db.cloud), my
-PlayStation 5 game database. The homepage. I checked 300 game pages, spread
-evenly across the sitemap. 297 came back as "URL is unknown to Google". Not
+PlayStation 5 game database. The homepage. I checked 300 pages from the sitemap,
+spread evenly across it. 297 came back as "URL is unknown to Google". Not
 rejected. Never seen.
 
 On 14 October I ran the same check again. 124 of 300 were indexed. That is 41%.
@@ -57,8 +57,10 @@ Google had downloaded it and done almost nothing with it.
 
 The real game page has always had a list of similar games. The crawler version
 never got it. Every browser test passed, because a browser never sees the
-crawler version. My last post was about exactly this kind of bug, the kind only
-a crawler can see, and I still missed this one for a month.
+crawler version. My 8 August post,
+[I can't tell if any of it worked](/posts/cant-tell-if-any-of-it-worked/), was
+about exactly this kind of bug, the kind only a crawler can see, and I still
+missed this one for a month.
 
 ## Two fixes on one day
 
@@ -139,4 +141,4 @@ where 980 views gave 4 clicks. On page one, but low on it.
 
 I will run the same check again around 11 November. If "unknown to Google" is
 still about 168 then, the code side is done, and what is left is getting other
-sites to link to ps·db. This post is one of those links.
+sites to link to ps·db.
