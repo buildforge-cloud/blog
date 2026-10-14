@@ -3,6 +3,28 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-14 — blog#28: post on how ps·db got indexed, and a voice check
+
+**What.** `src/content/posts/how-ps-db-got-indexed-by-google.md`, from
+ps-db#205's comments and the 2026-10-14 re-measure (ps-db#448). Before it,
+the voice and format check that Stefan asked for (decision 1245): its answers
+and a change proposal for the older posts are in the PR, and the older posts
+are not rewritten. The post is written the changed way: a title in the words
+a searcher uses, the product linked at first mention and at one game page,
+plain short sentences, and no closing twist line.
+
+**Numbers.** Every number in the post was matched by hand to its line and
+date in the sources. A scratch checker (not committed) also failed the post
+on any number absent from the source text. Its first version passed a
+made-up `73`, because `73b` in a commit hash matched; it now skips URLs and
+digits joined to letters, and then failed the bad sample on all 10 rules.
+
+**Older facts that changed.** The newest sample is 124 of 300 (41%) on
+2026-10-14; the issue's "37%" is the 2026-09-30 figure, which the post gives
+in its list. The 2026-08-08 post said Change of Address was the signal Google
+wanted; ps-db#205 found on 2026-08-09 that the old domain was at 0 indexed
+too, and the new post says that it was wrong.
+
 ## 2026-10-08 — blog#25: psi 1.0.1 → 1.1.0
 
 **What.** `python3 scripts/shared_checks.py update psi 1.1.0`, nothing else:
