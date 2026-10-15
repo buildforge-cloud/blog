@@ -42,8 +42,16 @@ names. A repo with no lock yet adopts with three commands:
 
 then runs `python3 scripts/check_secrets.py --staged` from its pre-commit hook
 and this file from CI, as buildforge-starter's `.githooks/pre-commit` and
-`.github/workflows/secrets.yml` do. Moving to a new release is one command,
-committed as one PR:
+`.github/workflows/secrets.yml` do. ⚠️ Copy that job's `runs-on` line whole:
+it puts the job on `home` in a private repo, where GitHub starts no hosted
+job (billing, 2026-10-13), and on GitHub's runner in a public repo and for a
+fork's pull request (since 1.2.0, buildforge-starter#123), and for any run
+of a Dependabot branch, whose package bump nobody reviewed (since 1.3.0,
+buildforge-starter#129). Since 1.4.0 it matches `dependabot/`, Dependabot's
+own prefix, so a person's `dependabot-...` branch keeps its checks, and this
+file refuses a `.github/dependabot.yml` that sets `pull-request-branch-name`,
+which would rename Dependabot's branch past it (buildforge-starter#134).
+Moving to a new release is one command, committed as one PR:
 
     python3 scripts/shared_checks.py update check_secrets 1.1.0
 
@@ -82,7 +90,7 @@ import subprocess
 import sys
 import tempfile
 
-__version__ = "1.1.0"
+__version__ = "1.4.0"
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LOCK = ROOT / "scripts" / "shared-checks.lock"
@@ -138,8 +146,50 @@ def summary(lock: dict) -> str:
     )
 
 
+# ⚠️ The shared jobs' `runs-on` (see the adopt note) keeps a run off `home` by
+# `dependabot/`, Dependabot's own branch prefix. `pull-request-branch-name`
+# renames that branch (`separator`, `prefix`, `template`), and the run would
+# install a bump nobody reviewed on `home` (buildforge-starter#134).
+DEPENDABOT_CONFIGS = (".github/dependabot.yml", ".github/dependabot.yaml")
+BRANCH_NAME_OPTION = "pull-request-branch-name"
+
+
+def renamed_dependabot_branch() -> list[str]:
+    """Where the dependabot.yml GitHub reads sets `pull-request-branch-name`,
+    as `path:line`, or `path: cannot read it`. Any setting, the default
+    spelled out too, and a line only a full-line comment is skipped. Text, not
+    YAML, since this file is stdlib only; a file not UTF-8 is a finding."""
+    found = []
+    for relative in DEPENDABOT_CONFIGS:
+        try:
+            text = (ROOT / relative).read_bytes().decode("utf-8")
+        except FileNotFoundError:
+            continue
+        except (OSError, UnicodeDecodeError):
+            found.append(f"{relative}: cannot read it")
+            continue
+        if "\0" in text:
+            found.append(f"{relative}: cannot read it")
+            continue
+        found.extend(
+            f"{relative}:{number}"
+            for number, line in enumerate(text.splitlines(), 1)
+            if BRANCH_NAME_OPTION in line and not line.lstrip().startswith("#")
+        )
+    return found
+
+
 def verify() -> int:
     lock = load_lock()
+    renamed = renamed_dependabot_branch()
+    for where in renamed:
+        print(f"REFUSING: {where} sets {BRANCH_NAME_OPTION}.", file=sys.stderr)
+    if renamed:
+        print(
+            "\nIt renames Dependabot's branch, which the shared jobs' runs-on knows by\n"
+            "`dependabot/` and keeps off `home`. Remove the option (buildforge-starter#134).\n",
+            file=sys.stderr,
+        )
     wrong = mismatched(lock)
     if wrong:
         for relative in wrong:
@@ -150,6 +200,8 @@ def verify() -> int:
             "  In buildforge-starter: bump __version__, then shared_checks.py release <path>",
             file=sys.stderr,
         )
+        return 1
+    if renamed:
         return 1
     print(f"OK: {summary(lock)}")
     return 0

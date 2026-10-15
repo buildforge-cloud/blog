@@ -3,6 +3,31 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-15 — blog#29, blog#31: shared_checks 1.1.0 → 1.4.0, psi 1.1.0 → 1.2.0
+
+**What.** `python3 scripts/shared_checks.py update shared_checks 1.4.0` and
+`update psi 1.2.0`, nothing else: no page, CSS or app file changed.
+shared_checks 1.2.0 to 1.4.0 move a private repo's `secrets.yml` and
+`docs-checks.yml` jobs to the `home` runner, keep a Dependabot branch off
+`home`, and refuse a `dependabot.yml` that renames Dependabot's branch. This
+public repo has neither workflow and no `dependabot.yml`, so no step beyond
+`update` applies. psi 1.2.0 (buildforge-starter#113) fails a run only on
+performance; another category with no score is named and prints `-`. The
+README's psi lines say so.
+
+**Evidence.** No blog suite runs either part's own tests. So the starter
+at each tag was extracted to a scratch folder, and its tests ran with the
+blog's file in place, in a venv with pytest and pyyaml. shared_checks
+(`tests/test_secrets.py`, `test_workflow_ceilings.py`, `test_log_entries.py`,
+`test_claude_rules.py`, `test_targets.py` at `shared_checks-v1.4.0`): 1.1.0
+from `main`, 31 failed, 480 passed (among them
+`test_the_pin_refuses_a_dependabot_yml_that_renames_dependabots_branch`);
+1.4.0, 511 passed, 15 skipped. psi (`parts/tests/test_psi.py` at
+`psi-v1.2.0`): 1.1.0, 6 failed, 44 passed (`mobile run @ m1: failed, no
+accessibility score`); 1.2.0, 50 passed. `npm test`: 32 pass, the same names
+as on `main`. A one-byte hand edit to each new file failed `every shared part
+is the release its pin names`; the restore passed it.
+
 ## 2026-10-14 — blog#28: post on how ps·db got indexed, and a voice check
 
 **What.** `src/content/posts/how-ps-db-got-indexed-by-google.md`, from

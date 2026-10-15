@@ -34,6 +34,13 @@ No admin panel / CMS — this is a git-based static site. To publish:
 4. Commit and push to `main` — `deploy.yml` rebuilds and redeploys automatically via
    the org's self-hosted runner, live within about a minute.
 
+**What a post is for** (Stefan, decision 1245, 2026-10-12): the blog's main job
+is to get the products seen, and a post must still read as a person wrote it.
+The blog-post skill's identity section still says "not traffic" and "not
+selling"; until Stefan picks blog#28's proposal for it, follow the post's
+issue. That means a title in the words a searcher types, the product linked at
+its first mention, short plain sentences and no em dash.
+
 **To schedule a post**, set `pubDatetime` to the future time and merge it as
 normal. `deploy.yml` also rebuilds every day at **07:05 UTC** (blog#9), and the
 post goes live at the first production build after its `pubDatetime`. The theme's
