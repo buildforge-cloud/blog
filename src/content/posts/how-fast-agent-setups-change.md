@@ -20,7 +20,8 @@ and this turned out to be the louder answer.
 
 ## Was my agent setup falling behind?
 
-I run a small group of AI agents that write, review and merge code across my
+I run a small group of AI agents that
+[write, review and merge code](/posts/the-bugs-were-in-the-brakes/) across my
 projects. I have a dashboard for them. In early October I wanted one more
 thing on it. In my own words at the time: "an indication of when we need to do
 improvements or pick up on changes in the market that I may not have picked up
