@@ -39,7 +39,11 @@ library is not installed"), and this host refuses a system `pip install`:
 
 ⚠️ A run Lighthouse could not score (a `runtimeError` such as `NO_FCP`) is a
 failed run: one line names it and its error, the medians are of the rest,
-and the exit is 1.
+and the exit is 1. Only performance fails a run. Another category with no
+score in a run is named on that run's line and left out of its own median
+only; when no run scored it, its cell is `-`, never 0. The exit is 1 then
+too (since 1.2.0, buildforge-starter#113: one null `seo` cost a monthly
+audit its whole run).
 
 ⚠️ It measures what Google can reach: a site behind Cloudflare Access, a
 staging or a dev server is out of its sight.
@@ -53,7 +57,7 @@ run only once per `fetchTime` and waits between asks.
 A shared part, pinned like `cf_access`: a release of buildforge-starter, byte
 for byte, never edited in place. A child places it once:
 
-    python3 scripts/shared_checks.py update psi 1.1.0 --into tools
+    python3 scripts/shared_checks.py update psi 1.2.0 --into tools
 
 and the lock remembers the folder, so moving is `update psi <version>`. Its
 tests live in buildforge-starter (`parts/tests/test_psi.py`);
@@ -72,7 +76,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 API = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
 DEFAULT_KEY_PATH = Path.home() / ".gsc" / "service-account.json"
@@ -126,14 +130,18 @@ def masked(text: str, key: str | None) -> str:
 
 
 def metrics(result: dict, categories=("performance",)) -> dict:
-    """A run's numbers, or its `failed` reason when Lighthouse could not score it."""
+    """A run's numbers, or its `failed` reason when Lighthouse could not score its performance.
+
+    Another category with no score is left out of the row, not failed: one
+    null `seo` cost a monthly audit its whole run in 1.1.x (buildforge-starter#113).
+    """
     lr = result["lighthouseResult"]
     audits = lr["audits"]
+    categories = list(dict.fromkeys(["performance", *categories]))
     scores = {c: lr["categories"].get(c, {}).get("score") for c in categories}
-    unscored = [c for c, score in scores.items() if score is None]
-    if unscored:
+    if scores["performance"] is None:
         error = lr.get("runtimeError")
-        reason = f"{error['code']}: {error['message']}" if error else f"no {unscored[0]} score"
+        reason = f"{error['code']}: {error['message']}" if error else "no performance score"
         return {"fetch_time": lr["fetchTime"], "failed": reason}
     return {
         "fetch_time": lr["fetchTime"],
@@ -142,7 +150,7 @@ def metrics(result: dict, categories=("performance",)) -> dict:
         "tbt_ms": audits["total-blocking-time"]["numericValue"],
         "cls": audits["cumulative-layout-shift"]["numericValue"],
         "fcp_ms": audits["first-contentful-paint"]["numericValue"],
-        **{c: round(scores[c] * 100) for c in categories if c != "performance"},
+        **{c: round(scores[c] * 100) for c in categories if c != "performance" and scores[c] is not None},
     }
 
 
@@ -171,7 +179,9 @@ def measure(url, strategy, runs, fetch, sleep=time.sleep, on_result=None, catego
 
 
 def median(rows: list[dict]) -> dict:
-    return {k: statistics.median(r[k] for r in rows) for k in rows[0] if k != "fetch_time"}
+    """Each figure's median over the runs that have it; one no run has is left out."""
+    keys = dict.fromkeys(k for r in rows for k in r if k != "fetch_time")
+    return {k: statistics.median(r[k] for r in rows if k in r) for k in keys}
 
 
 def at_least_one(text: str) -> int:
@@ -206,6 +216,9 @@ def main(argv=None, fetch=None) -> int:
 
         def save(result, row, strategy=strategy):
             outcome = f"failed, {row['failed']}" if "failed" in row else row["score"]
+            unscored = [c for c in others if "failed" not in row and c not in row]
+            if unscored:
+                outcome = f"{outcome}, no score for {', '.join(unscored)}"
             print(f"  {strategy} run @ {row['fetch_time']}: {outcome}", file=sys.stderr, flush=True)
             if args.save:
                 args.save.mkdir(parents=True, exist_ok=True)
@@ -215,14 +228,16 @@ def main(argv=None, fetch=None) -> int:
         rows = measure(args.url, strategy, args.runs, fetch=fetch, on_result=save, categories=categories)
         scored = [row for row in rows if "failed" not in row]
         counted = f"{len(scored)} of {len(rows)}" if len(scored) < len(rows) else f"{len(rows)}"
-        any_failed = any_failed or len(scored) < len(rows)
+        any_failed = any_failed or len(scored) < len(rows) or any(c not in row for row in scored for c in others)
         if not scored:
             print(f"| {strategy} | failed | - | - | - | - |" + " - |" * len(others) + f" {counted} |", flush=True)
             continue
         m = median(scored)
         print(
             f"| {strategy} | {m['score']:.0f} | {m['lcp_ms'] / 1000:.2f} s | {m['tbt_ms']:.0f} ms "
-            f"| {m['cls']:.3f} | {m['fcp_ms'] / 1000:.2f} s |" + "".join(f" {m[c]:.0f} |" for c in others) + f" {counted} |",
+            f"| {m['cls']:.3f} | {m['fcp_ms'] / 1000:.2f} s |"
+            + "".join(f" {m[c]:.0f} |" if c in m else " - |" for c in others)
+            + f" {counted} |",
             flush=True,
         )
     return 1 if any_failed else 0

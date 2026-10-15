@@ -1,8 +1,8 @@
 {
   "files": {
     "scripts/shared_checks.py": {
-      "sha256": "8456f8fd578a41bb831ea82d263ecfab2922f9896702cd51983a84eb78e91a64",
-      "version": "1.1.0"
+      "sha256": "7c6a4218a6cebe0795bf1f5c827540da51c3e042bab26a4f8eaa08278bb2dc13",
+      "version": "1.4.0"
     },
     "tests/check_nginx_headers.py": {
       "placed": true,
@@ -21,8 +21,8 @@
     },
     "tools/psi.py": {
       "placed": true,
-      "sha256": "5b422c465cbe23cca866aa4cb58be52595c26d29937d5672f6dfb7b61edef3e4",
-      "version": "1.1.0"
+      "sha256": "ad834f8e5900fa1b5388c3cd59825ca774fd68b004a0be01f19784b7515bfe75",
+      "version": "1.2.0"
     }
   },
   "source": "https://github.com/buildforge-cloud/buildforge-starter.git"
