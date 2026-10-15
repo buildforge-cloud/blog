@@ -16,7 +16,7 @@ In the week to 2 October, 60% of a sample of public pull requests made with
 Claude Opus 5.5. One week earlier it was 33%. One week before that, 0%.
 
 I was not looking for that. I was looking for something about my own setup,
-and this turned out to be the louder answer.
+and found this on the way.
 
 ## Was my agent setup falling behind?
 
@@ -30,13 +30,14 @@ for how to operate agents better."
 So, two questions. Are my agents getting slower than setups like mine? And is
 the market changing under me?
 
-The first one is the one I cared about. It is also the one the public numbers
-could barely answer.
+I cared most about the first, and the public numbers could barely answer it.
 
 ## How I counted, and what it misses
 
-Everything here comes from GitHub's own search. The weeks run Saturday to
-Friday in UTC, from 8 August to 2 October 2026.
+Everything here comes from GitHub's own search. The 8 weeks run Saturday to
+Friday in UTC, from 8 August to 2 October 2026. Two later figures come from a
+daily fetch that started after that. They cover the seven days from Thursday 8
+to Wednesday 14 October, and I say so where they appear.
 
 - **Counts.** Each week, the number of merged pull requests each agent left a
   mark on. Claude Code writes "Generated with Claude Code" into the PR text.
@@ -61,11 +62,11 @@ failed.
 
 The question I cared about was speed: how long from opening a PR to merging
 it. In the week to 2 October my agents' median was 16.4 minutes. The median of
-all merged Claude Code PRs that week was 13.8.
+a sample of 91 merged Claude Code PRs that week was 13.8.
 
-That looks a little slow. It is not a real gap. A median of about 100 PRs moves
-a lot by chance. Two public weeks could differ by up to 14.8 minutes and mean
-nothing. The band for my comparison was 22 minutes either way, and my gap was
+That looks a little slow, but it is not a real gap. A median of about 100 PRs
+moves a lot by chance. Two public weeks could differ by up to 14.8 minutes and
+mean nothing. The band for my comparison was 22 minutes either way, and my gap was
 2.6.
 
 Who counts as "similar" moved the answer more than anything else. Public Claude
@@ -80,13 +81,14 @@ public ones 145. Mine carry their tests and docs. A bigger PR takes longer, so
 the speed has to be compared over the same mix of sizes.
 
 So at about 100 PRs a week, the line can show a gap of about 2× and nothing
-smaller. My rule for "behind peers" fired on nothing. Run on the public weeks
-against each other, it fired 0 times in 7. That is what I want from it on
-noise. It is also all it can say for now.
+smaller. My rule for "behind peers" needs two bad weeks in a row, and I had
+only one full week of my own history, so it could not have fired yet. Run on
+the public weeks against each other, it fired 0 times in 7, so at least it
+stays quiet on noise.
 
 ## Claude Code's share of agent PRs
 
-The second question had a loud answer.
+The second question had a clear answer.
 
 | Week to | Agent PRs merged | Claude Code | Codex | Cursor |
 | ------- | ---------------- | ----------- | ----- | ------ |
@@ -100,7 +102,7 @@ Claude Code's share grew every week from the end of August. Codex's fell.
 Copilot and Devin stayed under 2% the whole time.
 
 Claude Code's own count went from 455k merged PRs a week to 1.47M. In the
-week of 8 to 14 October it was 1,812,623.
+seven days from Thursday 8 to Wednesday 14 October it was 1,812,623.
 
 The merge rate barely moved: 98.1% to 98.8%. Most public PRs are merged by the
 person who opened them, so this number says almost nothing about quality.
@@ -108,26 +110,28 @@ person who opened them, so this number says almost nothing about quality.
 ## A new Claude model took 60% in two weeks
 
 The model names moved fastest. Share of the sampled Claude Code PRs, by the
-model in the trailer:
+model in the trailer, for the weeks to these dates:
 
-| Week to | Opus 5 | Opus 5.5 | Sonnet 5.5 | Fable 5.1 |
-| ------- | ------ | -------- | ---------- | --------- |
-| 4 Sep   | 49%    | 0%       | 0%         | 0%        |
-| 11 Sep  | 41%    | 0%       | 0%         | 15%       |
-| 18 Sep  | 60%    | 0%       | 0%         | 20%       |
-| 25 Sep  | 29%    | 33%      | 0%         | 10%       |
-| 2 Oct   | 4%     | 60%      | 12%        | 2%        |
+| Model      | 4 Sep | 11 Sep | 18 Sep | 25 Sep | 2 Oct |
+| ---------- | ----- | ------ | ------ | ------ | ----- |
+| Opus 5     | 49%   | 41%    | 60%    | 29%    | 4%    |
+| Opus 5.5   | 0%    | 0%     | 0%     | 33%    | 60%   |
+| Sonnet 5.5 | 0%    | 0%     | 0%     | 0%     | 12%   |
+| Fable 5.1  | 0%    | 15%    | 20%    | 10%    | 2%    |
+| Other      | 32%   | 29%    | 12%    | 16%    | 4%    |
+| No trailer | 19%   | 15%    | 8%     | 12%    | 18%   |
+
+"Other" is the rest: mostly Sonnet 5, Fable 5 and Opus 4.8, plus rounding.
 
 Opus 5 fell to 4% in the same two weeks. I don't trust its 60% in mid
 September, though. The sample comes in bunches, and one busy repository can
 fill a whole window.
 
-The switch held. In the week of 8 to 14 October, 112 of 190 sampled PRs named
-Opus 5.5. That is 58.9%.
+The switch held. In the seven days from Thursday 8 to Wednesday 14 October,
+112 of 190 sampled PRs named Opus 5.5. That is 58.9%.
 
 My own agents moved with everyone else. Of the 278 PRs my account opened
-between 25 September and 3 October, 276 name Opus 5.5. I did not think of that
-as a market move when it happened. I thought of it as a new model in my config.
+between 25 September and 3 October, 276 name Opus 5.5.
 
 What did not move: review and CI. Between 8% and 20% of sampled PRs had any
 review, and 76% to 88% ran CI, with no trend. PR size went down by about 100

@@ -18,8 +18,10 @@ because a digit run followed by a letter never matched; it now allows a `k`
 or `M` after the number and caught it. Each number was also matched by hand
 to its table row and week.
 
-**Phone width.** Two tables of 5 columns: at 390 px each is 358 px wide and
-the page has no side scroll (`scrollWidth` 390), measured on the built page.
+**Phone width.** Two tables, of 5 and 6 columns (the model table has weeks as
+columns, so its "Other" and "No trailer" rows make each week add to 100): at
+390 px each is 358 px wide and the page has no side scroll (`scrollWidth`
+390), measured on the built page.
 
 **Playwright's browser.** The main checkout still has no `@playwright/test`,
 and `chromium_headless_shell-1243` was gone from the cache again. With
