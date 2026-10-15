@@ -3,6 +3,26 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-15 — blog#33: shared_checks 1.4.0 → 1.5.0
+
+**What.** `python3 scripts/shared_checks.py update shared_checks 1.5.0`,
+nothing else. 1.5.0 (buildforge-starter#153) changes only the adopt note and
+two messages: a private repo's `docs` and `scan` jobs now run on
+`home-light`, and a starter-made repo must also update
+`tests/_runner_switch.py` and its readers. This public repo has neither job
+nor those tests, so no step beyond `update` applies.
+
+**Evidence.** The starter's tests at `shared_checks-v1.5.0` (the same five
+files as blog#29) ran on blog's file, in the extracted tree with every file
+`git add`ed. 1.4.0 from `main`: 28 failed, 585 passed, among them
+`test_the_adopt_note_names_the_runner_the_scan_takes_in_a_private_repo`
+(`('home-light', None)`: no "Since 1.5.0" sentence). 1.5.0: 613 passed, 19
+skipped. With the files only `git init`ed and not added, 3
+`test_claude_rules.py` cases fail on both copies (rule patterns and the docs
+check find no tracked file); that is the harness, not the part. `npm test`:
+32 pass, the same names as on `main`. A hand edit of `__version__` failed
+`every shared part is the release its pin names`; the restore passed it.
+
 ## 2026-10-15 — blog#29, blog#31: shared_checks 1.1.0 → 1.4.0, psi 1.1.0 → 1.2.0
 
 **What.** `python3 scripts/shared_checks.py update shared_checks 1.4.0` and
