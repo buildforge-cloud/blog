@@ -43,7 +43,7 @@ names. A repo with no lock yet adopts with three commands:
 then runs `python3 scripts/check_secrets.py --staged` from its pre-commit hook
 and this file from CI, as buildforge-starter's `.githooks/pre-commit` and
 `.github/workflows/secrets.yml` do. ⚠️ Copy that job's `runs-on` line whole:
-it puts the job on `home` in a private repo, where GitHub starts no hosted
+it puts the job on the home machine in a private repo, where GitHub starts no hosted
 job (billing, 2026-10-13), and on GitHub's runner in a public repo and for a
 fork's pull request (since 1.2.0, buildforge-starter#123), and for any run
 of a Dependabot branch, whose package bump nobody reviewed (since 1.3.0,
@@ -51,6 +51,15 @@ buildforge-starter#129). Since 1.4.0 it matches `dependabot/`, Dependabot's
 own prefix, so a person's `dependabot-...` branch keeps its checks, and this
 file refuses a `.github/dependabot.yml` that sets `pull-request-branch-name`,
 which would rename Dependabot's branch past it (buildforge-starter#134).
+Since 1.5.0 the line puts a private repo's run on `home-light`, not `home`:
+one runner on the same home machine for these jobs of seconds, which waited
+10-20 minutes there behind long test jobs (buildforge-starter#153). Copy the
+line again into both jobs, `docs` and `scan`. A repo made from
+buildforge-starter also holds the tests that pin the line: apply
+buildforge-starter#153's change to `tests/_runner_switch.py` (its new `LIGHT_SWITCH`) and to the tests
+that read it, `tests/test_workflow_ceilings.py`, `tests/test_secrets.py`,
+`tests/test_claude_rules.py` and a web project's
+`backend/tests/test_deploy_workflows.py`, or its `docs` job fails.
 Moving to a new release is one command, committed as one PR:
 
     python3 scripts/shared_checks.py update check_secrets 1.1.0
@@ -90,7 +99,7 @@ import subprocess
 import sys
 import tempfile
 
-__version__ = "1.4.0"
+__version__ = "1.5.0"
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LOCK = ROOT / "scripts" / "shared-checks.lock"
@@ -146,10 +155,10 @@ def summary(lock: dict) -> str:
     )
 
 
-# ⚠️ The shared jobs' `runs-on` (see the adopt note) keeps a run off `home` by
+# ⚠️ The shared jobs' `runs-on` (see the adopt note) keeps a run off the home machine by
 # `dependabot/`, Dependabot's own branch prefix. `pull-request-branch-name`
 # renames that branch (`separator`, `prefix`, `template`), and the run would
-# install a bump nobody reviewed on `home` (buildforge-starter#134).
+# install a bump nobody reviewed there (buildforge-starter#134).
 DEPENDABOT_CONFIGS = (".github/dependabot.yml", ".github/dependabot.yaml")
 BRANCH_NAME_OPTION = "pull-request-branch-name"
 
@@ -187,7 +196,7 @@ def verify() -> int:
     if renamed:
         print(
             "\nIt renames Dependabot's branch, which the shared jobs' runs-on knows by\n"
-            "`dependabot/` and keeps off `home`. Remove the option (buildforge-starter#134).\n",
+            "`dependabot/` and keeps off the home machine. Remove the option (buildforge-starter#134).\n",
             file=sys.stderr,
         )
     wrong = mismatched(lock)
