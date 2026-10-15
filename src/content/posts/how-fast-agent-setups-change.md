@@ -11,9 +11,9 @@ tags:
 description: I counted merged pull requests from AI coding agents on GitHub for 8 weeks. Claude Code's share went from 67% to 82%, and a new model, Claude Opus 5.5, went from 0% to 60% of its PRs in two weeks.
 ---
 
-In the last week of September, 60% of the public pull requests made with
-[Claude Code](https://claude.com/product/claude-code) named a model called Claude Opus
-5.5. One week earlier it was 33%. One week before that, 0%.
+In the week to 2 October, 60% of a sample of public pull requests made with
+[Claude Code](https://claude.com/product/claude-code) named a model called
+Claude Opus 5.5. One week earlier it was 33%. One week before that, 0%.
 
 I was not looking for that. I was looking for something about my own setup,
 and this turned out to be the louder answer.
@@ -126,8 +126,8 @@ The switch held. In the week of 8 to 14 October, 112 of 190 sampled PRs named
 Opus 5.5. That is 58.9%.
 
 My own agents moved with everyone else. Of the 278 PRs my account opened
-between 25 September and 3 October, 276 name Opus 5.5. I did not think of that as a
-market move when it happened. I thought of it as a new model in my config.
+between 25 September and 3 October, 276 name Opus 5.5. I did not think of that
+as a market move when it happened. I thought of it as a new model in my config.
 
 What did not move: review and CI. Between 8% and 20% of sampled PRs had any
 review, and 76% to 88% ran CI, with no trend. PR size went down by about 100
