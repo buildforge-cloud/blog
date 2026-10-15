@@ -35,7 +35,9 @@ masks the key in all it prints or saves. Otherwise it uses a Google service
 account key at `~/.gsc/service-account.json` (`--key` names another), and then
 it needs `google-auth[requests]` in a venv (`python3 -m venv ~/.venvs/psi`,
 then `~/.venvs/psi/bin/pip install "google-auth[requests]"`). With neither,
-Google answers 429. Nothing in CI runs it.
+Google answers 429. Nothing in CI runs it. Only performance fails a run: a
+run with no score for another category names it on its line, and a category
+no run scored prints `-`, never 0.
 
 The nginx test skips unless `NGINX_RIG=1`. With it, it serves the real
 `nginx.conf` over a stub site, on Ubuntu's nginx 1.24 extracted into
