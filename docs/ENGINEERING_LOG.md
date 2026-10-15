@@ -3,6 +3,30 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-15 — blog#35: post on how fast agent setups change
+
+**What.** `src/content/posts/how-fast-agent-setups-change.md`, from the
+board's Market card issue and its plan's "Market signals" (both private, so
+the post names neither). Every number is quoted from those two, with its
+week. The voice and format check (decision 1245) is in the PR, as for
+blog#28; the older posts are not rewritten.
+
+**Numbers.** The same kind of scratch checker as blog#28 (not committed):
+11 rules, among them "every number in the prose is in the source text". A
+bad sample failed all 11 by name. Its first number rule missed `999k`,
+because a digit run followed by a letter never matched; it now allows a `k`
+or `M` after the number and caught it. Each number was also matched by hand
+to its table row and week.
+
+**Phone width.** Two tables of 5 columns: at 390 px each is 358 px wide and
+the page has no side scroll (`scrollWidth` 390), measured on the built page.
+
+**Playwright's browser.** The main checkout still has no `@playwright/test`,
+and `chromium_headless_shell-1243` was gone from the cache again. With
+`PLAYWRIGHT_SKIP_BROWSER_GC=1` on `playwright install --only-shell chromium`
+it was fetched, and `chromium-1248` and both other shells stayed (listed
+before and after). blog#28's run without the flag deleted them.
+
 ## 2026-10-15 — blog#33: shared_checks 1.4.0 → 1.5.0
 
 **What.** `python3 scripts/shared_checks.py update shared_checks 1.5.0`,
