@@ -22,7 +22,9 @@ On 4 October I wrote this about my own app, in Norwegian. My translation:
 That message stopped the release. The app is
 [Vedlikeholdsloggen](https://vedlikeholdsloggen.buildforge.no/), a Norwegian
 app that reminds me when to do the upkeep on a house or a cabin, and keeps a
-log of what got done. Version 1.2 went live in the App Store on 19 October. Its
+log of what got done. Version 1.2 went live in the
+[App Store](https://apps.apple.com/no/app/vedlikeholdsloggen/id6812536099) on
+19 October. Its
 big change is a new tab, Hjemmet ("the home"), with the things in the home at
 the centre. The grill is why it took a detour on the way.
 
