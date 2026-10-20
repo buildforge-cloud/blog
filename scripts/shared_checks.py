@@ -31,18 +31,30 @@ docs/ENGINEERING_LOG.md, buildforge-starter#50.
 ## A project: adopt, move
 
 A project made by `scripts/init.py` already holds the lock and the release it
-names. A repo with no lock yet adopts with three commands:
+names. A repo with no lock yet adopts with these commands:
 
     gh api -H "Accept: application/vnd.github.raw" \\
-      "repos/buildforge-cloud/buildforge-starter/contents/scripts/shared_checks.py?ref=shared_checks-v1.0.0" \\
+      "repos/buildforge-cloud/buildforge-starter/contents/scripts/shared_checks.py?ref=shared_checks-v1.6.0" \\
       > scripts/shared_checks.py
-    python3 scripts/shared_checks.py update shared_checks 1.0.0 \\
+    python3 scripts/shared_checks.py update shared_checks 1.6.0 \\
       --source https://github.com/buildforge-cloud/buildforge-starter.git
-    python3 scripts/shared_checks.py update check_secrets 1.0.0
+    python3 scripts/shared_checks.py update check_secrets 1.1.0
+    python3 scripts/shared_checks.py update secrets 1.0.0
+    python3 scripts/shared_checks.py update pre-commit 1.0.0
+    git config core.hooksPath .githooks
 
-then runs `python3 scripts/check_secrets.py --staged` from its pre-commit hook
-and this file from CI, as buildforge-starter's `.githooks/pre-commit` and
-`.github/workflows/secrets.yml` do. ⚠️ Copy that job's `runs-on` line whole:
+`secrets` is `.github/workflows/secrets.yml`, which runs the scanner and this
+file on every push; `pre-commit` is `.githooks/pre-commit`, which runs the
+scanner on each commit of a clone that ran the last line. ⚠️ **Since 1.6.0
+both are pinned releases too** (buildforge-starter#166): each repo used to
+copy them by hand, and a fix reached it only by one more copy. A file that
+cannot hold a Python line declares its version as a comment line,
+`# __version__ = "x.y.z"`. `update` gives a file its release's executable
+bit, and the pin fails a hook that lost it, which git would skip. A repo that
+held a copy takes the release over it, in one PR.
+
+⚠️ The shared jobs' `runs-on` line, which `secrets.yml` now brings and
+`docs-checks.yml`'s `docs` job copies by hand:
 it puts the job on the home machine in a private repo, where GitHub starts no hosted
 job (billing, 2026-10-13), and on GitHub's runner in a public repo and for a
 fork's pull request (since 1.2.0, buildforge-starter#123), and for any run
@@ -54,7 +66,7 @@ which would rename Dependabot's branch past it (buildforge-starter#134).
 Since 1.5.0 the line puts a private repo's run on `home-light`, not `home`:
 one runner on the same home machine for these jobs of seconds, which waited
 10-20 minutes there behind long test jobs (buildforge-starter#153). Copy the
-line again into both jobs, `docs` and `scan`. A repo made from
+line again into the `docs` job. A repo made from
 buildforge-starter also holds the tests that pin the line: apply
 buildforge-starter#153's change to `tests/_runner_switch.py` (its new `LIGHT_SWITCH`) and to the tests
 that read it, `tests/test_workflow_ceilings.py`, `tests/test_secrets.py`,
@@ -78,9 +90,10 @@ keeps that folder; without `--into`, a part lands at the release's own path
    pins the new bytes in the lock. Refused anywhere but this repo, and
    refused if that version is already tagged: a release never changes.
 3. Merge, then tag the merge commit, which is what `update` fetches:
-   `git tag check_secrets-v1.1.0 <merge sha> && git push origin check_secrets-v1.1.0`
+   `git tag check_secrets-v<version> <merge sha> && git push origin check_secrets-v<version>`
 
-A new shared check joins the same way: give it a `__version__`, release it.
+A new shared check joins the same way: give it a `__version__` (a comment
+line in a file that is not Python), release it.
 The tag's own lock says where each check lives, so `update` finds a check
 the repo has never held, makes its folder, and -- when a release moved a
 check -- drops the old pin and names it, so the PR can fix its callers.
@@ -99,11 +112,14 @@ import subprocess
 import sys
 import tempfile
 
-__version__ = "1.5.0"
+__version__ = "1.6.0"
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LOCK = ROOT / "scripts" / "shared-checks.lock"
 VERSION = re.compile(rb'^__version__ = "([^"]+)"$', re.MULTILINE)
+# A workflow (YAML) or a hook (shell) cannot hold that line as a statement, so
+# it says it as a comment line of its own. A Python file's own line wins.
+COMMENTED_VERSION = re.compile(rb'^# __version__ = "([^"]+)"$', re.MULTILINE)
 
 
 def git(*args: str) -> subprocess.CompletedProcess[bytes]:
@@ -111,7 +127,7 @@ def git(*args: str) -> subprocess.CompletedProcess[bytes]:
 
 
 def declared_version(data: bytes) -> str | None:
-    found = VERSION.search(data)
+    found = VERSION.search(data) or COMMENTED_VERSION.search(data)
     return found.group(1).decode() if found else None
 
 
@@ -133,17 +149,19 @@ def mismatched(lock: dict) -> list[str]:
     ⚠️ **The version is compared too, not only the hash.** Right bytes under a
     wrong version would make every report repeat the lie, and `update` would
     reason from it. ⚠️ A MISSING file is a mismatch: no scanner at all is the
-    worst edit there is.
+    worst edit there is. ⚠️ So is a pin marked `executable` whose file is not:
+    git skips such a hook, and every commit passes (buildforge-starter#166).
     """
     wrong = []
     for relative, pin in sorted(lock["files"].items()):
         try:
             data = (ROOT / relative).read_bytes()
+            runnable = bool((ROOT / relative).stat().st_mode & 0o100)
         except OSError:
-            data = None
+            data, runnable = None, False
         if data is None or hashlib.sha256(data).hexdigest() != pin["sha256"] or (
             declared_version(data) != pin["version"]
-        ):
+        ) or (pin.get("executable") and not runnable):
             wrong.append(relative)
     return wrong
 
@@ -243,7 +261,11 @@ def release(path: str) -> int:
         return 1
     version = declared_version(data)
     if version is None:
-        print(f'REFUSING: {relative} declares no `__version__ = "x.y.z"` line.', file=sys.stderr)
+        print(
+            f'REFUSING: {relative} declares no `__version__ = "x.y.z"` line'
+            ' (`# __version__ = "x.y.z"` in a file that is not Python).',
+            file=sys.stderr,
+        )
         return 1
     # ⚠️ **The TAG is the release, not the version number.** Until it exists
     # the same number may be re-pinned -- a review fix would otherwise cost a
@@ -258,14 +280,17 @@ def release(path: str) -> int:
         print(f"REFUSING: {tag} is released, and a release never changes.", file=sys.stderr)
         return 1
     lock["files"][relative] = {"version": version, "sha256": hashlib.sha256(data).hexdigest()}
+    if (ROOT / relative).stat().st_mode & 0o100:
+        lock["files"][relative]["executable"] = True
     save_lock(lock)
     print(f"Pinned {relative} {version}. After the merge, tag the merge commit:")
     print(f"  git tag {tag} <merge sha> && git push origin {tag}")
     return 0
 
 
-def fetch(source: str, tag: str, name: str) -> tuple[str, bytes] | None:
-    """(path, bytes) of the check `name` in the release `tag`, or None, having said why.
+def fetch(source: str, tag: str, name: str) -> tuple[str, bytes, bool] | None:
+    """(path, bytes, executable) of the check `name` in the release `tag`, or
+    None, having said why.
 
     ⚠️ **A throwaway bare repo, fetched by git** -- so it works with whatever
     credential git already has (gh's helper here, a token in CI) and with a
@@ -295,7 +320,8 @@ def fetch(source: str, tag: str, name: str) -> tuple[str, bytes] | None:
             print(f"REFUSING: {tag} pins no check named {name!r}.", file=sys.stderr)
             return None
         data = run("show", f"refs/tags/{tag}:{relative}")
-        return None if data is None else (relative, data)
+        entry = run("ls-tree", f"refs/tags/{tag}", "--", relative)
+        return None if data is None or entry is None else (relative, data, entry.startswith(b"100755 "))
 
 
 def update(name: str, version: str, source: str | None, into: str | None = None) -> int:
@@ -314,7 +340,7 @@ def update(name: str, version: str, source: str | None, into: str | None = None)
     fetched = fetch(source, tag, name)
     if fetched is None:
         return 1
-    relative, data = fetched
+    relative, data, executable = fetched
     # A tag on the wrong commit would pin a lie.
     declared = declared_version(data)
     if declared != version:
@@ -335,6 +361,10 @@ def update(name: str, version: str, source: str | None, into: str | None = None)
     # buildforge-starter#54).
     (ROOT / relative).parent.mkdir(parents=True, exist_ok=True)
     (ROOT / relative).write_bytes(data)
+    # ⚠️ The release's mode, both ways: a new file gets the umask's, and git
+    # skips a hook that is not executable, with only a hint (buildforge-starter#166).
+    mode = (ROOT / relative).stat().st_mode
+    (ROOT / relative).chmod(mode | 0o111 if executable else mode & ~0o111)
     lock["source"] = source
     # ⚠️ **A release that MOVED the check leaves its old pin behind** unless it
     # is dropped here -- and whatever still calls the old path, the hook
@@ -346,6 +376,8 @@ def update(name: str, version: str, source: str | None, into: str | None = None)
     lock["files"][relative] = {"version": version, "sha256": hashlib.sha256(data).hexdigest()}
     if into is not None or placed is not None:
         lock["files"][relative]["placed"] = True
+    if executable:
+        lock["files"][relative]["executable"] = True
     save_lock(lock)
     print(f"Pinned {relative} {version} from {source}. Commit both files as one PR.")
     return 0

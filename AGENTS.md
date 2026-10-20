@@ -361,7 +361,12 @@ which keeps it in the foreground. A worktree needs its own `npm install` when
 the main checkout's `node_modules` lacks a package the branch uses (such as
 `@playwright/test` before the main checkout is reinstalled). `npm ci` refuses
 this lockfile, which lacks two `@emnapi/*` entries under npm 10 and 11: run
-`npm install` as CI does, then `git restore package-lock.json`.
+`npm install` as CI does, then `git restore package-lock.json`. If
+`npm run test:pages` then says Chromium's executable does not exist, run
+`PLAYWRIGHT_SKIP_BROWSER_GC=1 playwright install --only-shell chromium`.
+Without the flag Playwright deletes every other cached browser version as
+"unused", and the host's other projects download theirs again (blog#28 lost
+`chromium-1248` that way; blog#35 kept it).
 
 ## Documentation
 
