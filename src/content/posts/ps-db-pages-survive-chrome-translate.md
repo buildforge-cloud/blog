@@ -34,11 +34,10 @@ the node is not where React left it, and the browser throws. It is an old,
 well-known React problem,
 [react#11538](https://github.com/react/react/issues/11538), and the usual
 workaround is in that thread: patch `removeChild` and `insertBefore` so they
-skip a node whose parent has changed, and log a warning.
+skip a node whose parent has changed, and log an error.
 
 The issue said that much was not proven yet, and it asked for a reproduction
-first. It also set the one rule I cared about most: don't turn translation
-off. Marking the page `translate="no"` would stop the crash, and it would also
+first. It also set one rule: don't turn translation off. Marking the page `translate="no"` would stop the crash, and it would also
 stop a French visitor from reading the site in French.
 
 ## The stack said portal
@@ -47,7 +46,7 @@ The agent that worked the issue read React's minified stack trace instead of
 trusting the pattern. React was not removing a text node. It was removing a
 portal during a page change. A portal is a part React draws outside its normal
 place on the page, here straight under `<body>`. This one's top element was no
-longer a child of `<body>`.
+longer a direct child of `<body>`.
 
 A game page has one portal of that shape: a small hint bubble. It opens for
 about six seconds after a tap on Owned, Wishlist or Blocked. So the likely path was
@@ -62,13 +61,13 @@ not apply, and a moved element could.
 ## The known fix leaves a bubble behind
 
 The agent wrote a test that follows the stack from Sentry: open a game page,
-move the hint bubble out of `<body>` the way the translator seems to have,
-then change page. Without a fix, the test failed with the exact message from
+wrap the hint bubble in a `<font>` element the way the translator seems to
+have, so it is no longer a direct child of `<body>`, then change page. Without a fix, the test failed with the exact message from
 Sentry.
 
 Then it tried the workaround from the React thread, which only skips the
-removal. The crash was gone. The hint bubble stayed on the screen for good,
-over whatever page came next. That would have shipped as "fixed".
+removal. The crash was gone, and the test still failed: the hint bubble
+stayed on the screen for good after the page change.
 
 So the guard does one more thing. When React removes a node whose parent has
 changed, the guard removes it from wherever it is now, or does nothing if it
@@ -80,7 +79,7 @@ passes, five runs out of five, and translation still works.
 
 ## What I still don't know
 
-The test moves the bubble by hand. What moved it on that phone is not proven.
+The test wraps the bubble by hand. What moved it on that phone is not proven.
 The browser that runs the tests has no translator, and the Sentry event had
 no trail of what happened before it. A check with Chrome's Translate on a real
 phone would settle it.

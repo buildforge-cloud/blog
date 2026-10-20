@@ -27,9 +27,9 @@ delivery and a CSS file that blocks the render. The unused JavaScript was
 decided that PostHog and Sentry load the way they do, so that part was not on
 the table. The image was the hero at the top of the page, a 1280 px file shown
 in a 721 px box. Lower down, among the other failing checks, was a 33 ms
-forced reflow that pointed into the desktop filter sidebar's code.
-
-The big win came from that small line lower down.
+forced reflow that pointed into the desktop filter sidebar's code. It
+pointed at the right part of the page, but the cause came from somewhere
+else.
 
 ## The phone was building the desktop page too
 
@@ -39,8 +39,8 @@ production's data. The profile showed the phone building the whole desktop
 layout: a table with 24 rows and the filter sidebar. Then CSS hid both. About
 300 ms of work before the first paint, for nothing anyone could see.
 
-The page had always built both layouts and let CSS pick one. I had never
-thought of hidden as costly. Hidden still has to be built.
+The page had always built both layouts and let CSS pick one. A hidden part
+still costs the phone the work of building it.
 
 The first fix went all the way: build only the layout for the current width.
 The code review caught what that breaks. Open the Filters sheet on a tablet,
@@ -60,8 +60,9 @@ On the agent's phone setup, the home page's first paint went from 1.2
 seconds to just under 1. The time the page was blocked after that first paint
 went from 104 ms to 1.
 
-One number did not move. The unused JavaScript is the same size, because the
-phone still downloads the table code. It just doesn't run it. Loading the
+One number went the wrong way. PageSpeed's count of our own unused
+JavaScript grew from 76 to 93 KiB. The phone still downloads the table code.
+It just doesn't run it any more. Loading the
 table later would cost every desktop visit a round trip, and that was tried
 and reverted once in July.
 
@@ -92,8 +93,8 @@ that used to have it. Now it runs on every list page.
 On the phone setup, coming soon's largest paint went from 3.7 seconds to
 2.4. Its first paint got about half a second later. The hero image now downloads next to the
 app's code and shares the connection, so the code arrives later. The home page
-made the same trade earlier in October. I'm keeping it, because the image is
-what a visitor waits for.
+made the same trade earlier in October. The trade stays, because the hero
+image is the page's largest paint.
 
 A game page waits for a different thing: its description, which comes from
 the API. That request used to wait for the app's code, then the page's own

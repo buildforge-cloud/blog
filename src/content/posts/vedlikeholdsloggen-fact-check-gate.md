@@ -34,12 +34,10 @@ the task follows its source.
 
 The check had a gap I did not see for a month. It ran when an agent edited an
 article, or when someone ran it by hand. CI never ran it, and a missing key or
-a timeout was only a soft note. Two issues in October ended with "clean", and
-nothing in the repo showed it.
+a timeout was only a soft note. Two pull requests in October ended with "clean",
+and nothing in the repo showed it.
 
-Then I looked at the app's own usage at TypeSafe, and it showed nothing. The
-checks had been running on a key that belonged to another of my projects. On
-15 October I wrote: "We cant risk posting information that is not based on
+On 15 October I wrote: "We cant risk posting information that is not based on
 facts."
 
 ## A receipt the build can read
@@ -66,10 +64,10 @@ is its request id at TypeSafe, and the file's history in git.
 
 The review of that first version found something worse than the hole. Only
 article paragraphs had a way for a person to accept a doubtful answer. Tasks
-had none. A correct task that Jev found only thinly supported (one water
-heater task once got 0.62) would have turned the build red for good. The only way out
-would have been to reword a correct text until the model liked it. That is
-the opposite of what I wanted, so tasks got the same way to be accepted.
+had none. A correct task that Jev found only thinly supported would have
+turned the build red for good. The only way out
+would have been to reword a correct text until the model liked it. The
+review asked for the same way to accept a doubt on tasks, and they got it.
 
 ## Headings are not claims
 
@@ -81,7 +79,8 @@ alarm is required by law.
 The obvious design was to check each heading and title on its own. The agent
 measured it before choosing: 333 headings and titles, 77 sent to a person, 2
 marked wrong.
-Nearly all of the 77 were labels. "Gjør det trygt" ("Make it safe"). "Slik
+60 of the 77 were headings, and the other 17 titles and ledes. Nearly all
+of the headings were labels. "Gjør det trygt" ("Make it safe"). "Slik
 merker du det" ("How to tell"). A label says nothing a source can back up.
 
 Read together with its paragraph, a heading is a claim again. The 60 flagged
