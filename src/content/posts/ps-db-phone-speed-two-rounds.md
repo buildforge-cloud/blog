@@ -12,14 +12,12 @@ description: My game database scored 65 on PageSpeed on a phone. The biggest cos
 ---
 
 On 15 October the home page of [ps·db](https://ps-db.cloud), my PlayStation 5
-game database, scored 65 out of 100 on PageSpeed for a phone. A game page
-scored 81, and the coming-soon list 79. I wanted all three at 90.
+game database, scored 65 out of 100 on PageSpeed for a phone. I wanted 90.
 
-Even the 65 was shaky. It was the median of three runs, and the runs were 64,
-83 and 65. In the two low ones, PageSpeed's own load drew nothing until about
-2.3 seconds, with the main thread idle from about 1.4. The 83 painted at
-549 ms. The agent looked for a cause in the app and found none. So from the
-first day the rule was to read all three runs, not only the median.
+Even the 65 was shaky. The three runs behind it were 64, 83 and 65. In the
+two low ones, PageSpeed's own load drew nothing for over two seconds while the
+page sat idle. The agent looked for a cause in the app and found none. So from
+the first day the rule was to read all three runs, not only the median.
 
 ## The list said JavaScript and images
 
@@ -28,11 +26,10 @@ delivery and a CSS file that blocks the render. The unused JavaScript was
 162 KiB: 76 of it our own bundle, 64 PostHog and 22 Sentry. I had already
 decided that PostHog and Sentry load the way they do, so that part was not on
 the table. The image was the hero at the top of the page, a 1280 px file shown
-in a 721 px box. Further down, under the passed and failed checks, was a
-33 ms forced reflow that pointed into the desktop filter sidebar's code.
+in a 721 px box. Lower down, among the other failing checks, was a 33 ms
+forced reflow that pointed into the desktop filter sidebar's code.
 
-The agent made the hero smaller by switching it to WebP. The big win came from
-that small line further down.
+The big win came from that small line lower down.
 
 ## The phone was building the desktop page too
 
@@ -56,12 +53,12 @@ after.
 The same profile had smaller costs in it. Each date in a list built its own
 date formatter, 45 to 57 ms for a list. A sort's first call to
 `localeCompare` loaded the browser's collation data, 37 ms, inside a script
-that holds up the rest of the page. And the hero picture became WebP: across
-six heroes, 660 KB went to 498 KB.
+that holds up the rest of the page. From PageSpeed's list, the hero picture
+became WebP, about a quarter smaller. Its size in pixels stayed the same.
 
-On the agent's phone setup, the home page's first paint went from 1198 to
-964 ms. The time the page was blocked after that first paint went from 104 ms
-to 1.
+On the agent's phone setup, the home page's first paint went from 1.2
+seconds to just under 1. The time the page was blocked after that first paint
+went from 104 ms to 1.
 
 One number did not move. The unused JavaScript is the same size, because the
 phone still downloads the table code. It just doesn't run it. Loading the
@@ -92,8 +89,8 @@ page. That rule was older than the hero on the other list pages. When the
 hero moved to every list page, the early start stayed behind on the one page
 that used to have it. Now it runs on every list page.
 
-On the phone setup, coming soon's largest paint went from 3682 to 2424 ms.
-Its first paint got 470 ms later. The hero image now downloads next to the
+On the phone setup, coming soon's largest paint went from 3.7 seconds to
+2.4. Its first paint got about half a second later. The hero image now downloads next to the
 app's code and shares the connection, so the code arrives later. The home page
 made the same trade earlier in October. I'm keeping it, because the image is
 what a visitor waits for.
@@ -101,15 +98,15 @@ what a visitor waits for.
 A game page waits for a different thing: its description, which comes from
 the API. That request used to wait for the app's code, then the page's own
 code, then a render. Now the HTML starts it while it is still being read. The
-game page's largest paint went from 2366 to 2126 ms.
+game page's largest paint came about a quarter of a second sooner.
 
 One idea measured slower. Preloading the game page's own code from the HTML
-sounded like an easy win. On the phone setup the largest paint went from 2122
-to 2176 ms. That code competes with the main bundle for the connection, and
+sounded like an easy win. On the phone setup the largest paint came about 50 ms
+later. That code competes with the main bundle for the connection, and
 the wait is the phone's CPU, not the round trip. It was dropped.
 
-Two more costs went. The release notes' text left the main bundle, which went
-from 185.8 to 169.3 KiB compressed. And a game page's gallery stopped drawing
+Two more costs went. The release notes' text left the main bundle, which got
+about 16 KiB smaller compressed. And a game page's gallery stopped drawing
 144 × 80 thumbnails from 1080p screenshots. On Elden Ring's page those were
 1.6 MB.
 

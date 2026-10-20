@@ -1,14 +1,14 @@
 ---
 author: Stefan M. Gulbrandsen
 pubDatetime: 2026-11-10T07:00:00Z
-title: "Chrome Translate crashed my React pages: a removeChild error that wasn't about text"
+title: "A React removeChild crash under Chrome Translate, and why the known fix wasn't enough"
 slug: ps-db-pages-survive-chrome-translate
 featured: false
 draft: false
 tags:
   - ps-db
   - debugging
-description: One visitor let Chrome translate my game database into French, and its game pages went blank. The well-known cause is translated text. Here it was a hint bubble, and the well-known fix would have left that bubble stuck on screen.
+description: One French visitor's phone, most likely running Chrome's page translation, made my game database's pages go blank. The well-known cause is translated text. Here the crash was in a hint bubble, and the well-known fix would have left that bubble stuck on screen.
 ---
 
 On 15 October, in five minutes, one visitor crashed
@@ -20,8 +20,9 @@ Sentry got the same error every time, and nothing caught it:
 > NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be
 > removed is not a child of this node.
 
-When that happens, the page goes blank. It was the first time in 90 days.
-Production had been running for nine hours, so no deploy had set it off.
+When that happens, the page goes blank. Sentry had not seen this error in the
+90 days before. Production had been running for nine hours, so no deploy had
+set it off.
 
 ## Everyone knows this one
 
@@ -49,7 +50,7 @@ place on the page, here straight under `<body>`. This one's top element was no
 longer a child of `<body>`.
 
 A game page has one portal of that shape: a small hint bubble. It opens for
-6.2 seconds after a tap on Owned, Wishlist or Blocked. So the likely path was
+about six seconds after a tap on Owned, Wishlist or Blocked. So the likely path was
 a tap on Wishlist, then a tap on a similar game while the bubble was still
 open.
 
@@ -90,8 +91,9 @@ one element missing until React draws that spot again. And translated text
 that React removes can leave Chrome's copy of it on the screen.
 
 It also changes what a quiet Sentry means. A guard hit is only a warning in the
-visitor's console, not a crash. So no new crashes after the
-deploy will prove the guard runs. They will not prove the cause is gone.
+visitor's console, not a crash. So if no new crashes come in after the deploy,
+it could mean the guard caught a moved bubble. It could also mean nobody
+translated a game page again. Neither proves the cause is gone.
 
 What I keep coming back to is how close the first answer was. Right browser,
 right language, right error, right old issue. Wrong part of the page. And the

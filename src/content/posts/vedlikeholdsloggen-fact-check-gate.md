@@ -66,8 +66,8 @@ is its request id at TypeSafe, and the file's history in git.
 
 The review of that first version found something worse than the hole. Only
 article paragraphs had a way for a person to accept a doubtful answer. Tasks
-had none. A correct task that Jev scored a little low (one water heater task
-once got 0.62) would have turned the build red for good. The only way out
+had none. A correct task that Jev found only thinly supported (one water
+heater task once got 0.62) would have turned the build red for good. The only way out
 would have been to reword a correct text until the model liked it. That is
 the opposite of what I wanted, so tasks got the same way to be accepted.
 
@@ -79,7 +79,8 @@ shows when I say I don't have something. One of those three says a smoke
 alarm is required by law.
 
 The obvious design was to check each heading and title on its own. The agent
-measured it before choosing: 333 texts, 77 sent to a person, 2 marked wrong.
+measured it before choosing: 333 headings and titles, 77 sent to a person, 2
+marked wrong.
 Nearly all of the 77 were labels. "Gjør det trygt" ("Make it safe"). "Slik
 merker du det" ("How to tell"). A label says nothing a source can back up.
 
@@ -97,7 +98,7 @@ through, so headings still get read by eye.
 
 ## A doubt waits for a person
 
-The run over the new texts gave 266 clean and 19 for a person. That person
+The run over the 288 new texts gave 269 clean and 19 for a person. That person
 was me. I accepted 14 as they stood. The other 5 said more than their source,
 and were rewritten to say only what it says.
 
@@ -147,7 +148,9 @@ on the source page. Jev never reads them.
 
 What changed for me is where the decision sits. A check that runs when
 someone remembers is a habit, not a gate. And the model's answer is not the
-decision. Jev is tuned for English: the same reversed claim scored 0.87 in
-Norwegian and 0.99 in English. So a score just under the limit goes to a
-person, never to a verdict. The model finds the texts to read. Reading them is
+decision. Jev is tuned for English. The same claim, turned into its opposite,
+was called a contradiction with a confidence of 0.87 in Norwegian and 0.99 in
+English. The line for a sure verdict is 0.8, so in Norwegian a score just
+under it is more often the language than an error. Those go to a person,
+never to a verdict. The model finds the texts to read. Reading them is
 still my job.
