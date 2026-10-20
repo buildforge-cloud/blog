@@ -3,6 +3,32 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-20 — blog#39: shared_checks 1.6.0 → 1.7.0
+
+**What.** `python3 scripts/shared_checks.py update shared_checks 1.7.0`, run
+twice. 1.7.0 (buildforge-starter#176) has two changes. An `update` of
+shared_checks hands over to the new copy, so the new copy writes the pin.
+The pin also refuses an executable file whose lock has no `executable`. 1.6.0
+cannot hand over, so the starter's adopt note says to run `update` once more.
+Here the second run changed nothing: 1.6.0 already copies the mode, and 1.7.0
+adds no lock field. Every file this repo pins is 100644 with no flag, or
+100755 with the flag, so the new refusal flags nothing. No step beyond
+`update` applies. From 1.7.0 on, one run is enough.
+
+⚠️ blog#37's entry below says a bump from 1.6.0 needs one run. For 1.7.0 that
+happened to be true, but only because 1.7.0 adds no lock field. The starter's
+rule is: a copy before 1.7.0 cannot hand over, so run `update` twice.
+
+**Evidence.** The starter's tests at `shared_checks-v1.7.0` (the same five
+files as blog#37) ran on blog's file, in the extracted tree with every file
+`git add`ed. 1.6.0 from `main`: 40 failed, 710 passed, among them
+`test_an_executable_file_whose_pin_does_not_say_so_fails_the_pin`
+(`assert (1, 1, False) == (0, 1, True)`). 1.7.0: 750 passed, 19 skipped.
+`npm test`: 32 pass, the same names as on `main`. With `"executable": true`
+taken out of the lock, `every shared part is the release its pin names`
+failed (`REFUSING: scripts/shared_checks.py is executable, and its pin does
+not say so`). With the lock restored, it passed.
+
 ## 2026-10-20 — blog#37: shared_checks 1.5.0 → 1.6.0
 
 **What.** `python3 scripts/shared_checks.py update shared_checks 1.6.0`, run
