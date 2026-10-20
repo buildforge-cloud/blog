@@ -3,6 +3,32 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-20 — blog#37: shared_checks 1.5.0 → 1.6.0
+
+**What.** `python3 scripts/shared_checks.py update shared_checks 1.6.0`, run
+twice. 1.6.0 (buildforge-starter#166) pins `secrets.yml` and
+`.githooks/pre-commit` as releases, reads a version from a
+`# __version__ = "x.y.z"` comment line, and copies each release's executable
+bit. A pin marked `executable` now fails when the file lost the bit. This
+repo has no `secrets.yml`, no hook and no `check_secrets.py`, so no step
+beyond `update` applies.
+
+⚠️ **The first `update` is run by the old tool**, so it took the new bytes
+but not the release's mode: the file stayed 100644 and the lock had no
+`executable`. The second run, by 1.6.0 itself, made it 100755 and wrote
+`"executable": true`, as the starter's own lock has it. A later bump from
+1.6.0 on needs one run.
+
+**Evidence.** The starter's tests at `shared_checks-v1.6.0` (the same five
+files as blog#33) ran on blog's file, in the extracted tree with every file
+`git add`ed. 1.5.0 from `main`: 36 failed, 638 passed, among them
+`test_a_file_that_cannot_hold_python_declares_its_version_in_a_comment`
+(the old copy refuses `secrets.yml` and `pre-commit`: no version it can
+read). 1.6.0: 674 passed, 19 skipped. `npm test`: 32 pass, the same names as on
+`main`. With the executable bit taken off, `every shared part is the release
+its pin names` failed (`scripts/shared_checks.py is not the release its pin
+names`); with it back, it passed.
+
 ## 2026-10-15 — blog#35: post on how fast agent setups change
 
 **What.** `src/content/posts/how-fast-agent-setups-change.md`, from the
