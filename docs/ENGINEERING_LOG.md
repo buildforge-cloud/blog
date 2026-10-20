@@ -3,6 +3,23 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-20 — blog#27: post on the Vedlikeholdsloggen 1.2 launch
+
+**What.** `src/content/posts/vedlikeholdsloggen-1-2-history-per-thing.md`,
+dated 2026-10-19, the day 1.2 went live in the App Store (the issue's
+comment). Facts come from the app's private issues on the equipment list,
+the Hjemmet tab, history per thing and the task-linking fix, and from its
+store listing. The post names none of them. Each claim about 1.2 was
+matched by hand to the 1.2.0 release note or the store description.
+
+**Checks.** The same kind of scratch checker as blog#28 and blog#35 (not
+committed), 9 rules: no em or en dash, no second person, the product linked
+at its first mention, `draft: false`, the go-live date, a real tag, no stock
+phrase, no internal detail, and every number in the prose found in the
+sources. A bad sample failed all 9 by name. Its first link rule passed
+nothing: the window after the first mention was 3 characters shorter than
+the link, so it was widened before the post passed.
+
 ## 2026-10-20 — blog#39: shared_checks 1.6.0 → 1.7.0
 
 **What.** `python3 scripts/shared_checks.py update shared_checks 1.7.0`, run
