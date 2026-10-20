@@ -3,6 +3,32 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-20 — blog#46: post on keeping the Actions token from pull request code
+
+**What.** `src/content/posts/github-actions-token-fork-pr.md`, dated 17
+November 07:00 UTC, one week after the 10 November post. It tells how the
+starter's secret scan first dropped the token from the scanner's step, why
+that was not enough (`$GITHUB_ENV`, `$GITHUB_PATH`), and the two fixes:
+the token only in steps before any checkout code, and `python3 -I` in every
+step that holds it. Facts come from the starter's two private PRs, their
+issue and log entries, its README section on the scan, its workflow, and
+the two ps·db PRs whose reviews found the gaps. The post names and links
+none of them: the starter is private, so it is not linked either. Public
+links only: ps·db, GitHub's docs, actions/checkout, Python's and bash's
+manuals.
+
+**Checks.** The same kind of scratch checker as blog#42 (not committed), 11
+rules: no em or en dash, no second person, `draft: false`, the go-live date,
+the slug, a real tag, a title of at most 60 characters with `GITHUB_TOKEN`
+and "fork" in it and "secrets" in the description, no stock phrase, no
+internal detail (runner labels, repo and PR numbers), ps·db linked at its
+first mention, and every number found in the sources. Two bad samples failed
+every rule by name; the link rule needed the second one, because the first
+sample linked ps·db later in the text. The review of the PR then added
+lines the post must not hold, each seen red on the old draft first: a claim
+that every project runs the scan, and a pull request reaching the `since`
+step (its `if:` skips pull requests).
+
 ## 2026-10-20 — blog#42, #43, #44: three scheduled posts
 
 **What.** Three posts, one a week, each dated 07:00 UTC so the 07:05 run
