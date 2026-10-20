@@ -34,13 +34,13 @@ A project made by `scripts/init.py` already holds the lock and the release it
 names. A repo with no lock yet adopts with these commands:
 
     gh api -H "Accept: application/vnd.github.raw" \\
-      "repos/buildforge-cloud/buildforge-starter/contents/scripts/shared_checks.py?ref=shared_checks-v1.6.0" \\
+      "repos/buildforge-cloud/buildforge-starter/contents/scripts/shared_checks.py?ref=shared_checks-v1.7.0" \\
       > scripts/shared_checks.py
-    python3 scripts/shared_checks.py update shared_checks 1.6.0 \\
+    python3 scripts/shared_checks.py update shared_checks 1.7.0 \\
       --source https://github.com/buildforge-cloud/buildforge-starter.git
-    python3 scripts/shared_checks.py update check_secrets 1.1.0
-    python3 scripts/shared_checks.py update secrets 1.0.0
-    python3 scripts/shared_checks.py update pre-commit 1.0.0
+    python3 scripts/shared_checks.py update check_secrets 1.2.0
+    python3 scripts/shared_checks.py update secrets 1.2.0
+    python3 scripts/shared_checks.py update pre-commit 1.0.1
     git config core.hooksPath .githooks
 
 `secrets` is `.github/workflows/secrets.yml`, which runs the scanner and this
@@ -74,7 +74,15 @@ that read it, `tests/test_workflow_ceilings.py`, `tests/test_secrets.py`,
 `backend/tests/test_deploy_workflows.py`, or its `docs` job fails.
 Moving to a new release is one command, committed as one PR:
 
-    python3 scripts/shared_checks.py update check_secrets 1.1.0
+    python3 scripts/shared_checks.py update check_secrets 1.2.0
+
+⚠️ **`update shared_checks` is run by the OLD copy**, which writes the pin
+as the old release knew it (buildforge-starter#172): 1.5.0 knew no
+`executable`. Since 1.7.0 a copy that replaced itself hands the same command
+to the new copy, which writes its own pin. A copy before 1.7.0 cannot, so
+after moving from one, run the same `update` once more. And this file
+refuses an executable file whose pin does not say so, naming the `update`
+that fixes it.
 
 ⚠️ **A runtime part goes where the app is built from, so the repo names the
 folder**: `update cf_access 1.0.0 --into backend/app` (`api/app` in
@@ -106,13 +114,14 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import pathlib
 import re
 import subprocess
 import sys
 import tempfile
 
-__version__ = "1.6.0"
+__version__ = "1.7.0"
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LOCK = ROOT / "scripts" / "shared-checks.lock"
@@ -164,6 +173,22 @@ def mismatched(lock: dict) -> list[str]:
         ) or (pin.get("executable") and not runnable):
             wrong.append(relative)
     return wrong
+
+
+def unflagged(lock: dict) -> list[str]:
+    """The pinned files that are executable while their pin does not say so.
+
+    ⚠️ **An older copy of this file wrote the pin, and left the field out**
+    (buildforge-starter#172): 1.5.0 knew no `executable`, so its `update`
+    pinned an executable check without it, and the pin then guarded nothing.
+    `update` gives a file its release's mode, so such a file is either a pin
+    an older copy wrote or a mode nobody released, and taking the release
+    again fixes both.
+    """
+    return [
+        relative for relative, pin in sorted(lock["files"].items())
+        if not pin.get("executable") and (ROOT / relative).is_file() and (ROOT / relative).stat().st_mode & 0o100
+    ]
 
 
 def summary(lock: dict) -> str:
@@ -228,7 +253,15 @@ def verify() -> int:
             file=sys.stderr,
         )
         return 1
-    if renamed:
+    loose = unflagged(lock)
+    for relative in loose:
+        print(
+            f"REFUSING: {relative} is executable, and its pin does not say so. Take its release again:\n"
+            f"  python3 scripts/shared_checks.py update {pathlib.PurePath(relative).stem}"
+            f" {lock['files'][relative]['version']}",
+            file=sys.stderr,
+        )
+    if renamed or loose:
         return 1
     print(f"OK: {summary(lock)}")
     return 0
@@ -360,6 +393,9 @@ def update(name: str, version: str, source: str | None, into: str | None = None)
     # A check released in a folder this repo lacks crashed here (review of
     # buildforge-starter#54).
     (ROOT / relative).parent.mkdir(parents=True, exist_ok=True)
+    replaced_itself = (ROOT / relative).resolve() == pathlib.Path(__file__).resolve() and (
+        pathlib.Path(__file__).read_bytes() != data
+    )
     (ROOT / relative).write_bytes(data)
     # ⚠️ The release's mode, both ways: a new file gets the umask's, and git
     # skips a hook that is not executable, with only a hint (buildforge-starter#166).
@@ -380,6 +416,15 @@ def update(name: str, version: str, source: str | None, into: str | None = None)
         lock["files"][relative]["executable"] = True
     save_lock(lock)
     print(f"Pinned {relative} {version} from {source}. Commit both files as one PR.")
+    if replaced_itself:
+        # ⚠️ **This copy is the OLD one**, so it wrote the pin as the old
+        # release knew it: a field the new one adds was left out
+        # (buildforge-starter#172). The new copy takes the same release again
+        # and writes its own pin. Its bytes are the release, so it does not
+        # hand over again. The source and a placed folder are in the lock
+        # just saved. Flushed first: exec drops what is buffered.
+        print(f"Handing over to {relative} {version}, to write its pin as it knows it.", flush=True)
+        os.execv(sys.executable, [sys.executable, str(ROOT / relative), "update", name, version])
     return 0
 
 
