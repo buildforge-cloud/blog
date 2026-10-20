@@ -3,6 +3,35 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-20 — blog#42, #43, #44: three scheduled posts
+
+**What.** Three posts, one a week, each dated 07:00 UTC so the 07:05 run
+publishes it (blog#9):
+
+- `vedlikeholdsloggen-fact-check-gate.md`, 27 October: the source-check
+  ledger that fails CI for a text with no clean AI check, and the finding
+  that a heading must be read with its paragraph.
+- `ps-db-phone-speed-two-rounds.md`, 3 November: two rounds of phone speed
+  work, with PageSpeed and the agent's phone setup before and after.
+- `ps-db-pages-survive-chrome-translate.md`, 10 November: the crash under
+  Chrome's page translation, and why the known fix was not enough.
+
+Facts come from each app's private PRs, their issues and review threads, and
+the Vedlikeholdsloggen rule file on its source check. The posts name none of
+them. Before the first post, the last three posts were read for marketing
+lines (listed in the PR).
+
+⚠️ **Round two of the speed work has no PageSpeed "after" yet.** It went live
+on the evening of 19 October, and the app's own follow-up runs PageSpeed on
+22 October. The post says it was written before that run. If the numbers are
+in before 3 November, they can go into the post.
+
+**Checks.** The same kind of scratch checker as blog#27 (not committed), 10
+rules, now with a required-link rule for the App Store page. A bad sample
+failed all 10 by name. The number rule read the source PRs and issues; its
+first run on the speed post failed two LCP figures that were only in an
+issue comment, so the issues joined the sources.
+
 ## 2026-10-20 — blog#27: post on the Vedlikeholdsloggen 1.2 launch
 
 **What.** `src/content/posts/vedlikeholdsloggen-1-2-history-per-thing.md`,
