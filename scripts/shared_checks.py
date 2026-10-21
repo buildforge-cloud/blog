@@ -34,12 +34,12 @@ A project made by `scripts/init.py` already holds the lock and the release it
 names. A repo with no lock yet adopts with these commands:
 
     gh api -H "Accept: application/vnd.github.raw" \\
-      "repos/buildforge-cloud/buildforge-starter/contents/scripts/shared_checks.py?ref=shared_checks-v1.7.0" \\
+      "repos/buildforge-cloud/buildforge-starter/contents/scripts/shared_checks.py?ref=shared_checks-v1.7.1" \\
       > scripts/shared_checks.py
-    python3 scripts/shared_checks.py update shared_checks 1.7.0 \\
+    python3 scripts/shared_checks.py update shared_checks 1.7.1 \\
       --source https://github.com/buildforge-cloud/buildforge-starter.git
     python3 scripts/shared_checks.py update check_secrets 1.2.0
-    python3 scripts/shared_checks.py update secrets 1.2.0
+    python3 scripts/shared_checks.py update secrets 1.3.0
     python3 scripts/shared_checks.py update pre-commit 1.0.1
     git config core.hooksPath .githooks
 
@@ -121,7 +121,7 @@ import subprocess
 import sys
 import tempfile
 
-__version__ = "1.7.0"
+__version__ = "1.7.1"
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LOCK = ROOT / "scripts" / "shared-checks.lock"
