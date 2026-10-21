@@ -3,6 +3,29 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-21 — blog#48: shared_checks 1.7.0 → 1.7.1
+
+**What.** `python3 scripts/shared_checks.py update shared_checks 1.7.1`, one
+run (1.7.0 hands over to the new copy, which wrote the pin again). 1.7.1
+(buildforge-starter#186, from #184) changes only the adopt note at the top of
+the file, which now names `shared_checks 1.7.1` and `secrets 1.3.0`, and its
+`__version__`. The file stays 100755 and the lock keeps `"executable": true`.
+The starter's README adds nothing for `shared_checks` beyond `update`; its new
+text is about the `secrets` workflow, which blog does not pin.
+
+**Evidence.** The starter's tests at `shared_checks-v1.7.1` (the five files
+that name `shared_checks`) ran on blog's file, in the extracted tree with every
+file `git add`ed. 1.7.0 from `main`: 40 failed, 719 passed. Most of the 40 fail
+only because the old bytes are not the starter's pinned bytes. The one that
+tests the release itself is
+`test_the_adopt_commands_name_the_releases_the_lock_pins[the pin tool's adopt
+note]`, which printed the old note with `ref=shared_checks-v1.7.0` and
+`update secrets 1.2.0`. 1.7.1: 759 passed, 19 skipped (about 6 minutes per
+run). `npm test`: 32 pass, the same names as on `main`. With `__version__` set
+to `"1.7.2"` by hand, only `every shared part is the release its pin names`
+failed (`REFUSING: scripts/shared_checks.py is not the release its pin
+names`). With the file restored, it passed.
+
 ## 2026-10-20 — blog#46: post on keeping the Actions token from pull request code
 
 **What.** `src/content/posts/github-actions-token-fork-pr.md`, dated 17
