@@ -3,6 +3,27 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-22 — blog#50: strategy draft
+
+**What.** `strategy/STRATEGY.md`, 78 lines, with no status line: the merge
+after Stefan's yes is the approval (the issue's rule, changed 2026-10-22).
+The six headings the issue names, in its order, each with a `Source:` note.
+"Now" holds work not yet done: the 4 retitles and the skill text after his
+yes to blog#28's proposal, and the PageSpeed numbers for the 3 Nov post.
+Every claim comes from `CLAUDE.md`, `README.md`, `about.md`, the blog-post
+skill, this log and the issues and PRs it names. Four gaps went to "Open
+questions", not into the text: the skill's "not traffic" against decision
+1245, which number means "seen", what comes after the 17 November post, and
+whether app users are readers too.
+
+**Checks.** A scratch checker (not committed) asserts the issue's rules: at
+most 80 lines, no status line, the six headings in order, a `Source:` note
+in each, three steps under "Now" that are neither done work nor a bare
+decision, no em or en dash. A bad sample failed 10 rules by name; the length
+rule passed at 80 lines and failed at 81. The first draft failed the review
+rules: a status line, a step for posts already merged, and a step that only
+repeated an open question.
+
 ## 2026-10-21 — blog#48: shared_checks 1.7.0 → 1.7.1
 
 **What.** `python3 scripts/shared_checks.py update shared_checks 1.7.1`, one
