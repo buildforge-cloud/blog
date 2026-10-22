@@ -1,7 +1,5 @@
 # blog strategy
 
-Status: draft until Stefan's yes
-
 What the blog is for, who reads it, and what comes next. Reviewed once a
 month (decision 1943, blog#50). How it is built is in `CLAUDE.md`.
 
@@ -28,12 +26,13 @@ Source: the user stories in the issues named above.
 
 ## Now
 
-1. Check that the 4 queued posts go live at the 07:05 UTC run on 27 Oct, 3 Nov, 10 Nov and 17 Nov (blog#42, blog#43, blog#44, blog#46).
-2. Add round two's PageSpeed "after" numbers to the 3 Nov post if they are in before 3 Nov (blog#43).
-3. Stefan says yes or no to blog#28's proposal: new titles for 4 old posts, and the blog-post skill's identity text.
+1. After Stefan's yes to blog#28's proposal: new `title` and `description` for the 4 old posts PR #30 names, slugs kept.
+2. After the same yes: change the blog-post skill's identity text ("not traffic", "not selling") to match decision 1245.
+3. Add round two's PageSpeed "after" numbers to the 3 Nov phone speed post, if they are in before 3 Nov.
 
-Source: `docs/ENGINEERING_LOG.md` (blog#42 to #46 entries), PR #30,
-`CLAUDE.md` "What a post is for". No open issue holds any of these.
+Source: PR #30 (the proposal for the old posts), `CLAUDE.md` "What a
+post is for", `docs/ENGINEERING_LOG.md` (blog#42 to #44 entry). No open
+issue holds any of these yet.
 
 ## Not doing
 
