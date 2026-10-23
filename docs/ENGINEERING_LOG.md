@@ -3,6 +3,27 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-23 — blog#53: the blog-post skill's identity follows decision 1245
+
+**What.** The skill's identity block said "not traffic, not audience growth",
+"Audience: nobody specific" and "Not selling anything". Decision 1245 says the
+blog's main job is to get the products seen while it reads as a person wrote
+it, and Stefan said yes to it in decision 1977. The block now names the four
+products with their links, says who searches for a post, and lists blog#30's
+format rules under "How a post gets seen". "Not selling" became "no sales
+pitch and no calls to action, but the product is named and linked". Kept: not
+a tutorial, honest about struggles, no numbered series, first person. The
+Gemini prompt, step 1's questions, two structural tells (topic words in a
+heading, the last paragraph) and the safe-link list now agree with it.
+`CLAUDE.md` "What a post is for" points at the skill, and `changes.d/52.md` is
+folded into it.
+
+**Checks.** `tests/blog-post-skill.test.mjs` went red on 6 of 7 tests before
+the edit (the old lines, no "products seen", em dashes, the Gemini prompt,
+`CLAUDE.md`'s "until Stefan picks"). The seventh, the kept rules, passed
+first; changing "Not a tutorial" made it fail. `STRATEGY.md` is left alone:
+its Now 2 is this issue, and blog#54 cites Now 3 by number.
+
 ## 2026-10-23 — blog#52: new titles for the 4 old posts, slugs kept
 
 **What.** Stefan's yes to blog#30's proposal (decision 1977). The 4 posts
