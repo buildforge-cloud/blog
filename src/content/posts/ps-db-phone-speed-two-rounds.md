@@ -113,10 +113,19 @@ about 16 KiB smaller compressed. And a game page's gallery stopped drawing
 
 ## The score I asked for and the causes I got
 
-Round two went live on the evening of 19 October. When I wrote this,
-PageSpeed had not measured it yet. On the phone setup, coming soon's largest
-paint comes more than a second sooner, and its first paint comes later. I
-don't know yet what PageSpeed will make of that trade.
+Round two went live on the evening of 19 October. PageSpeed measured it on
+23 October, on a phone, as the median of three runs:
+
+| page        | round one | round two | LCP round one | LCP round two |
+| ----------- | --------- | --------- | ------------- | ------------- |
+| home        | 85        | 87        | 3.93 s        | 3.85 s        |
+| game page   | 82        | 84        | 4.58 s        | 4.23 s        |
+| coming soon | 80        | 90        | 4.81 s        | 3.36 s        |
+
+The trade on coming soon paid. Its largest paint came almost 1.5 seconds
+sooner, and it went from the worst page to the only one at 90. The other two
+moved two points each. The runs still spread: the home page's three were 77,
+87 and 90, and coming soon's were 80, 90 and 90.
 
 What I take from both rounds is about the list. I asked for a score, and the
 score came with a list of what to fix. In both rounds the biggest cause was

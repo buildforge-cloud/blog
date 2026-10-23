@@ -94,6 +94,11 @@ visitor's console, not a crash. So if no new crashes come in after the deploy,
 it could mean the guard caught a moved bubble. It could also mean nobody
 translated a game page again. Neither proves the cause is gone.
 
+So far it is quiet. The nine crashes are two issues in Sentry,
+PS-DB-FRONTEND-X with 7 events and PS-DB-FRONTEND-Y with 2. On 23 October
+neither had an event after 17:42 UTC on 15 October, before the fix was merged
+that evening.
+
 What I keep coming back to is how close the first answer was. Right browser,
 right language, right error, right old issue. Wrong part of the page. And the
 fix that came with it would have traded a blank page for a popup that never
