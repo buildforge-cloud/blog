@@ -41,6 +41,14 @@ selling"; until Stefan picks blog#28's proposal for it, follow the post's
 issue. That means a title in the words a searcher types, the product linked at
 its first mention, short plain sentences and no em dash.
 
+**`strategy/STRATEGY.md`** (decision 1943, blog#50) holds the blog's goal,
+readers, next three steps ("Now"), what it will not do, and how it is
+measured. It is reviewed once a month and has no status line: the merge after
+Stefan's yes is the approval. Keep it at 80 lines or fewer, with a `Source:`
+note under each section. A "Now" step is work not yet done, never a decision
+that "Open questions" already asks. When a post issue or a decision changes
+the goal or the readers, change that file in the same PR.
+
 **To schedule a post**, set `pubDatetime` to the future time and merge it as
 normal. `deploy.yml` also rebuilds every day at **07:05 UTC** (blog#9), and the
 post goes live at the first production build after its `pubDatetime`. The theme's

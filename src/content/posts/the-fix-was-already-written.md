@@ -1,14 +1,14 @@
 ---
 author: Stefan M. Gulbrandsen
 pubDatetime: 2026-09-20T01:00:00Z
-title: The fix was already written
+title: "App Store guideline 3.1.2: rejected twice in one day over Terms of Use"
 slug: the-fix-was-already-written
 featured: false
 draft: false
 tags:
   - vedlikeholdsloggen
   - directing-ai
-description: Apple rejected my first app twice in one day on the same guideline number, for two different things. The fix for the second rejection had been sitting in main the whole time.
+description: Apple rejected Vedlikeholdsloggen, my first App Store app, twice in one day under guideline 3.1.2. First for a Terms of Use link missing from the store description, then for the links on the subscription screen. That fix was already in main.
 ---
 
 The second rejection arrived a few hours after the first one, and it cited the
@@ -87,5 +87,4 @@ someone I couldn't ask a follow-up question.
 
 What nags is how ordinary the mistake was. Nothing was broken, nothing was
 hard, the code was written and the tests were green. I lost a round to a
-sequencing decision nobody made out loud, in a process where I find out whether
-I chose right only once it's too late to choose again.
+sequencing decision nobody made out loud.
