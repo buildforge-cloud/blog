@@ -8,7 +8,7 @@ draft: false
 tags:
   - vedlikeholdsloggen
   - directing-ai
-description: Apple rejected Vedlikeholdsloggen, my first App Store app, twice in one day under guideline 3.1.2. First for a Terms of Use link missing from the store description, then for the links on the subscription screen. That fix was already in main.
+description: "Apple rejected Vedlikeholdsloggen, my first App Store app, twice in a day under 3.1.2: Terms of Use in the listing, then in the app. That fix was in main."
 ---
 
 The second rejection arrived a few hours after the first one, and it cited the

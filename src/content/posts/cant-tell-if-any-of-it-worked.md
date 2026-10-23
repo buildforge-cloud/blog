@@ -8,7 +8,7 @@ draft: false
 tags:
   - ps-db
   - seo
-description: In August Google knew one page of ps·db, my PS5 game database, and the sitemap said 2,784 submitted, 0 indexed. How I checked it, the crawler bugs no browser test caught, and why every Search Console report arrives late.
+description: "In August Google knew one page of ps·db, my PS5 game database: 2,784 submitted, 0 indexed. How I checked it, and the crawler bugs no browser test caught."
 ---
 
 _Update, October 2026: what this post says about Change of Address was wrong.

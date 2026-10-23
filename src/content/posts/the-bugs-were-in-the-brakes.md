@@ -8,7 +8,7 @@ draft: false
 tags:
   - directing-ai
   - orchestrator
-description: I built one Claude session that hands GitHub issues to my other Claude sessions, re-runs their tests and merges some of the work. It took a day. The two bugs that could have hurt something were in its safety checks.
+description: I built a Claude session that hands GitHub issues to my other sessions, re-runs their tests and merges some work. The risky bugs were in its safety checks.
 ---
 
 The first real bug my new boss AI found was in its own code.

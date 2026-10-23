@@ -7,7 +7,7 @@ featured: false
 draft: false
 tags:
   - infrastructure
-description: Every staging gate for ps·db and cvtailor on my self-hosted GitHub Actions runner left a Docker volume behind from its Postgres service. 268 volumes, 13 GB, the disk at 96%. The fix was one tmpfs line.
+description: Staging gates for ps·db and cvtailor on my self-hosted GitHub Actions runner left a Postgres Docker volume per run. 268 of them, 13 GB. One line fixed it.
 ---
 
 The disk was at 96% again.
