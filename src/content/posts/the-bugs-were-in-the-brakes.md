@@ -1,14 +1,14 @@
 ---
 author: Stefan M. Gulbrandsen
 pubDatetime: 2026-09-26T07:00:00Z
-title: The bugs were in the brakes
+title: Building a Claude Code orchestrator that runs my other agents
 slug: the-bugs-were-in-the-brakes
 featured: false
 draft: false
 tags:
   - directing-ai
   - orchestrator
-description: I spent a day building an AI session that hands work to my other AI sessions, reviews what comes back and merges some of it. The part that does things came together fast. The bugs that could have hurt something were in the parts meant to stop it.
+description: I built a Claude session that hands GitHub issues to my other sessions, re-runs their tests and merges some work. The risky bugs were in its safety checks.
 ---
 
 The first real bug my new boss AI found was in its own code.
@@ -163,4 +163,4 @@ because on this blog merging is publishing.
 Gemini's first round had a line about this too. I was the supervisor, it said,
 and I didn't need an LLM deciding when to spawn other LLMs. By the end of the
 same day I'd told one to decide. The plan also says the blog side should wait
-until the loop has run cleanly for two weeks. This post is from its first day.
+until the loop has run cleanly for two weeks.

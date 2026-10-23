@@ -1,15 +1,20 @@
 ---
 author: Stefan M. Gulbrandsen
 pubDatetime: 2026-08-08T18:00:00Z
-title: I can't tell if any of it worked
+title: Why Google indexed only one page of ps·db
 slug: cant-tell-if-any-of-it-worked
 featured: false
 draft: false
 tags:
   - ps-db
   - seo
-description: SEO is the first thing I've built where I genuinely can't see whether I'm right. The browser lies, the reports arrive weeks late, and the one instrument I built myself lied too.
+description: "In August Google knew one page of ps·db, my PS5 game database: 2,784 submitted, 0 indexed. How I checked it, and the crawler bugs no browser test caught."
 ---
+
+_Update, October 2026: what this post says about Change of Address was wrong.
+The domain move was not the cause.
+[How the site really got indexed](/posts/how-ps-db-got-indexed-by-google/) has
+the real cause and the fix._
 
 For a few days in July I thought [ps·db](https://ps-db.cloud) was doing fine on
 Google. Search Console said the site averaged position 2.8 for its own name.
@@ -164,5 +169,3 @@ The change report keys on a numeric id, so a retitle doesn't even show up as a
 line in the diff.
 
 It's completely harmless right now, because nothing is indexed for it to break.
-
-Being relieved about that is a strange feeling.

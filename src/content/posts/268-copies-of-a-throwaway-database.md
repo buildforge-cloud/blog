@@ -1,13 +1,13 @@
 ---
 author: Stefan M. Gulbrandsen
 pubDatetime: 2026-09-25T16:55:00Z
-title: 268 copies of a throwaway database
+title: A GitHub Actions Postgres service leaked 268 Docker volumes
 slug: 268-copies-of-a-throwaway-database
 featured: false
 draft: false
 tags:
   - infrastructure
-description: My server's disk was at 96%, three weeks after it had been completely full. The biggest thing on it was a test database that every CI run was supposed to throw away, and a comment in my own workflow said it did.
+description: Staging gates for ps·db and cvtailor on my self-hosted GitHub Actions runner left a Postgres Docker volume per run. 268 of them, 13 GB. One line fixed it.
 ---
 
 The disk was at 96% again.
@@ -35,7 +35,7 @@ weeks old. Real data doesn't come in identical slices. Something was stamping
 these out.
 
 The dates gave it away. Counted per day, the volumes lined up with the staging
-deploys of two projects, cvtailor and ps·db, almost exactly. One busy day in
+deploys of two projects, cvtailor and [ps·db](https://ps-db.cloud), almost exactly. One busy day in
 early September had 36 new volumes and 35 staging deploys. A quiet day had two
 of each.
 
@@ -124,5 +124,4 @@ the caches and the old volumes gone, the disk went from 96% to 70%.
 What I keep coming back to is the list I don't have. The hosted runner threw
 away a whole machine after every job, and I'd been relying on that without
 knowing it. In August the same move turned up a port that two processes wanted
-at once. This time it was disk. I don't know what the third thing is, only that
-I won't find it by reading the workflows, because the workflows were right.
+at once. This time it was disk.

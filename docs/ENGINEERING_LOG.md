@@ -3,6 +3,25 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-23 — blog#52: new titles for the 4 old posts, slugs kept
+
+**What.** Stefan's yes to blog#30's proposal (decision 1977). The 4 posts
+from August and September get a `title` and `description` in the words a
+searcher types: the product or tool and the problem. Slugs, file names and
+`pubDatetime` stay, so no URL changed. *I can't tell if any of it worked*
+opens with an update note that its Change of Address claim was wrong, linking
+`how-ps-db-got-indexed-by-google`. *268 copies* links ps·db at its first
+mention. Each post's closing twist line is gone. No other body line changed.
+
+**Checks.** A scratch checker (not committed) compares each post with
+`origin/main`: slug and date kept, title and description changed, product
+words present, no em or en dash, the twist lines gone, and every removed or
+added body line on an allow list. It failed 33 rules on the old text. A
+planted `49 MB` → `48 MB` failed it on that line. The built sitemap lists the
+same 29 URLs as the live one. The headings, the mid-post "That one sat with
+me for a while." and `STRATEGY.md`'s Now 1 were left alone: the issue's list
+does not touch them, and blog#53 and #54 cite Now 2 and Now 3 by number.
+
 ## 2026-10-22 — blog#50: strategy draft
 
 **What.** `strategy/STRATEGY.md`, 78 lines, with no status line: the merge
