@@ -5,47 +5,67 @@ description: Helps write posts for Stefan's dev-journey blog (blog.buildforge.cl
 
 # Blog Post
 
-This blog is a personal record of Stefan's journey building things (mostly with AI
-agents doing the actual implementation), kept both for himself and for whoever else
-finds it — even if that's one reader. Every step below should protect that identity,
-not drift toward generic "content marketing" blogging advice, which is the default
-failure mode of both AI-assisted writing and of research tools like Gemini if you
-don't anchor them first.
+This blog gets BuildForge's products seen, and it is Stefan's record of building
+them (mostly with AI agents doing the actual implementation). Every step below
+protects the identity block. Without it a post drifts into generic content
+marketing, which is the default failure of AI-assisted writing and of research
+tools like Gemini when they are not anchored first.
 
-## The blog's identity — treat this as fixed, don't re-derive it per post
+## The blog's identity: treat this as fixed, don't re-derive it per post
 
-- **Why it exists**: documenting the journey, for Stefan's own record and
-  entertainment first; connecting with anyone else who finds it interesting is a
-  welcome side effect, not the goal being optimized for.
-- **What "doing this well" actually means**: not traffic, not audience growth —
-  whether the post is still worth rereading years from now. That means capturing
-  *why* a decision was made and what the thinking actually was, not just recording
-  that something happened. A flat list of "did X, then did Y" ages badly; the
-  reasoning and the wrong turns are what make it worth rereading.
-- **Audience**: nobody specific. Not written *for* recruiters, not written *for*
-  beginners, not written *for* a subreddit. Anyone interested is welcome to read it.
-- **Throughline**: a mix of learning journey and experimentation — there is no fixed
-  narrative arc ("becoming a developer," "building a startup") to keep consistent.
-  Individual posts can be about wildly different things as long as they're honest
-  about what actually happened. Don't serialize posts as numbered parts ("Project X:
-  Part 3") — use tags instead, so an abandoned or stalled project doesn't create
+Set by Stefan in decision 1245 (2026-10-12) and written in here by blog#53. The
+format rules come from blog#30. If a line further down disagrees, this block wins.
+
+- **Why it exists**: the main job is to get BuildForge's products seen:
+  [ps·db](https://ps-db.cloud),
+  [Vedlikeholdsloggen](https://vedlikeholdsloggen.buildforge.no/),
+  [Skredda](https://skredda.no) and
+  [ISO Pathfinder Buddy](https://iso-pathfinder-buddy.lovable.app/roadmap).
+  A post does that by being worth reading, not by pitching. The blog is also
+  Stefan's record of building apps with AI agents, with the wrong turns left in.
+- **What "doing this well" means**: a person who searched for the problem finds
+  the post, reads it to the end, and sees the product it is about. The post is
+  also still worth rereading years from now. Both come from the same thing: *why*
+  a decision was made, and the wrong turns on the way. A flat list of "did X, then
+  did Y" fails both.
+- **Audience**: people who search for the problem a post is about. Most are
+  developers: one who wants a small site in Google, one who uses coding agents,
+  one who fights a GitHub Actions setting. Some are users of the products. Not
+  written *for* recruiters or *for* a subreddit. `strategy/STRATEGY.md` "Users"
+  keeps the current list.
+- **Throughline**: a mix of learning journey and experimentation. There is no
+  fixed narrative arc ("becoming a developer," "building a startup") to keep
+  consistent. Posts can be about very different things, as long as they are
+  honest about what actually happened. Don't serialize posts as numbered parts
+  ("Project X: Part 3"). Use tags instead, so a stalled project creates no
   pressure to "finish the series."
-- **Voice**: personal journal style. First person, informal, reflective — not a
-  writeup addressed to a reader who needs onboarding.
-- **What a reader should walk away with**: knowing what the work was actually like,
-  and what I now think that I didn't think before. Not persuaded, not sold, not
-  taught a skill step by step. "Informed" is a byproduct, not the target — aiming
-  at it directly is what quietly turns a post into a report, because it gives every
+- **Voice**: personal journal style. First person, informal, reflective. Short
+  plain sentences. It must read as a person wrote it, not as a writeup for a
+  reader who needs onboarding.
+- **What a reader should walk away with**: what the work was actually like, what
+  I now think that I didn't think before, and where the product is. Not persuaded,
+  not taught a skill step by step. "Informed" is a byproduct, not the target.
+  Aiming at it directly quietly turns a post into a report, because it gives every
   true fact a claim to be included (see "Structural tells" below).
-- **Source material**: anything relevant — a real incident from a buildforge.cloud
-  project, a decision and why it was made, a struggle that isn't resolved yet, a
-  more general reflection with no specific project event behind it at all.
+- **How a post gets seen** (blog#30):
+  - A `title` in the words a searcher types, such as the product and the result.
+    The `description` names the product and the problem.
+  - The product named and linked at its first mention.
+  - One deep link where the post talks about a page (a ps·db game page, not
+    only the home page).
+  - Short plain sentences and short paragraphs. No em dash.
+  - No closing twist line. The last paragraph says the next real step and when.
+  - Numbers in a short dated list, so a reader can find them fast.
+- **Source material**: anything relevant. A real incident from a buildforge.cloud
+  project, a decision and why it was made, a struggle that isn't resolved yet, or
+  a more general reflection with no specific project event behind it at all.
 - **Hard boundaries**:
   - Not a tutorial. Don't let a post drift into "here's how you do X" structure.
-  - Not selling anything — no calls to action, no positioning, no product pitch.
+  - No sales pitch and no calls to action ("try it", "sign up"). The product is
+    named and linked where the post is about it, and that is all.
   - Must be transparent about struggles along the way. A post that only recounts
-    the win and skips what was frustrating, confusing, or still broken is off-brand
-    for this blog specifically — the struggle is part of the point.
+    the win and skips what was frustrating, confusing, or still broken is
+    off-brand for this blog. The struggle is part of the point.
 
 ## Post shape — no forced length or cadence
 
@@ -146,7 +166,9 @@ without anyone deciding to transfer it.
 Any one of these is worth a restructure, not a tweak:
 
 - **Section headers that are topic labels rather than moments.** "Search Console
-  API access" is a bucket. "The number that made me stop" is a moment.
+  API access" is a bucket. "The number that made me stop" is a moment. A moment
+  may carry the topic word a searcher uses ("I blamed the domain move"); that
+  helps the post get found and is still a moment (blog#30).
 - **Sections of roughly uniform length**, each opening a subject and closing it
   cleanly before the next. Real narrative sections are lopsided.
 - **An opening that summarises the findings** before anything is at stake.
@@ -154,7 +176,8 @@ Any one of these is worth a restructure, not a tweak:
   Nobody talks like that. It's the register of a status update.
 - **A "Still open" / "Next steps" close.** Ending on unresolved things is honest
   and good; ending on a *checklist* of them is bookkeeping. Say what's still
-  nagging, not what's still on the list.
+  nagging, not what's still on the list. One plain last paragraph with the next
+  real step and its date is fine; a closing twist line is not (blog#30).
 - **The post is a survey** — several incidents each getting a fair share of space.
   That means it has no spine. Several incidents can absolutely appear in one post,
   but as evidence for one thread, never as a catalogue.
@@ -167,6 +190,9 @@ Don't re-ask about the blog's identity above — that's fixed. Only ask for what
 missing for this particular post:
 
 - **Seed** — the rough topic, incident, or feeling prompting this post.
+- **Product**: which product the post is about, and which of its pages the post
+  talks about, if any. That gives the first-mention link and the deep link (see
+  "How a post gets seen" above). A post with no product is fine; say so.
 - **Source material** — a specific project/session/incident to ground it in (point
   at git history, an issue, a CLAUDE.md/ops-log entry, or this conversation's own
   history if relevant), or confirm it's a freestanding reflection with no specific
@@ -194,44 +220,51 @@ the user to run.
 
 ```
 I'm doing research to help me write a post for my personal dev-journey blog.
-Ground everything you tell me in what this blog actually is — don't give me
-generic blogging/content-marketing advice, it doesn't apply here.
+Ground everything you tell me in what this blog actually is. Don't give me
+generic blogging or content-marketing advice; it doesn't apply here.
 
 WHAT THE BLOG IS:
-- A personal record of building things (mostly AI agents doing the actual
-  implementation), kept for myself and for whoever else finds it interesting —
-  even if that's one reader.
-- No target audience — not written for recruiters, beginners, or any specific
-  community.
-- No fixed narrative arc. Posts vary; the only throughline is honesty about what
+- Its main job is to get my products seen. This post is about
+  {product and its URL, or "no product" if none}. It gets seen by being a post
+  a searcher wants to read to the end, not by pitching.
+- It is also my personal record of building things, mostly with AI agents doing
+  the actual implementation.
+- Readers: people who search for the problem this post is about. Mostly
+  developers.
+- No fixed narrative arc. Posts vary; the throughline is honesty about what
   actually happened.
-- Voice: personal journal, first person, informal.
-- Reader goal: informed, not persuaded, not taught a how-to.
-- Hard rules: NOT a tutorial. NOT selling anything. MUST be honest about what
-  struggled or went wrong, not just the win.
+- Voice: personal journal, first person, informal, short plain sentences.
+- Reader goal: know what the work was really like, and where the product is.
+  Not persuaded, not taught a how-to.
+- Hard rules: NOT a tutorial. No sales pitch and no calls to action, but the
+  product is named and linked where the post is about it. MUST be honest about
+  what struggled or went wrong, not just the win.
 
 WHAT THIS POST IS ABOUT:
 {seed}
 
 SOURCE MATERIAL / WHAT ACTUALLY HAPPENED:
-{source material, or "no specific incident — general reflection" if freestanding}
+{source material, or "no specific incident, a general reflection" if freestanding}
 
 THE HONEST STRUGGLE I WANT TO INCLUDE:
 {the honest struggle from step 1}
 
 WHAT I WANT FROM YOU:
-1. Angle — given everything above, what's the most honest and specific way to
-   frame this post? Flag any framing that would drift it toward tutorial or
-   sales-y territory so I can avoid it.
-2. Structure — a loose shape for the post (not full prose), matching journal
-   voice, not listicle/how-to voice.
-3. What's already out there — if this topic has been written about a lot
+1. Angle: given everything above, what's the most honest and specific way to
+   frame this post? Flag any framing that would drift it toward a tutorial or a
+   sales pitch so I can avoid it.
+2. Search words: what would someone type into a search engine when they have
+   the problem this post is about? Give me 3 to 5 phrasings I could build the
+   title from.
+3. Structure: a loose shape for the post (not full prose), matching journal
+   voice, not listicle or how-to voice.
+4. What's already out there: if this topic has been written about a lot
    elsewhere, tell me what the common takes are so I don't just repeat them, and
    flag anything commonly claimed that's actually wrong or oversimplified.
-4. Honesty check — push back if my framing of "the struggle" above looks like
+5. Honesty check: push back if my framing of "the struggle" above looks like
    it's papering over what actually happened, or ask me clarifying questions to
    get closer to what's real.
-5. Open questions — anything you'd want to know before this could become an
+6. Open questions: anything you'd want to know before this could become an
    actual draft.
 
 Don't write the blog post itself. I want research and a thinking partner, not
@@ -361,18 +394,23 @@ post" section — re-read it if unsure, don't assume the schema from memory):
   via the Access header" section for which apps this applies to). A reader
   without Stefan's login just hits an auth wall, which is a bad link to hand
   someone. Fine to write about these projects narratively, just don't link
-  out to the live instance. The two projects that are actually public and
+  out to the live instance. The projects that are actually public and
   safe to link directly are ps·db (`https://ps-db.cloud` — note it moved off
   `ps-db.buildforge.cloud` in the 2026-07-23 domain migration; the old
-  subdomain only 301s now) and ISO
-  Pathfinder Buddy (`https://iso-pathfinder-buddy.lovable.app/roadmap`) — both
-  listed on [buildforge.cloud](https://buildforge.cloud), which is also a fine
-  generic fallback link. Recheck this list before linking anything new; it'll
+  subdomain only 301s now), Vedlikeholdsloggen
+  (`https://vedlikeholdsloggen.buildforge.no/`, and its App Store page), Skredda
+  (`https://skredda.no`) and ISO
+  Pathfinder Buddy (`https://iso-pathfinder-buddy.lovable.app/roadmap`). The
+  identity block's product links use these.
+  [buildforge.cloud](https://buildforge.cloud) is also a fine generic fallback
+  link. Recheck this list before linking anything new; it'll
   drift as projects go public or get gated.
 - Before treating the draft as done, run it against **both** the "AI writing tells
   to avoid" and the "Structural tells" sections above — check for em dashes
   specifically, since they're easy to drop in without noticing, and check the
-  section headers against the spine and against the source doc.
+  section headers against the spine and against the source doc. Then check the
+  identity block's "How a post gets seen" list: a searcher's `title`, the
+  product linked at its first mention, the deep link, no closing twist line.
 
 ### 6. Wrap
 
@@ -388,5 +426,6 @@ devblog (unfiltered, zero-agenda daily build log), Simon Willison's
 main-blog/TIL-subdomain split (lets small discoveries publish with near-zero
 friction without cluttering long-form posts), and Dan Luu's writing (rejects
 audience-optimized advice-giving in favor of self-auditing and evidence-based
-reasoning). Don't copy their structure wholesale — this blog's own identity above
-takes precedence.
+reasoning). They are for tone only. None of them has this blog's job of getting
+products seen, so don't copy their structure, and the identity above takes
+precedence.

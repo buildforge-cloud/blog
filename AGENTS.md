@@ -36,10 +36,16 @@ No admin panel / CMS — this is a git-based static site. To publish:
 
 **What a post is for** (Stefan, decision 1245, 2026-10-12): the blog's main job
 is to get the products seen, and a post must still read as a person wrote it.
-The blog-post skill's identity section still says "not traffic" and "not
-selling"; until Stefan picks blog#28's proposal for it, follow the post's
-issue. That means a title in the words a searcher types, the product linked at
-its first mention, short plain sentences and no em dash.
+The blog-post skill's identity block holds the rules (blog#53): a title in the
+words a searcher types, the product linked at its first mention, short plain
+sentences, no em dash and no sales pitch. `tests/blog-post-skill.test.mjs`
+fails if the old "not traffic" or "not selling" text comes back.
+
+To retitle a live post, change only `title` and `description`. The URL comes
+from `slug`, so it stays, and the OG image is rebuilt with the new title. When
+a later post shows an old claim was wrong, the old post gets one italic first
+paragraph, `_Update, <month> <year>: ..._`, that says what was wrong and links
+the newer post. Do not rewrite the old body (blog#52).
 
 **`strategy/STRATEGY.md`** (decision 1943, blog#50) holds the blog's goal,
 readers, next three steps ("Now"), what it will not do, and how it is
