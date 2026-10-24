@@ -3,6 +3,35 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-24 — blog#58, #59, #60: three scheduled posts, and who picks topics
+
+**What.** Three posts, one a week, each dated 07:00 UTC so the 07:05 run
+publishes it (blog#9):
+
+- `ai-written-tests-mutation-testing.md`, 24 November: ps·db's first
+  mutation run (a false 100 of 100, then 2,080 survivors), and the tests
+  for the three functions that cut survivors to 1, 0 and 34.
+- `keep-visitor-input-out-of-logs-and-sentry.md`, 1 December: the rule
+  that a visitor's search stays private, made in four layers (the 422
+  answer, uvicorn's access log, nginx's access log, Sentry's events).
+- `copied-text-rebuilt-in-our-own-words.md`, 8 December: Vedlikeholdsloggen
+  texts too close to a source, the word and model checks that measured it,
+  and the rewrite.
+
+Facts come from the apps' and the starter's private PRs, issues and review
+threads, and ps·db's own log; the posts name none of them. The third post
+names no source and quotes no source text: it says only "a Norwegian
+source". Its real-name list lives in the scratch checker, not in this repo.
+`strategy/STRATEGY.md`: open question 3 is answered in Measure (the
+executive proposes 3 topics a month, Stefan says yes to each, decision
+2124), and Now names the three go-live dates.
+
+**Checks.** The same kind of scratch checker as blog#46 (not committed),
+now with two new rules: post 2 holds no real search (only `search=...`),
+and post 3 names none of the app's sources by name or site and has no «»
+quote. Bad samples failed every rule by name. A second checker read the
+strategy file: red on the old one (9 failures), green after.
+
 ## 2026-10-23 — blog#53: the blog-post skill's identity follows decision 1245
 
 **What.** The skill's identity block said "not traffic, not audience growth",
