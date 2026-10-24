@@ -26,13 +26,13 @@ Source: the user stories in the issues named above.
 
 ## Now
 
-1. After Stefan's yes to blog#28's proposal: new `title` and `description` for the 4 old posts PR #30 names, slugs kept.
-2. After the same yes: change the blog-post skill's identity text ("not traffic", "not selling") to match decision 1245.
-3. Add round two's PageSpeed "after" numbers to the 3 Nov phone speed post, if they are in before 3 Nov.
+1. 24 Nov: the post on AI-written tests and mutation testing (blog#58) goes live at 07:05 UTC; check it on the site.
+2. 1 Dec: the post on keeping what visitors type out of logs and Sentry (blog#59) goes live; check it on the site.
+3. 8 Dec: the post on copied text rebuilt in our own words (blog#60) goes live; check it on the site.
 
-Source: PR #30 (the proposal for the old posts), `CLAUDE.md` "What a
-post is for", `docs/ENGINEERING_LOG.md` (blog#42 to #44 entry). No open
-issue holds any of these yet.
+Source: blog#58, #59 and #60 (Stefan's "Queue these 3", decision 2128).
+The three earlier steps are done: the 4 retitles (blog#52), the skill text
+(blog#53) and the round two numbers (blog#54).
 
 ## Not doing
 
@@ -53,13 +53,14 @@ Source: `CLAUDE.md` (Analytics, Design, Writing a post, Comments),
 - Search clicks and impressions for blog.buildforge.cloud, read in Google
   Search Console. The repo holds no baseline and no target yet.
 - Posts that went live, one a week: read from `pubDatetime` in
-  `src/content/posts/` and checked on the live site.
+  `src/content/posts/` and checked on the live site. The executive proposes
+  3 topics a month, and Stefan says yes to each one (decision 2124).
 - Floors that must stay green: `npm run test:pages` in CI (AA contrast, no
   tracker, CSP) and `python3 tools/psi.py https://blog.buildforge.cloud/`
   for PageSpeed.
 
 Source: `CLAUDE.md` "Analytics" ("Search Console still gives the search
-numbers"), `README.md` commands, blog#9.
+numbers"), `README.md` commands, blog#9, decision 2124 (blog#58).
 
 ## Open questions
 
@@ -69,10 +70,9 @@ numbers"), `README.md` commands, blog#9.
 2. Which number means "seen": search clicks to the blog, or visits from the
    blog to each product? The blog has no analytics, so the second can only be
    read in each product's own tools. What target do you want?
-3. No post is queued after 17 Nov. Does one a week go on, and who picks the
-   next topics?
-4. Every reader named in the issues is a developer. Is that the main reader,
+3. Every reader named in the issues is a developer. Is that the main reader,
    or do you also want app users (such as Vedlikeholdsloggen's Norwegian home
    owners, while the posts are in English)?
 
-Source: the gaps and conflicts found in the sources above.
+Source: the gaps and conflicts found in the sources above. The old
+question 3, on the topics after 17 Nov, is answered in Measure.
