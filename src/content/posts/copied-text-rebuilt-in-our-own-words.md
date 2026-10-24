@@ -11,16 +11,13 @@ tags:
 description: My app's AI-written articles kept too close to their sources. An originality check found 173 of 181 blocks in Vedlikeholdsloggen were not our own words.
 ---
 
-In October a Norwegian source wrote to me. It asked that my app stop
-reproducing its articles.
+About a quarter of the articles in my app rested on a Norwegian source. Dozens
+of their texts followed its pages close to word for word, or as a close
+paraphrase. That is not our own text.
 
 The app is [Vedlikeholdsloggen](https://vedlikeholdsloggen.buildforge.no/), a
 Norwegian app that reminds me of the upkeep on a house or a cabin. Every task
-and article in it names a source, and AI agents write the texts. The first
-step was to measure. 13 of the 53 articles rested on that source. Of
-their 60 texts, 15 were close to word for word, and 30 were close paraphrase.
-
-That is not our own text.
+and article in it names a source, and AI agents write the texts.
 
 ## The rule that made the copies
 
@@ -36,8 +33,9 @@ safer it is with both. Nobody set out to copy. The rules rewarded it.
 
 ## Taking it down
 
-The first fix removed the texts. 11 articles went, and their pages sent a
-visitor on to the task list. Two more lost their blocks from that source.
+The first fix removed the texts. Most of those articles went, and their
+pages sent a visitor on to the task list. The rest lost their blocks from
+that source.
 Each article now ends with a new line. In my translation:
 the text is written by Vedlikeholdsloggen from facts at the sources above,
 and the sources do not stand behind the app or check what it says.
@@ -49,9 +47,10 @@ Then a check against a repeat. A new or changed text may share at most 8
 words in a row with the page it cites, and at most a quarter of its runs of
 four words. A short quote is fine.
 
-That check found more than the one source. Of the 225 texts in the 42
+That check found more than the one source. Of the 225 texts in the
 articles left, 180 were over those limits. Measured the same way, the
-removed texts had shared 44 % of their four-word runs with their source.
+removed texts had shared over 40 % of their four-word runs with their
+source.
 In the articles that were left, the texts from one other source shared
 78 %.
 
@@ -73,18 +72,17 @@ wrote itself: rewrites with new words in the source's order, and own words
 with one cited fact. The word check let through 9 of the 12 close paraphrases,
 and all 5 planted rewrites, at 0 % overlap. The model caught all 14.
 
-Then it ran on every block the app had left. 181 blocks in 42 articles, for
-about 4 cents. 1 came back clean. 7 were in doubt. 173 were not our own words.
+Then it ran on every block the app had left. 181 blocks, for about 4
+cents. 1 came back clean. 7 were in doubt. 173 were not our own words.
 
 Those blocks had all passed the fact check. They were true, and they named
 their source. By this measure they were also the source.
 
 ## Our point first, then one fact
 
-The rebuild started with the 13 articles that had rested on that source,
-now written from other sources.
-The first round failed. 41 of 45 new blocks were not own words, by the
-model's reading. "In our own words" was not enough of an instruction.
+The rebuild started with the articles that had rested on that source, now
+written from other sources. The first round failed. About nine in ten new
+blocks were not own words, by the model's reading. "In our own words" was not enough of an instruction.
 
 What worked was a shape. Each block opens with our own advice: when to do the
 job, how, and what to look at. Then it takes one fact from the page, with the
