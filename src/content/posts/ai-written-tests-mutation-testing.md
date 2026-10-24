@@ -114,23 +114,27 @@ passes that check, and the process still exits 0. So the mutant that ended
 the run with no error code survived. The workflow that runs the weekly refresh
 would have gone on to its next step. Now the test checks the exact message.
 
+The help line got a test too, and that test had a hole of its own. It reads
+the script's `--help` output and checks that each flag has a line. The help
+text wraps to the width of the terminal. At 2 of 161 widths, a wrapped line
+started with a flag name, and the test read it as a flag. The code review
+caught it, and the test now sets the width.
+
+The review also broke the code by hand and ran the new tests against it. 4
+of its 5 hand-made mutants had survived the old tests. All 5 failed the new
+ones. The review did not run the full mutation count again. That count comes
+from the agent that wrote the tests.
+
 111 survivors became 34. All 34 are changes nobody can see. 28 only change
 the wording of a help line. The other 6 give the same result another way,
 such as an indent in a JSON file that nothing reads byte for byte.
 
-## What the agent's own tests got wrong
+The numbers, from the report of 23 October and the work after it:
 
-The agents' new tests were not clean on the first try either. One reads the
-script's `--help` output and checks that each flag has a line. The help text
-wraps to the width of the terminal. At 2 of 161 widths, a wrapped line
-started with a flag name, and the test read it as a flag. The code review
-caught it, and the test now sets the width.
-
-The pull requests were also checked by a review that broke the code by hand
-and ran the new tests against it. For the RAWG script, 4 of its 5 hand-made
-mutants had survived the old tests. All 5 failed the new ones. The review did
-not run the full mutation count again. That count comes from the agent that
-wrote the tests.
+- The whole backend: 2,080 of 11,043 mutants survived.
+- The multiplayer rule: 60 of 66 survived, then 1.
+- The cleaning function: 110 of 221, then 0.
+- The RAWG script's `main`: 111 of 240, then 34.
 
 ## What I check now
 
@@ -152,5 +156,5 @@ route handlers are not mutated, only the helpers they call. And code that only
 runs when the app starts reads as survived, every mutant of it.
 
 On 24 October, three functions from the report had their new tests. The
-next one down the list builds a preview of the coming-soon page, and 101 of
-its 198 mutants are still alive.
+third on its top list has none yet. It builds a preview of the coming-soon
+page, and 101 of its 198 mutants are still alive.

@@ -110,11 +110,11 @@ check fails if anyone edits the copy by hand. A fix to a part reaches every
 project with a version bump. ps·db took the Sentry scrub's second version the
 same day it was made.
 
+Sentry's tracing is off in ps·db. Tracing events skip `before_send`, so
+turning tracing on would need a scrub of its own.
+
 What is still open is text the app writes itself. If an exception's own
 message quotes what someone typed, the scrub can't tell it apart from any
 other text. A Postgres error that quotes a bad value in its own words is one
 example. FastAPI checks the types before a query runs, so I don't know of a
 route that reaches it today.
-
-And Sentry's tracing is off. Tracing events skip `before_send`, so the day I
-turn it on, it needs a scrub of its own first.

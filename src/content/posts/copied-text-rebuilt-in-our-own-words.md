@@ -37,9 +37,8 @@ safer it is with both. Nobody set out to copy. The rules rewarded it.
 ## Taking it down
 
 The first fix removed the texts. 11 articles went, and their pages sent a
-visitor on to the task list. Two more lost their blocks from that source. The
-source's name came out of the app's welcome screen, the store text and the
-site's front page. Each article now ends with a new line. In my translation:
+visitor on to the task list. Two more lost their blocks from that source.
+Each article now ends with a new line. In my translation:
 the text is written by Vedlikeholdsloggen from facts at the sources above,
 and the sources do not stand behind the app or check what it says.
 
@@ -51,8 +50,9 @@ words in a row with the page it cites, and at most a quarter of its runs of
 four words. A short quote is fine.
 
 That check found more than the one source. Of the 225 texts in the 42
-articles left, 180 were over those limits. On the share of shared four-word
-runs, the source that wrote to me measured 44 %. Another source measured
+articles left, 180 were over those limits. Measured the same way, the
+removed texts had shared 44 % of their four-word runs with their source.
+In the articles that were left, the texts from one other source shared
 78 %.
 
 ## Copies at zero overlap
@@ -108,8 +108,9 @@ puts on it.
 ## What the rewrite cost
 
 Some advice did not survive. The radon article lost its 5- and 10-year
-rules. The snow load article lost a table that turned kilos per square metre
-into a depth of snow. They went in the rewrite, and the pull requests name
+rules. The
+[snow load article](https://vedlikeholdsloggen.buildforge.no/vedlikehold/vurder-snolasten-pa-taket)
+lost a table that turned kilos per square metre into a depth of snow. They went in the rewrite, and the pull requests name
 each one.
 
 On 22 October the list of blocks that were not own words was empty. The
