@@ -44,6 +44,17 @@ const built = slug => ({
   image: existsSync(path.join(distPosts, slug, "index.png")),
 });
 
+// A post in a subfolder gets the folder in its URL, which readPosts() does
+// not work out. Fail, so such a post is not left out of the check unseen.
+test("every post is in the top folder this check reads", () => {
+  const nested = readdirSync(postsDir, { withFileTypes: true })
+    .filter(entry => entry.isDirectory())
+    .map(entry => entry.name);
+  expect(nested, "teach readPosts() the URL of a post in a subfolder").toEqual(
+    []
+  );
+});
+
 test("a post's share image is built only when its page is", () => {
   expect(existsSync(distPosts), "no dist/posts: run `npm run build`").toBe(
     true
