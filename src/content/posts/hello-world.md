@@ -3,7 +3,7 @@ author: Stefan M. Gulbrandsen
 pubDatetime: 2026-08-07T12:00:00Z
 title: Starting this blog
 slug: starting-this-blog
-featured: true
+featured: false
 draft: false
 tags:
   - meta
