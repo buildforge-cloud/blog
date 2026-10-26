@@ -25,6 +25,10 @@ No admin panel / CMS — this is a git-based static site. To publish:
 1. Add a Markdown or MDX file under `src/content/posts/` (use `hello-world.md` as a
    frontmatter template: `author`, `pubDatetime`, `title`, `slug`, `featured`, `draft`,
    `tags`, `description` — see `src/content.config.ts` for the full schema).
+   Set `featured: false`; no post is featured (blog#62). A featured post sits
+   above every newer one on the front page, and `tests/front-page.spec.mjs`
+   (in `npm run test:pages`) fails when `/` and `/posts/` start with
+   different posts.
 2. Preview: `npm run dev` → https://dev.buildforge.cloud/absproxy/5177/ (live reload),
    or `npm run build && npm run preview` for an exact production build.
 3. Write it with `draft: false` from the start. This theme hides drafts in

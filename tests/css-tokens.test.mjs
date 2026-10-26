@@ -19,7 +19,7 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 
-// Astro's font API sets these from `astro.config.ts` (`cssVariable`), outside
+// Astro's font API sets these from `fonts.config.mjs` (`cssVariable`), outside
 // any CSS this check reads.
 const setByAstro = [
   "--font-space-grotesk",

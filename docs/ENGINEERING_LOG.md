@@ -3,6 +3,51 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-26 — blog#64: the fonts come from the repo
+
+**Why.** `astro.config.ts` loaded its three fonts with
+`fontProviders.google()`, so every build fetched them. On 2026-10-08 and on
+2026-10-26 (run 40345255516, after blog#63) that fetch failed with `fetch
+failed` in `CachedFontFetcher.fetch`, the deploy stopped, and the merged
+change waited for the next 07:05 UTC build.
+
+**What.** The font list moved to `fonts.config.mjs`, so a test can import
+it, and every family uses `fontProviders.local()`. The 28 files in
+`src/assets/fonts/` (14 faces, a `.woff` and a `.ttf` each) are the files
+the live site served from Google that day, read from its `@font-face`
+rules. Each family's OFL licence is beside them. IBM Plex Sans lists its
+italics first, as Google did: Astro sizes the fallback font from the first
+face, and with normal first the fallback's `size-adjust` changed from
+99.5961% to 101.1663%.
+
+**Checks.** Astro's Google provider asks a third host first:
+`fonts.google.com/metadata/fonts`. With no network at all (`unshare -rn`),
+the old config failed with `getaddrinfo EAI_AGAIN fonts.google.com`, then
+`Cannot find the font path` at `/og.png`. The new one built with no network
+(loopback only: the OG route fetches its font from Astro's own local
+server). Against the old build, every `@font-face` and `:root` rule on `/`
+and on a post is the same once the hashes are taken out, every font file has
+the same bytes, the OG images have the same bytes, and the screenshots in
+`docs/plan/mockup/blog-64/` are the same bytes. `ci.yml` now points the
+three hosts at 0.0.0.0 before `npm run build`.
+`tests/fonts.test.mjs` failed first with `Space Grotesk uses the "google"
+provider; want "local"`; the CI pin failed first on the missing step.
+Mutations each failed one test: a wrong file name, a dropped weight, one
+family back on Google, a host left out of the step, `/tmp/hosts` for
+`/etc/hosts`, the step removed.
+
+**Review fixes.** A text pin cannot tell a working hosts line from a
+commented one, so the step now runs `getent ahosts` on each host and fails
+on any address but 0.0.0.0. Run with `bash -e` under a fake `/etc/hosts`
+(`unshare -rm`), the step passed as written and failed with the line
+commented out. The IPv4 line alone is enough: with it, `getent ahosts`
+gave no IPv6 address and Node's `fetch` got `ECONNREFUSED` on all three
+hosts. The face test no longer sorts, so it pins Plex Sans's italic-first
+order; a new test pins a `.woff` then a `.ttf` per face.
+`.prettierignore` lists `fonts.config.mjs`, so `format:check` reads it. A
+typo in the font config is still caught without types: Astro validates its
+config on load (`! Unrecognized key: "cssVarible"`).
+
 ## 2026-10-26 — blog#62: the front page opens on the newest post
 
 **What.** `hello-world.md` ("Starting this blog", 7 Aug) had

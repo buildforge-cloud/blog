@@ -8,6 +8,7 @@
 !/tests
 !tsconfig.json
 !astro.config.ts
+!fonts.config.mjs
 !package.json
 !.prettierrc
 !eslint.config.js

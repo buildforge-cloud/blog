@@ -40,6 +40,19 @@ jobs:
       - name: "📝 Checking code format"
         run: npm run format:check
 
+      # blog#64: the fonts come from the repo. Google's font hosts point
+      # nowhere from here on, so a build that still fetches a font fails.
+      # The loop proves the block took: no host may resolve to a real address.
+      - name: "🚫 Block Google's font hosts"
+        run: |
+          echo "0.0.0.0 fonts.google.com fonts.googleapis.com fonts.gstatic.com" | sudo tee -a /etc/hosts
+          for host in fonts.google.com fonts.googleapis.com fonts.gstatic.com; do
+            if getent ahosts "$host" | awk '{print $1}' | grep -vx '0.0.0.0'; then
+              echo "::error::$host still resolves to a real address"
+              exit 1
+            fi
+          done
+
       - name: "🚀 Build the project"
         run: npm run build
 
