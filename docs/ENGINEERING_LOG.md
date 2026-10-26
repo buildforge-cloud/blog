@@ -23,7 +23,8 @@ its page is not built yet, but its share image is`. After it, the build
 made 10 post images for the 10 post pages, and the 7 planned posts (27 Oct
 to 8 Dec) had none. With one live post's `index.png` deleted from `dist/`,
 it failed with `starting-this-blog: its page is built, but its share image
-is not`.
+is not`. It reads only the top folder of `src/content/posts/`, so another
+test fails if a subfolder appears there (seen red with an empty one).
 
 ## 2026-10-26 — blog#64: the fonts come from the repo
 
