@@ -279,6 +279,20 @@ without `--build`): `up --build` would build again without the arg. Before blog#
 nothing needed this, because every deploy was a push with new content, and new
 content already changes the `COPY . .` layer.
 
+The fonts come from the repo, not Google Fonts (blog#64). A failed Google
+fetch stopped the deploy twice (2026-10-08, 2026-10-26). `fonts.config.mjs`
+lists the three families with Astro's local provider. The files are in
+`src/assets/fonts/`, a `.woff` and a `.ttf` per face (satori reads the
+`.ttf` for the OG images), with each family's OFL licence; they are the bytes
+Google served before. `ci.yml` points fonts.google.com, fonts.googleapis.com
+and fonts.gstatic.com at 0.0.0.0 before the build and checks with `getent`
+that the block took, so a build that fetches a font fails the PR
+(`tests/workflows.test.mjs` pins the step). `tests/fonts.test.mjs` pins the
+faces in Google's order, since Astro sizes the fallback font from the first
+face. A new font: its files in `src/assets/fonts/`, a family in
+`fonts.config.mjs`, a line in `tests/fonts.test.mjs`, and a `--defined` line
+in `tests/css-tokens.test.mjs`.
+
 `npm test` (every `tests/*.test.mjs`, Node's built-in runner; the workflow
 checks in `tests/workflows.test.mjs` read the YAML with the `yaml` package)
 pins what the workflows must keep doing: the 07:05 UTC cron, the
@@ -301,7 +315,7 @@ in `src/**/*.astro`, in `<style>` blocks, `style="..."` attributes and
 `class` values, a Tailwind `-(--name)` class among them (css_tokens 1.1.0,
 blog#23). It reads no `<script>` and no front matter, so a token used only
 there is not checked (BackToTopButton's `var(--accent)` is one). Astro sets
-the font tokens from `astro.config.ts`, so the test names them with
+the font tokens from `fonts.config.mjs`, so the test names them with
 `--defined`, and a new font needs a line there too. `tests/test_nginx.py`
 serves the real `nginx.conf` on a real nginx with the part's `serve_dir()`,
 only with `NGINX_RIG=1` (never in CI): run it after any `nginx.conf` change.

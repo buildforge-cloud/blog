@@ -3,6 +3,28 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-26 — blog#66: a planned post's share image waits for its date
+
+**Why.** `/posts/ai-written-tests-mutation-testing/index.png` answered 200
+on the live site and showed the title of the post planned for 24 Nov.
+`getStaticPaths()` in `src/pages/posts/[...slug]/index.png.ts` kept every
+post with `!data.draft && !data.ogImage`, and did not look at the date.
+
+**What.** The route now keeps `postFilter(post) && !post.data.ogImage`, the
+same filter the post pages, lists and RSS use. `postFilter` already drops
+drafts. In `npm run dev` it shows every post, so the images still show
+there.
+
+**Checks.** `tests/og-image-date.spec.mjs` reads `dist/`: each non-draft
+post without an `ogImage` must have an `index.png` if and only if it has an
+`index.html`. It reads `dist/` and not the clock, so the build's own time
+decides. Before the fix it failed with `ai-written-tests-mutation-testing:
+its page is not built yet, but its share image is`. After it, the build
+made 10 post images for the 10 post pages, and the 7 planned posts (27 Oct
+to 8 Dec) had none. With one live post's `index.png` deleted from `dist/`,
+it failed with `starting-this-blog: its page is built, but its share image
+is not`.
+
 ## 2026-10-26 — blog#64: the fonts come from the repo
 
 **Why.** `astro.config.ts` loaded its three fonts with
