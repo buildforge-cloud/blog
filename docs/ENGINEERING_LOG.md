@@ -3,6 +3,27 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-26 — blog#62: the front page opens on the newest post
+
+**What.** `hello-world.md` ("Starting this blog", 7 Aug) had
+`featured: true`, so the front page's Featured slot put it above every newer
+post. It is now `featured: false`, like every other post. No post is
+featured, so `index.astro` drops the Featured section by itself, and Recent
+Posts comes first, newest on top. The post's page, slug and text are
+unchanged, and it is still in `/posts/` and `/archives/`.
+
+This was the smaller of the two fixes the issue named. The other, putting
+the newest post in the Featured slot, would change `index.astro` and keep a
+section heading that says nothing a list sorted by date does not say.
+
+**Checks.** `tests/front-page.spec.mjs` (in `npm run test:pages`) compares
+the first post link on `/` with the first on `/posts/`, which is newest
+first. Red before the fix: `Received: "/posts/starting-this-blog/"`,
+expected the Vedlikeholdsloggen 1.2 post. Its second test, that
+`/archives/` still links the old post, passed at once, so it was broken on
+purpose: with the post set to `draft: true` it failed (`Expected: 1,
+Received: 0`). Screenshots at 390 px: `docs/plan/mockup/blog-62/`.
+
 ## 2026-10-24 — blog#58, #59, #60: three scheduled posts, and who picks topics
 
 **What.** Three posts, one a week, each dated 07:00 UTC so the 07:05 run
