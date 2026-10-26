@@ -36,6 +36,18 @@ Mutations each failed one test: a wrong file name, a dropped weight, one
 family back on Google, a host left out of the step, `/tmp/hosts` for
 `/etc/hosts`, the step removed.
 
+**Review fixes.** A text pin cannot tell a working hosts line from a
+commented one, so the step now runs `getent ahosts` on each host and fails
+on any address but 0.0.0.0. Run with `bash -e` under a fake `/etc/hosts`
+(`unshare -rm`), the step passed as written and failed with the line
+commented out. The IPv4 line alone is enough: with it, `getent ahosts`
+gave no IPv6 address and Node's `fetch` got `ECONNREFUSED` on all three
+hosts. The face test no longer sorts, so it pins Plex Sans's italic-first
+order; a new test pins a `.woff` then a `.ttf` per face.
+`.prettierignore` lists `fonts.config.mjs`, so `format:check` reads it. A
+typo in the font config is still caught without types: Astro validates its
+config on load (`! Unrecognized key: "cssVarible"`).
+
 ## 2026-10-26 — blog#62: the front page opens on the newest post
 
 **What.** `hello-world.md` ("Starting this blog", 7 Aug) had

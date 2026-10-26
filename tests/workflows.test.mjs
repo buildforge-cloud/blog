@@ -141,6 +141,13 @@ test("ci.yml builds with Google's font hosts blocked", () => {
     block >= 0 && block < build,
     `ci.yml must point ${googleFontHosts.join(", ")} at nothing in /etc/hosts before \`npm run build\``
   );
+  // A text check cannot tell a working hosts line from a commented one, so
+  // the step looks each host up after writing it and fails on a real address.
+  assert.match(
+    runs(job)[block],
+    /getent ahosts/,
+    "the block step must check with `getent ahosts` that each host now resolves to 0.0.0.0"
+  );
 });
 
 // blog#2. With one runner for the whole org, runs already take turns, so a

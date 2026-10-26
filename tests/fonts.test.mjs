@@ -34,16 +34,29 @@ test("every font file the config names is in the repo", () => {
   }
 });
 
+// Each face is a .woff for browsers, then a .ttf: satori (the OG images)
+// cannot read a .woff2, and getFontPathByWeight picks the "truetype" source.
+test("every face ships a .woff, then a .ttf of the same face", () => {
+  for (const family of fonts) {
+    for (const v of variants(family)) {
+      const face = `${family.name} ${v.weight} ${v.style}`;
+      assert.equal(v.src.length, 2, `${face} has ${v.src.length} files`);
+      const [woff, ttf] = v.src;
+      assert.match(woff, /\.woff$/, `${face}: first file is ${woff}`);
+      assert.equal(ttf, woff.replace(/\.woff$/, ".ttf"), `${face}: ${ttf}`);
+    }
+  }
+});
+
 // The faces, CSS variables and fallbacks the site served from Google Fonts
-// before blog#64, read from the live front page on 2026-10-26.
+// before blog#64, read from the live front page on 2026-10-26. The order is
+// Google's too: Astro sizes the fallback font from each family's first face.
 test("the pages keep the same font families, faces and CSS variables", () => {
   const served = fonts.map(f => ({
     name: f.name,
     cssVariable: f.cssVariable,
     fallbacks: f.fallbacks,
-    faces: variants(f)
-      .map(v => `${v.weight} ${v.style}`)
-      .sort(),
+    faces: variants(f).map(v => `${v.weight} ${v.style}`),
   }));
   assert.deepEqual(served, [
     {
@@ -58,12 +71,12 @@ test("the pages keep the same font families, faces and CSS variables", () => {
       fallbacks: ["system-ui", "sans-serif"],
       faces: [
         "400 italic",
-        "400 normal",
         "500 italic",
-        "500 normal",
         "600 italic",
-        "600 normal",
         "700 italic",
+        "400 normal",
+        "500 normal",
+        "600 normal",
         "700 normal",
       ],
     },
