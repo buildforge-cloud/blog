@@ -115,6 +115,34 @@ test("ci.yml checks text contrast on the built site", () => {
   );
 });
 
+// blog#64. A Google Fonts fetch failure stopped the deploy twice. The fonts
+// now come from the repo, and CI proves it: Google's font hosts point nowhere
+// before the build, so a build that still fetches a font fails the PR.
+// Astro's Google provider asks fonts.google.com for its font list first, then
+// fonts.googleapis.com for the CSS and fonts.gstatic.com for the files.
+const googleFontHosts = [
+  "fonts.google.com",
+  "fonts.googleapis.com",
+  "fonts.gstatic.com",
+];
+
+test("ci.yml builds with Google's font hosts blocked", () => {
+  const runs = job => (job.steps ?? []).map(s => (s.run ?? "").trim());
+  const job = Object.values(workflow("ci.yml").jobs).find(j =>
+    runs(j).includes("npm run build")
+  );
+  assert.ok(job, "no ci.yml job runs `npm run build`");
+  const blocks = run =>
+    run.includes("/etc/hosts") &&
+    googleFontHosts.every(host => run.includes(` ${host}`));
+  const block = runs(job).findIndex(blocks);
+  const build = runs(job).indexOf("npm run build");
+  assert.ok(
+    block >= 0 && block < build,
+    `ci.yml must point ${googleFontHosts.join(", ")} at nothing in /etc/hosts before \`npm run build\``
+  );
+});
+
 // blog#2. With one runner for the whole org, runs already take turns, so a
 // group that queues changes nothing today; it writes the rule down, and it
 // holds if a second runner is ever added. It must not cancel (the test below).
