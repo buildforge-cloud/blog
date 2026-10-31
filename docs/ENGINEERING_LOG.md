@@ -34,8 +34,8 @@ still 80 lines, with Now 3 holding the three January posts, Now 4 both
 "add the reading" steps, and the first Users line widened to "or back in it
 (blog#28, #75)". "Down 99%" in the title is #655's own "about 99%". No
 internal detail: no ps-db issue numbers, paths, run ids, property names or
-people but the author. Cloudflare is "the firewall in front of the site",
-PostHog "ps·db's own analytics". ps·db's real game titles carry an em dash,
+people but the author, and vendors only as "the firewall in front of the
+site" and "ps·db's own analytics". ps·db's real game titles carry an em dash,
 so the post says the title "ended in" its last words. Nothing records the
 four checks' results (ps-db, its log, #655, #484), so the post says the
 write-up has none and claims neither way. Each Google quote was matched
@@ -52,6 +52,22 @@ and the same plant fails it. With the post dated 30 Oct, `npm run build`
 made its page and OG image, and `npm run test:pages` passed 152 (2 giscus
 tests skipped), the new post among them at desktop and 390 px. With the
 real date the build leaves out both.
+
+**Review fixes** (`code-review medium`, 10 findings). The post linked the
+14 Oct post beside a figure (15 to 116 impressions) that post never gave;
+it now quotes that post's own figure (position 40.1 to 16.2) and gives the
+other to the 14 Oct check. The title said "overnight" for a fall inside one
+hour; it says "in one hour", at 77 characters, and the description is 157.
+"8 in the 5 days after" read against the post's 4-day windows; the line now
+gives no window. The Now test's cut at `Source:` let a note renamed
+`Sources:` or an intro line name the issue: plants of both passed. It now
+reads only numbered steps and their indented continuation lines; both
+plants fail it, a step wrapped onto a second line passes, and deleting the
+continuation clause fails that case. The memory fragment described the leak
+filter's private list in this public repo, so it is gone. Not changed: the
+14 Oct post gets no update line yet, since the retitling is a suspect, not
+a proven cause, and the link would point at a post not live until 19 Jan
+(a follow-up on 19 Jan decides it). Metro 2039 is a real ps·db page.
 
 ## 2026-10-31 — blog#72, #73: two January posts
 

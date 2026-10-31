@@ -151,13 +151,30 @@ const strategy = readFileSync(
   "utf8"
 );
 
+// A section's numbered steps ("1. ..."), each with its indented
+// continuation lines, as one string. Its intro line and its `Source:` note
+// name issues too, so they are left out: a step must name each one.
+const stepsOf = section => {
+  const steps = [];
+  let open = false;
+  for (const line of section.split("\n")) {
+    if (/^\d+\.\s/.test(line)) steps.push(line);
+    else if (open && /^\s+\S/.test(line)) steps.push(line.trim());
+    else {
+      open = false;
+      continue;
+    }
+    open = true;
+  }
+  return steps.join("\n");
+};
+
 test("STRATEGY.md's Now names the queued posts", () => {
   const start = strategy.indexOf("\n## Now");
   assert.notEqual(start, -1, "no ## Now section");
-  // The steps only: the section's `Source:` note names issues too.
-  const now = strategy
-    .slice(start, strategy.indexOf("\n## ", start + 1))
-    .split("\nSource:")[0];
+  const now = stepsOf(
+    strategy.slice(start, strategy.indexOf("\n## ", start + 1))
+  );
   for (const [, , issue] of QUEUED)
     assert.match(now, new RegExp(`${issue}\\b`), `Now does not name ${issue}`);
 });

@@ -1,14 +1,14 @@
 ---
 author: Stefan M. Gulbrandsen
 pubDatetime: 2027-01-19T07:00:00Z
-title: "Site disappeared from Google overnight: still indexed in Search Console, impressions down 99%"
+title: "Site disappeared from Google in one hour: still indexed, impressions down 99%"
 slug: google-stopped-showing-our-site-in-a-day
 featured: false
 draft: false
 tags:
   - ps-db
   - seo
-description: On 26 October Google stopped showing ps·db, my PS5 game database, within one hour. Search Console still said indexed, there was no manual action, and Bing held. What I checked after the Google traffic drop, the suspects I ruled out, and a rule I was breaking all along.
+description: My Google traffic dropped in one hour on 26 October. ps·db, my PS5 game database, was still indexed in Search Console, with no manual action. What I checked.
 ---
 
 Until 17:59 UTC on 26 October, Google showed [ps·db](https://ps-db.cloud), my
@@ -138,11 +138,12 @@ a database people use, with two sources matched up, filters and similar games.
 On a page of 83 words, little of that shows.
 
 The retitling is mine twice over. On 29 September every game title got "age
-rating" and the time to beat. On 14 October they changed again: the snippet
-now opened with the age rating, and the title ended in "ESRB rating | ps·db".
-It worked for a while. On the 126 pages measured, searches with "age" in them
-went from 15 impressions to 116, and I [wrote it up as a
-win](/posts/how-ps-db-got-indexed-by-google/). Google's page on [helpful
+rating" and the time to beat. The 14 October check said it worked, and my
+[post that day](/posts/how-ps-db-got-indexed-by-google/) called it a win:
+searches with "age" in them went from position 40.1 to 16.2. On the 126 pages
+that check measured, they went from 15 impressions to 116. The same day the
+titles changed again. The snippet now opened with the age rating, and the
+title ended in "ESRB rating | ps·db". Google's page on [helpful
 content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content)
 lists warning signs, and the first is "Is the content primarily made to
 attract visits from search engines?". 3,000 pages retitled twice in a month to
@@ -212,7 +213,8 @@ The numbers, as of 31 October. Search Console, Google only:
 - Impressions a day, 22 to 25 October: 333, 362, 371, 441.
 - 26 October: 171. About 10 to 30 an hour until 17:59 UTC, then 0 to 1.
 - 27 to 30 October: 3, 3, 4, 5.
-- Pages with impressions: 763 in the 14 days before, 8 in the 5 days after.
+- Pages with impressions: 763 in the 14 days before. After the fall, 8,
+  with 15 impressions between them.
 - Searches for the name: 178 before, 3 after.
 - Home page average position: 7.4 before, 36 after.
 
