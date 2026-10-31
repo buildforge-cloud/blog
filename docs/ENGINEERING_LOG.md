@@ -3,6 +3,56 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-31 — blog#75: a post on Google's 26 Oct drop of ps·db
+
+**What.** One post, 19 January at 07:00 UTC, a week after the 12 Jan post:
+`google-stopped-showing-our-site-in-a-day.md`. Its facts come from ps-db#655's
+write-up, `docs/search-drop-2026-10-26.md` (PR #656), and fix 1, ps-db#657
+(PR #658). The spine: I blamed the 17:17 deploy (#598), but pages Google
+last crawled on 11 and 16 Oct fell in the same hour, so Google had judged the
+whole site. And the likeliest things it counted were built on purpose,
+among them the retitling that the 14 Oct post called a win. The write-up's
+seven causes keep their "how sure" words. The four checks sit beside the
+suspects they settle, not in the write-up's order.
+
+**Voice check** (the issue's first step). Read the last three posts (29 Dec,
+5 Jan, 12 Jan) and the 1.2 post (blog#40). Lines that read as marketing or
+filler, quoted and left as they are: "It needs no API key and no account,
+and it sends nothing anywhere." (29 Dec, store-listing register); "Moving the
+code turned out to be the part that was easiest to prove." (5 Jan, restates
+its heading); "A comparison that can't fail proves nothing." and "A test can
+stay green because it is right, or because it is reading a file the code
+just left." (5 Jan, composed lines); "This post is what I knew that day, and
+the plan that came out of it." and "17 is a small number, and it still said
+something clear once it was split." (12 Jan, throat-clearing and summing
+up). The new post has none of those shapes.
+
+Departures, all from the sources or the repo's rules. The issue's Touches
+named the post and this log. The repo's rules add `tests/posts.test.mjs`
+(the post in `QUEUED` and in the product-first test) and STRATEGY.md:
+still 80 lines, with Now 3 holding the three January posts, Now 4 both
+"add the reading" steps, and the first Users line widened to "or back in it
+(blog#28, #75)". "Down 99%" in the title is #655's own "about 99%". No
+internal detail: no ps-db issue numbers, paths, run ids, property names or
+people but the author. Cloudflare is "the firewall in front of the site",
+PostHog "ps·db's own analytics". ps·db's real game titles carry an em dash,
+so the post says the title "ended in" its last words. Nothing records the
+four checks' results (ps-db, its log, #655, #484), so the post says the
+write-up has none and claims neither way. Each Google quote was matched
+against its live page, and every link answered 200, on 31 Oct.
+
+**Checks.** Red first: `no post with slug
+google-stopped-showing-our-site-in-a-day in src/content/posts/` and `Now
+does not name blog#75`. Plants in a scratch copy: 18 Jan and 09:00 dates
+failed the date test; `draft: true` and `featured: true` the published
+test; a link before ps·db's the product-first test; an em dash its test.
+Now without blog#75 passed, since the Now test read the whole section and
+its `Source:` note names blog#75 too. The test now reads Now's steps only,
+and the same plant fails it. With the post dated 30 Oct, `npm run build`
+made its page and OG image, and `npm run test:pages` passed 152 (2 giscus
+tests skipped), the new post among them at desktop and 390 px. With the
+real date the build leaves out both.
+
 ## 2026-10-31 — blog#72, #73: two January posts
 
 **What.** Two posts, a week apart after the 29 Dec post, at 07:00 UTC:

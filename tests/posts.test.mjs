@@ -65,6 +65,11 @@ const QUEUED = [
     "2027-01-12T07:00:00.000Z",
     "blog#73",
   ],
+  [
+    "google-stopped-showing-our-site-in-a-day",
+    "2027-01-19T07:00:00.000Z",
+    "blog#75",
+  ],
 ];
 
 const WEEK = 7 * 24 * 60 * 60 * 1000;
@@ -108,6 +113,7 @@ test("a product post links its product first", () => {
       "17-downloads-a-plan-before-more-code",
       "vedlikeholdsloggen.buildforge.no",
     ],
+    ["google-stopped-showing-our-site-in-a-day", "ps-db.cloud"],
   ]) {
     const link = firstLink(bySlug(slug).body);
     assert.equal(
@@ -148,7 +154,10 @@ const strategy = readFileSync(
 test("STRATEGY.md's Now names the queued posts", () => {
   const start = strategy.indexOf("\n## Now");
   assert.notEqual(start, -1, "no ## Now section");
-  const now = strategy.slice(start, strategy.indexOf("\n## ", start + 1));
+  // The steps only: the section's `Source:` note names issues too.
+  const now = strategy
+    .slice(start, strategy.indexOf("\n## ", start + 1))
+    .split("\nSource:")[0];
   for (const [, , issue] of QUEUED)
     assert.match(now, new RegExp(`${issue}\\b`), `Now does not name ${issue}`);
 });
