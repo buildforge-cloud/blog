@@ -1,5 +1,5 @@
 // The posts in src/content/posts/ keep the blog's standing rules, and the
-// queued posts keep their dates (blog#68 to #70, #72, #73). Run with
+// queued posts keep their dates (`QUEUED`, from the 8 Dec post on). Run with
 // `npm test`.
 //
 // A scheduled post's date is only seen on the morning it should go live
@@ -39,16 +39,32 @@ const bySlug = slug => {
   return post;
 };
 
-// The queued posts, each a week after the one before it, from the 8 Dec
-// post, at 07:00 UTC, so the 07:05 scheduled deploy publishes it (blog#9).
-// December: blog#68 to #70. January: blog#72, #73.
+// The queued posts, oldest first, each at 07:00 UTC so the 07:05 scheduled
+// deploy publishes it (blog#9), with the issue STRATEGY.md's Now names it
+// by. A post leaves this list when it is live and Now drops it.
 const QUEUED = [
-  ["copied-text-rebuilt-in-our-own-words", "2026-12-08T07:00:00.000Z"],
-  ["passing-tests-skipped-most-of-the-file", "2026-12-15T07:00:00.000Z"],
-  ["coding-agents-weekly-usage-limit", "2026-12-22T07:00:00.000Z"],
-  ["search-youtube-comments-desktop", "2026-12-29T07:00:00.000Z"],
-  ["split-a-large-file-in-five-safe-steps", "2027-01-05T07:00:00.000Z"],
-  ["17-downloads-a-plan-before-more-code", "2027-01-12T07:00:00.000Z"],
+  [
+    "copied-text-rebuilt-in-our-own-words",
+    "2026-12-08T07:00:00.000Z",
+    "blog#60",
+  ],
+  [
+    "passing-tests-skipped-most-of-the-file",
+    "2026-12-15T07:00:00.000Z",
+    "blog#68",
+  ],
+  ["coding-agents-weekly-usage-limit", "2026-12-22T07:00:00.000Z", "blog#69"],
+  ["search-youtube-comments-desktop", "2026-12-29T07:00:00.000Z", "blog#70"],
+  [
+    "split-a-large-file-in-five-safe-steps",
+    "2027-01-05T07:00:00.000Z",
+    "blog#72",
+  ],
+  [
+    "17-downloads-a-plan-before-more-code",
+    "2027-01-12T07:00:00.000Z",
+    "blog#73",
+  ],
 ];
 
 const WEEK = 7 * 24 * 60 * 60 * 1000;
@@ -60,10 +76,11 @@ test("each queued post keeps its date", () => {
   }
 });
 
-test("each queued post is pinned a week after the one before", () => {
+// One a week at most (STRATEGY.md "Not doing"): a skipped week is fine.
+test("each queued post is pinned a week or more after the one before", () => {
   for (let i = 1; i < QUEUED.length; i++) {
     const gap = Date.parse(QUEUED[i][1]) - Date.parse(QUEUED[i - 1][1]);
-    assert.equal(gap, WEEK, `${QUEUED[i][0]}: ${gap / 86400000} days`);
+    assert.ok(gap >= WEEK, `${QUEUED[i][0]}: ${gap / 86400000} days`);
   }
 });
 
@@ -132,7 +149,7 @@ test("STRATEGY.md's Now names the queued posts", () => {
   const start = strategy.indexOf("\n## Now");
   assert.notEqual(start, -1, "no ## Now section");
   const now = strategy.slice(start, strategy.indexOf("\n## ", start + 1));
-  for (const issue of ["blog#68", "blog#69", "blog#70", "blog#72", "blog#73"])
+  for (const [, , issue] of QUEUED)
     assert.match(now, new RegExp(`${issue}\\b`), `Now does not name ${issue}`);
 });
 

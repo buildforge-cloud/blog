@@ -1,7 +1,7 @@
 ---
 author: Stefan M. Gulbrandsen
 pubDatetime: 2027-01-12T07:00:00Z
-title: "No downloads for my indie app: 17 in six weeks on the App Store, and a plan before more code"
+title: "Almost no downloads for my indie app: 17 in six weeks on the App Store, and a plan before more code"
 slug: 17-downloads-a-plan-before-more-code
 featured: false
 draft: false
@@ -13,7 +13,8 @@ description: My home maintenance app Vedlikeholdsloggen had 17 first-time App St
 
 On 31 October I opened App Store Connect and read one number. 17
 first-time downloads, from launch on 18 September to 30 October. The goal
-was 300 or more.
+was 300 or more. This post is what I knew that day, and the plan that came
+out of it.
 
 The app is
 [Vedlikeholdsloggen](https://vedlikeholdsloggen.buildforge.no/), a Norwegian
@@ -72,7 +73,7 @@ What it found, as of 31 October:
 - Product Hunt and X. I posted there by 29 September. I expected zero
   Norwegian installs from it. Not read.
 - A nomination to Apple's editors, sent 1 October, for 2 to 15 November. No
-  answer yet. Apple picks.
+  answer by 31 October. Apple picks.
 - This blog: posts on 19 and 27 October. Not read. The blog has no analytics,
   so it can't count what it sends.
 - The website and its articles: in Google from 2 October, with Apple's app
@@ -117,12 +118,13 @@ shows a metric only once the app has
 first-time downloads. So the plan reads a source that isn't shown as not
 shown, never as 0.
 
-The one that decides the next step is Unique Impressions from App Store
-search. If the shares still look like 1 October, about 39% from view to page
-and 27% from page to download, the page is not the problem, and the steps
-below go ahead. If either has fallen below half of that, the page gets fixed
-first. That line
-is a judgement, not Apple's. The 1 October reading didn't say whether its
+The plan reads that screen in two passes. First the shares: if they still
+look like 1 October, about 39% from view to page and 27% from page to
+download, the page is not the problem. If either has fallen below half of
+that, the page gets fixed before anything else. That line is a judgement,
+not Apple's. Only then the count that decides the next step: Unique
+Impressions from App Store search, which is what step 1 below is judged
+on. The 1 October reading didn't say whether its
 views were unique, so I only compare shares, and only roughly.
 
 That first reading, split by source, was not done when the plan was written.
@@ -138,8 +140,8 @@ worked.
    house and cabin), and `leilighet` in place of `varmepumpe` in the
    keywords. The number is Unique Impressions from App Store search, per day,
    against the rate from launch to 30 October. It worked if that doubled. The
-   reading is on 1 December, or 28 days after release if 1.3 is not out by 3
-   November. 28 days and not 14, because at about 5 views a day a doubling in
+   reading was set for 1 December, or 28 days after release if 1.3 was not
+   out by 3 November. 28 days and not 14, because at about 5 views a day a doubling in
    two weeks could be chance. The editors' window falls in the same weeks,
    and a feature from them counts as browse, not search, so search is read on
    its own.
@@ -174,5 +176,5 @@ The numbers, read on 31 October:
 
 The plan was written on 31 October, before any of the three steps, and so
 was this post. Which steps run is my call, and nothing in the plan spends
-money. The first reading, the one for 1.3's subtitle and keywords, is on 1
-December.
+money. The first reading, the one for 1.3's subtitle and keywords, was set
+for 1 December.

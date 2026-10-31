@@ -58,9 +58,10 @@ and ran the comparison again, to see it fail. A comparison that can't fail prove
 - Step 5, the similar games: 1,064 responses, all identical, headers
   included, and the API schema too. One planted word made 60 differ.
 
-My executive session, which reviews the workers' pull requests, ran its own
-comparison on each one before it merged. Every step was approved on the first
-review. All five merged on 28 October, between 07:13 and 11:20 UTC.
+Each worker reviewed its own pull request before handing it in, and that is
+where the gaps below were found and fixed. Then my executive session, which
+reviews the workers' pull requests, ran its own comparison on each one. It
+approved every step on its first look. All five merged on 28 October, between 07:13 and 11:20 UTC.
 
 ## Guards that watch a file by name
 
@@ -126,7 +127,7 @@ after.
 The numbers, from the pull requests of 28 to 30 October:
 
 - `routers/games.py`: 3,265, 2,810, 2,170, 1,490, 1,405, 682 lines.
-- Step pull requests: 5, every one approved on its first review.
+- Step pull requests: 5, every one approved on the executive's first look.
 - Byte-identical answers in the largest step: 1,064 of 1,064.
 - Old guards that would have stayed green on code they no longer saw: 3. The
   release-status guard in step 1, the hours-to-beat guard in step 5, and a
