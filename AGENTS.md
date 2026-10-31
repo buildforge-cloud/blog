@@ -67,10 +67,11 @@ that day's 07:05 run, and one dated 09:00 waits for the next push or the next
 day's run.
 
 Until then a production build leaves the post out completely: no page, no index,
-tag or RSS entry. Only its OG image (`/posts/<slug>/index.png`) is built early,
-because that route filters drafts but not dates. So the title and description can
-be seen at that `.png` URL, but the page itself cannot. Measured 2026-09-25 on
-blog#8: `dist/posts/<slug>/` held only `index.png`. `npm run dev` shows a
+tag or RSS entry. The OG image (`/posts/<slug>/index.png`) waits too, since
+blog#66: its route keeps only the posts `postFilter` keeps. Before that it
+filtered drafts but not dates, so a planned post's title showed at that `.png`
+URL weeks early. `tests/og-image-date.spec.mjs` (in `npm run test:pages`) fails
+when a post has an image but no page, or a page but no image. `npm run dev` shows a
 future-dated post as normal (`import.meta.env.DEV ||` in `postFilter.ts`), so the
 preview cannot tell you a date is wrong.
 

@@ -3,6 +3,55 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-31 — blog#68, #69, #70: three December posts, and a posts test
+
+**What.** Three posts, one a week after the 8 Dec post, each dated 07:00
+UTC so the 07:05 run publishes it (blog#9):
+
+- `passing-tests-skipped-most-of-the-file.md`, 15 December: ps·db's text
+  tests stripped `/* */` before `//`, so the `/*` in a `//` comment on
+  App.tsx line 122 hid lines 122 to 1206 (1,085 of 1,423) from 5 test files.
+- `coding-agents-weekly-usage-limit.md`, 22 December: the 7-day usage
+  limit, the idle morning of 26 Oct, and the override that ends at the
+  reset, set only on Stefan's yes. It merged 17 minutes after that reset.
+- `search-youtube-comments-desktop.md`, 29 December: Comment Finder 1.9.1.
+  Desktop search stopped at about 60 because the extension asked a hidden
+  panel's comment list for more; also 1.9.0's next and previous buttons.
+
+Two departures from the issues, both from the sources. blog#68 named the
+file `passing-tests-read-half-the-file`, but the tests read 338 of 1,423
+lines, about a quarter, so the slug says "skipped most of the file". And it
+said 4 tests; ps-db#624 and #626 changed 5 test files (2 sharing one
+reader, then 3 more). The private repos are named in this log only, never
+in a post. `strategy/STRATEGY.md` Now names the three dates; its old note on
+the steps done before blog#58 went, to stay at 80 lines. The blog-post
+skill lists Comment Finder as safe to link, and no longer says a planned
+post's OG image is built early (blog#66). `changes.d/66.md` is folded into
+CLAUDE.md.
+
+**Checks.** `tests/posts.test.mjs` (in `npm test`) replaces the scratch
+checkers of blog#46 and #58: the December dates, `draft` and `featured`
+false, the product as each product post's first link, no em dash in any
+post or page, no link to a buildforge-cloud repo but `blog`, and Now naming
+blog#68 to #70 within 80 lines. Red first: `no post with slug
+passing-tests-skipped-most-of-the-file` and `Now does not name blog#68`.
+The three that passed at once were broken on purpose, one at a time, and
+each mutant failed only its own test: an em dash in a post and in a page, a
+link to a private repo, an 81st line, a date an hour late, `draft: true`,
+another link before the product's, and `blog#690` for `blog#69`.
+
+**Review fixes** (`code-review medium`). The test now reads what the
+content collections build: subfolders too, never a file whose own name
+starts with `_`, and CRLF front matter. The repo check ignores case and
+covers the `Hysas` owner. The first link skips images, and the product is
+matched by host, not by prefix. Each fix has a scenario run on the old test
+and the new: an em dash in `2027/x.md` (old: passed), a `_notes.md` with no
+front matter and a CRLF post (old: 5 tests failed), links to `Hysas/ps-db`
+and `Buildforge-Cloud/ps-db` (old: passed), an image before the product
+link (old: failed), `ps-db.cloud.example.com` (old: passed). All seven are
+right on the new test. The 22 Dec description said work stops at 90%; it
+now says merges and Low work stop, and "morning", as the body does.
+
 ## 2026-10-26 — blog#66: a planned post's share image waits for its date
 
 **Why.** `/posts/ai-written-tests-mutation-testing/index.png` answered 200

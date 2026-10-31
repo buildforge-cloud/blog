@@ -29,10 +29,12 @@ Source: the user stories in the issues named above.
 1. 24 Nov: the post on AI-written tests and mutation testing (blog#58) goes live at 07:05 UTC; check it on the site.
 2. 1 Dec: the post on keeping what visitors type out of logs and Sentry (blog#59) goes live; check it on the site.
 3. 8 Dec: the post on copied text rebuilt in our own words (blog#60) goes live; check it on the site.
+4. 15 Dec: the post on passing tests that never read most of a file (blog#68) goes live; check it on the site.
+5. 22 Dec: the post on the coding agents' weekly usage limit (blog#69) goes live; check it on the site.
+6. 29 Dec: the post on Comment Finder 1.9.1 (blog#70) goes live; check it on the site.
 
-Source: blog#58, #59 and #60 (Stefan's "Queue these 3", decision 2128).
-The three earlier steps are done: the 4 retitles (blog#52), the skill text
-(blog#53) and the round two numbers (blog#54).
+Source: blog#58, #59 and #60 (Stefan's "Queue these 3", decision 2128);
+blog#68, #69 and #70 (his "Queue these 3", decision 2293).
 
 ## Not doing
 

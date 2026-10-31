@@ -358,7 +358,7 @@ post" section — re-read it if unsure, don't assume the schema from memory):
   schedules the post on purpose. `postFilter.ts` treats a future date as a
   scheduled post, and the two builds disagree about it: `npm run dev` shows the
   post as normal, while a production build leaves it out entirely (no page, no
-  index or tag entry; only its OG image is built). So the preview cannot catch
+  index or tag entry, and since blog#66 no OG image). So the preview cannot catch
   a wrong date. Check `date -u` and use it, do not round the hour up.
   (Measured 2026-09-25 on blog#7: the same post dated one day ahead was on the
   dev home page and had no page in `dist/`.)
@@ -399,9 +399,11 @@ post" section — re-read it if unsure, don't assume the schema from memory):
   `ps-db.buildforge.cloud` in the 2026-07-23 domain migration; the old
   subdomain only 301s now), Vedlikeholdsloggen
   (`https://vedlikeholdsloggen.buildforge.no/`, and its App Store page), Skredda
-  (`https://skredda.no`) and ISO
-  Pathfinder Buddy (`https://iso-pathfinder-buddy.lovable.app/roadmap`). The
-  identity block's product links use these.
+  (`https://skredda.no`), ISO
+  Pathfinder Buddy (`https://iso-pathfinder-buddy.lovable.app/roadmap`) and
+  Comment Finder for YouTube (`https://commentfinder.buildforge.no/`, and its
+  Chrome Web Store page; its repo is private, blog#70). The identity block's
+  product links use the first four.
   [buildforge.cloud](https://buildforge.cloud) is also a fine generic fallback
   link. Recheck this list before linking anything new; it'll
   drift as projects go public or get gated.
