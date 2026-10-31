@@ -112,7 +112,6 @@ needs a browser like Vivaldi for Android. The
 [store listing](https://chromewebstore.google.com/detail/comment-finder-for-youtub/pfmklefdjlkanjehfipnmhffjkkakcnb)
 says the last two in the same words.
 
-Searching the replies is still phone only. On the desktop the same code loads
-no replies and moves the page, so the switch is not offered there. Finding
-out why is the next step. It has its own issue, still open and with no date
-yet.
+In 1.9.1, searching the replies works on the phone only. On the desktop the
+same code loads no replies and moves the page, so the switch is not offered
+there. The desktop fix has its own issue.
