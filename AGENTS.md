@@ -28,7 +28,11 @@ No admin panel / CMS — this is a git-based static site. To publish:
    Set `featured: false`; no post is featured (blog#62). A featured post sits
    above every newer one on the front page, and `tests/front-page.spec.mjs`
    (in `npm run test:pages`) fails when `/` and `/posts/` start with
-   different posts.
+   different posts. `tests/posts.test.mjs` (in `npm test`) fails on an em
+   dash in any post or page, a post link to a buildforge-cloud repo other
+   than `blog`, and a queued post whose date, `draft` or `featured` changes.
+   Its `QUEUED` list pins each queued post (blog#68 to #73), a week apart: a
+   new queued post gets a line there.
 2. Preview: `npm run dev` → https://dev.buildforge.cloud/absproxy/5177/ (live reload),
    or `npm run build && npm run preview` for an exact production build.
 3. Write it with `draft: false` from the start. This theme hides drafts in

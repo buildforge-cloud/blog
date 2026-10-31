@@ -1,5 +1,5 @@
 // The posts in src/content/posts/ keep the blog's standing rules, and the
-// queued December posts keep their dates (blog#68, #69, #70). Run with
+// queued posts keep their dates (blog#68 to #70, #72, #73). Run with
 // `npm test`.
 //
 // A scheduled post's date is only seen on the morning it should go live
@@ -39,24 +39,36 @@ const bySlug = slug => {
   return post;
 };
 
-// Each one a week after the one before it, from the 8 Dec post, at 07:00
-// UTC, so the 07:05 scheduled deploy publishes it (blog#9).
-const DECEMBER = [
+// The queued posts, each a week after the one before it, from the 8 Dec
+// post, at 07:00 UTC, so the 07:05 scheduled deploy publishes it (blog#9).
+// December: blog#68 to #70. January: blog#72, #73.
+const QUEUED = [
   ["copied-text-rebuilt-in-our-own-words", "2026-12-08T07:00:00.000Z"],
   ["passing-tests-skipped-most-of-the-file", "2026-12-15T07:00:00.000Z"],
   ["coding-agents-weekly-usage-limit", "2026-12-22T07:00:00.000Z"],
   ["search-youtube-comments-desktop", "2026-12-29T07:00:00.000Z"],
+  ["split-a-large-file-in-five-safe-steps", "2027-01-05T07:00:00.000Z"],
+  ["17-downloads-a-plan-before-more-code", "2027-01-12T07:00:00.000Z"],
 ];
 
-test("each December post is dated a week after the one before", () => {
-  for (const [slug, when] of DECEMBER) {
+const WEEK = 7 * 24 * 60 * 60 * 1000;
+
+test("each queued post keeps its date", () => {
+  for (const [slug, when] of QUEUED) {
     const { data } = bySlug(slug);
     assert.equal(new Date(data.pubDatetime).toISOString(), when, slug);
   }
 });
 
-test("each December post is published and not featured", () => {
-  for (const [slug] of DECEMBER) {
+test("each queued post is pinned a week after the one before", () => {
+  for (let i = 1; i < QUEUED.length; i++) {
+    const gap = Date.parse(QUEUED[i][1]) - Date.parse(QUEUED[i - 1][1]);
+    assert.equal(gap, WEEK, `${QUEUED[i][0]}: ${gap / 86400000} days`);
+  }
+});
+
+test("each queued post is published and not featured", () => {
+  for (const [slug] of QUEUED) {
     const { data } = bySlug(slug);
     assert.equal(data.draft, false, `${slug}: draft must be false`);
     assert.equal(data.featured, false, `${slug}: featured must be false`);
@@ -74,6 +86,11 @@ test("a product post links its product first", () => {
   for (const [slug, product] of [
     ["passing-tests-skipped-most-of-the-file", "ps-db.cloud"],
     ["search-youtube-comments-desktop", "commentfinder.buildforge.no"],
+    ["split-a-large-file-in-five-safe-steps", "ps-db.cloud"],
+    [
+      "17-downloads-a-plan-before-more-code",
+      "vedlikeholdsloggen.buildforge.no",
+    ],
   ]) {
     const link = firstLink(bySlug(slug).body);
     assert.equal(
@@ -111,11 +128,11 @@ const strategy = readFileSync(
   "utf8"
 );
 
-test("STRATEGY.md's Now names the December posts", () => {
+test("STRATEGY.md's Now names the queued posts", () => {
   const start = strategy.indexOf("\n## Now");
   assert.notEqual(start, -1, "no ## Now section");
   const now = strategy.slice(start, strategy.indexOf("\n## ", start + 1));
-  for (const issue of ["blog#68", "blog#69", "blog#70"])
+  for (const issue of ["blog#68", "blog#69", "blog#70", "blog#72", "blog#73"])
     assert.match(now, new RegExp(`${issue}\\b`), `Now does not name ${issue}`);
 });
 
