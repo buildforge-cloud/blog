@@ -16,7 +16,7 @@ Source: `CLAUDE.md` "What a post is for" (decision 1245, 2026-10-12),
 
 ## Users
 
-- Developers who run a small site and want it indexed by Google (blog#28).
+- Developers who run a small site and want it in Google, or back in it (blog#28, #75).
 - Developers who use coding agents and want to know when to switch (blog#35).
 - Developers who search for GitHub Actions secrets and fork PRs (blog#46).
 - Readers the posts bring to ps·db and Vedlikeholdsloggen (blog#42, #43, #44).
@@ -30,11 +30,11 @@ Source: the user stories in the issues named above.
 Each post goes live at the 07:05 UTC deploy on its day; check it on the site.
 1. 24 Nov, 1 Dec, 8 Dec: AI-written tests (blog#58), visitor input in logs (blog#59), copied text (blog#60).
 2. 15, 22, 29 Dec: tests that skipped a file (blog#68), the weekly usage limit (blog#69), Comment Finder 1.9.1 (blog#70).
-3. 5 Jan: splitting a large file in five steps (blog#72). 12 Jan: 17 downloads, a plan before more code (blog#73).
-4. Before 12 Jan: add the 1 Dec reading of Vedlikeholdsloggen 1.3 to blog#73's post if it is in.
+3. 5, 12, 19 Jan: splitting a large file (blog#72), 17 downloads (blog#73), Google stopped showing ps·db (blog#75).
+4. Before 12 Jan: add Vedlikeholdsloggen 1.3's 1 Dec reading to blog#73's post; before 19 Jan, ps·db's 11 and 25 Nov readings to blog#75's.
 
 Source: blog#58 to #60 (Stefan's "Queue these 3", decision 2128); blog#68
-to #70 (decision 2293); blog#72, #73 ("Queue these 2", decision 2529).
+to #70 (decision 2293); blog#72, #73 (decision 2529); blog#75 (decision 2563).
 
 ## Not doing
 
