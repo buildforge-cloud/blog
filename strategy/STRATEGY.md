@@ -20,21 +20,21 @@ Source: `CLAUDE.md` "What a post is for" (decision 1245, 2026-10-12),
 - Developers who use coding agents and want to know when to switch (blog#35).
 - Developers who search for GitHub Actions secrets and fork PRs (blog#46).
 - Readers the posts bring to ps·db and Vedlikeholdsloggen (blog#42, #43, #44).
+- Indie app makers whose app is live and nobody downloads it (blog#73).
 - Stefan himself: the blog is his record (blog-post skill, "identity").
 
 Source: the user stories in the issues named above.
 
 ## Now
 
-1. 24 Nov: the post on AI-written tests and mutation testing (blog#58) goes live at 07:05 UTC; check it on the site.
-2. 1 Dec: the post on keeping what visitors type out of logs and Sentry (blog#59) goes live; check it on the site.
-3. 8 Dec: the post on copied text rebuilt in our own words (blog#60) goes live; check it on the site.
-4. 15 Dec: the post on passing tests that never read most of a file (blog#68) goes live; check it on the site.
-5. 22 Dec: the post on the coding agents' weekly usage limit (blog#69) goes live; check it on the site.
-6. 29 Dec: the post on Comment Finder 1.9.1 (blog#70) goes live; check it on the site.
+Each post goes live at the 07:05 UTC deploy on its day; check it on the site.
+1. 24 Nov, 1 Dec, 8 Dec: AI-written tests (blog#58), visitor input in logs (blog#59), copied text (blog#60).
+2. 15, 22, 29 Dec: tests that skipped a file (blog#68), the weekly usage limit (blog#69), Comment Finder 1.9.1 (blog#70).
+3. 5 Jan: splitting a large file in five steps (blog#72). 12 Jan: 17 downloads, a plan before more code (blog#73).
+4. Before 12 Jan: add the 1 Dec reading of Vedlikeholdsloggen 1.3 to blog#73's post if it is in.
 
-Source: blog#58, #59 and #60 (Stefan's "Queue these 3", decision 2128);
-blog#68, #69 and #70 (his "Queue these 3", decision 2293).
+Source: blog#58 to #60 (Stefan's "Queue these 3", decision 2128); blog#68
+to #70 (decision 2293); blog#72, #73 ("Queue these 2", decision 2529).
 
 ## Not doing
 

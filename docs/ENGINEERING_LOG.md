@@ -3,6 +3,58 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-10-31 — blog#72, #73: two January posts
+
+**What.** Two posts, a week apart after the 29 Dec post, at 07:00 UTC:
+
+- `split-a-large-file-in-five-safe-steps.md`, 5 January: ps-db#634 to #642
+  (PRs #635 to #643) took `routers/games.py` from 3,265 to 682 lines in
+  five steps, then #647 to #650 (PRs #651 to #654) four more files. The
+  spine is the guards that read a file by name and went blind after a move
+  (PR #635, #643, #653), not the moves, which were byte-identical each time.
+- `17-downloads-a-plan-before-more-code.md`, 12 January: vedlikeholdsloggen
+  #261 and its `docs/brukere.md` (PR #262). 17 first-time downloads against
+  300+, the 1 Oct funnel, the unread channels, the three steps.
+
+Departures, both from the sources. blog#72's file name said "an 800-line
+file", but the file was 3,265 lines and 800 is the limit, so the slug is
+`split-a-large-file-in-five-safe-steps`. And three of blog#73's draft
+headers mapped onto `brukere.md`'s own sections, the report tell the skill
+names, so they were renamed as moments. The "code kept coming" wrong turn
+comes from the 1.2 post's own dates (Hjemmet merged 3 and 5 Oct, after the
+1 Oct funnel reading). blog#73's post was written before the 1 Dec reading,
+and says so; Now 4 asks to add that reading before 12 Jan. STRATEGY.md's
+Now went from six numbered items to an intro line and four items (three
+December posts to an item), to fit both posts and blog#73's reader (indie
+app makers) within 80 lines: the file is at 80 now, with no margin. `changes.d/68.md` is folded into
+CLAUDE.md, with the list renamed `QUEUED`.
+
+**Checks.** `tests/posts.test.mjs`: `DECEMBER` became `QUEUED` with both
+posts, plus a test that each pin is 7 days or more after the one before.
+Red first: `no post with slug split-a-large-file-in-five-safe-steps` and
+`Now does not name blog#72`. The gap test passed at once, so it was broken
+on purpose in a scratch copy: 12 Jan pinned as 13 Jan failed it (and the
+date test). A post dated 6 Jan, a store link before the product's, and
+`draft: true` each failed only their own test. A production build leaves
+both posts out (future dates); a scratch build with past dates rendered
+both, with their OG images.
+
+**Review fixes** (`code-review medium`, 9 findings, all fixed). The gap
+test was first written as exactly 7 days; a skipped week would then fail
+it, while STRATEGY.md only says one a week at most, so it is now 7 or
+more (a declared loosening: the exact date pins still hold). Plants: a
+6-day gap fails it, a 14-day gap passes it. The Now test read a hand list
+of issues; it now takes each issue from `QUEUED`, so it checks blog#60
+too: Now without blog#60 fails it, and the old list would have passed.
+The 12 Jan post said "No answer yet" and "is on 1 December" for dates that
+are past by 12 Jan; it now says what was known on 31 October. Its title
+said "No downloads" over 17; it says "Almost no downloads". Its decision
+rule named impressions and judged shares; it now reads the shares first,
+then the impressions count. The 5 Jan post said each step was "approved on
+the first review" beside the gaps its reviews found; it now says the
+workers' own reviews found them, and the executive approved each on its
+first look.
+
 ## 2026-10-31 — blog#68, #69, #70: three December posts, and a posts test
 
 **What.** Three posts, one a week after the 8 Dec post, each dated 07:00
