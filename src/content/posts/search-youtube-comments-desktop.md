@@ -114,4 +114,5 @@ says the last two in the same words.
 
 Searching the replies is still phone only. On the desktop the same code loads
 no replies and moves the page, so the switch is not offered there. Finding
-out why has its own issue, and it is still open.
+out why is the next step. It has its own issue, still open and with no date
+yet.

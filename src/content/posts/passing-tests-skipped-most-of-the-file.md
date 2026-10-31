@@ -136,5 +136,6 @@ The new stripper still guesses. It is not a real JavaScript parser. The
 review named the shapes that would fool it, and none is in the code today.
 JSX text with `/*` in it, like a path written as `/games/*`, would open a
 block. A lone `'` in JSX text, as in "the '90s", would start a string. It
-suggested a cheap fix, ending a quoted string at the end of its line, and
-called it hardening for later, in ps·db and the starter both.
+suggested a cheap fix, ending a quoted string at the end of its line, in
+ps·db and the starter both. It called that hardening for later, and it has
+no date yet.

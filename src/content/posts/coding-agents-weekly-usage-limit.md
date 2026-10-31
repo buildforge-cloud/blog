@@ -8,7 +8,7 @@ draft: false
 tags:
   - claude-code
   - orchestrator
-description: My coding agents stop new work when the plan's weekly token use passes 90%, to keep a reserve. One afternoon 4 hours before the reset I wanted them to go on, and there was no switch.
+description: My Claude Code agents stop merging, and start no low-priority work, once the plan's weekly token use passes 90%, to keep a reserve. One morning, 4 hours before the reset, I wanted them to go on, and there was no switch.
 ---
 
 On the morning of 26 October my AI coding setup stood still. Pull requests
@@ -38,7 +38,7 @@ The point of the weekly one is a reserve. In my own words, it keeps
 the last percent for a blocker or an emergency. If something breaks in
 production on day six, I want tokens left to fix it.
 
-## Two reasons for one idle afternoon
+## Two reasons for one idle morning
 
 That day the 7-day use sat between 93% and 96% from 08:00 until the reset at
 15:00 UTC. So merges stopped, as they should. By the afternoon six approved
@@ -110,4 +110,5 @@ itself, at the reset. And a check that a gate for one thing, here merging,
 has not quietly become a gate for everything.
 
 One gap is known. If the 7-day reset moves earlier after I lift the limit,
-the lift still holds until the time I set, into the new week.
+the lift still holds until the time I set, into the new week. Nothing is
+planned for that yet, and there is no date for it.

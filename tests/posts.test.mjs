@@ -14,20 +14,24 @@ import { parse } from "yaml";
 const POSTS = new URL("../src/content/posts/", import.meta.url);
 const PAGES = new URL("../src/content/pages/", import.meta.url);
 
-// { data, body } of a Markdown file with YAML front matter.
+// { data, body } of a Markdown file with YAML front matter, LF or CRLF.
 const read = url => {
   const text = readFileSync(url, "utf8");
-  const match = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+  const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
   assert.ok(match, `${url.pathname}: no front matter`);
   return { data: parse(match[1]), body: match[2] };
 };
 
+// The files the content collections build: content.config.ts's glob,
+// `**/[^_]*.{md,mdx}`, takes subfolders too and skips only a file whose own
+// name starts with `_`.
 const markdownIn = dir =>
-  readdirSync(dir)
-    .filter(name => /\.mdx?$/.test(name))
+  readdirSync(dir, { recursive: true })
+    .filter(path => /(?:^|\/)[^_/][^/]*\.mdx?$/.test(path))
     .map(name => ({ name, ...read(new URL(name, dir)) }));
 
-const posts = () => markdownIn(POSTS);
+let postCache;
+const posts = () => (postCache ??= markdownIn(POSTS));
 
 const bySlug = slug => {
   const post = posts().find(p => p.data.slug === slug);
@@ -59,17 +63,22 @@ test("each December post is published and not featured", () => {
   }
 });
 
-// The first link in the body, as Markdown writes it: [text](url).
-const firstLink = body => body.match(/\]\((\S+?)\)/)?.[1];
+// The first link in the body, as Markdown writes it: [text](url), not an
+// image's ![alt](src).
+const firstLink = body => body.match(/(?<!!)\[[^\]]*\]\(([^)\s]+)\)/)?.[1];
+
+// A relative link is on the blog itself.
+const hostOf = link => new URL(link, "https://blog.buildforge.cloud").host;
 
 test("a product post links its product first", () => {
   for (const [slug, product] of [
-    ["passing-tests-skipped-most-of-the-file", "https://ps-db.cloud"],
-    ["search-youtube-comments-desktop", "https://commentfinder.buildforge.no"],
+    ["passing-tests-skipped-most-of-the-file", "ps-db.cloud"],
+    ["search-youtube-comments-desktop", "commentfinder.buildforge.no"],
   ]) {
     const link = firstLink(bySlug(slug).body);
-    assert.ok(
-      link?.startsWith(product),
+    assert.equal(
+      link && hostOf(link),
+      product,
       `${slug}: first link is ${link}, not ${product}`
     );
   }
@@ -84,11 +93,16 @@ test("no post or page has an em dash", () => {
 
 test("no post links to a private repo", () => {
   // blog is the org's only public repo (CLAUDE.md); a link to any other one
-  // is a 404 for a reader.
-  const orgLink = /github\.com\/buildforge-cloud\/([\w.-]+)/g;
+  // is a 404 for a reader. A repo starts under Hysas and moves to the org,
+  // so its old address redirects there. GitHub ignores the case of both.
+  const orgLink = /github\.com\/(buildforge-cloud|hysas)\/([\w.-]+)/gi;
   for (const { name, body } of posts()) {
-    for (const [, repo] of body.matchAll(orgLink))
-      assert.equal(repo, "blog", `${name}: links to buildforge-cloud/${repo}`);
+    for (const [, owner, repo] of body.matchAll(orgLink))
+      assert.equal(
+        repo.toLowerCase(),
+        "blog",
+        `${name}: links to ${owner}/${repo}`
+      );
   }
 });
 

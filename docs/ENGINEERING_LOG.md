@@ -40,6 +40,18 @@ each mutant failed only its own test: an em dash in a post and in a page, a
 link to a private repo, an 81st line, a date an hour late, `draft: true`,
 another link before the product's, and `blog#690` for `blog#69`.
 
+**Review fixes** (`code-review medium`). The test now reads what the
+content collections build: subfolders too, never a file whose own name
+starts with `_`, and CRLF front matter. The repo check ignores case and
+covers the `Hysas` owner. The first link skips images, and the product is
+matched by host, not by prefix. Each fix has a scenario run on the old test
+and the new: an em dash in `2027/x.md` (old: passed), a `_notes.md` with no
+front matter and a CRLF post (old: 5 tests failed), links to `Hysas/ps-db`
+and `Buildforge-Cloud/ps-db` (old: passed), an image before the product
+link (old: failed), `ps-db.cloud.example.com` (old: passed). All seven are
+right on the new test. The 22 Dec description said work stops at 90%; it
+now says merges and Low work stop, and "morning", as the body does.
+
 ## 2026-10-26 — blog#66: a planned post's share image waits for its date
 
 **Why.** `/posts/ai-written-tests-mutation-testing/index.png` answered 200
