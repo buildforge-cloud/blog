@@ -3,6 +3,33 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-11-07 — blog#77: nginx_rig 1.1.1
+
+**What.** `python3 scripts/shared_checks.py update nginx_rig 1.1.1`: the part
+and its pin, nothing else of the rig. The release's README section at tag
+`nginx_rig-v1.1.1` names no step beyond `update`.
+
+**Why it matters here.** apt's candidate on this host, `1.26.3-3+deb13u9`, has
+left upstream: its `nginx` package answers 404. Run on an empty cache
+(2026-11-07), 1.1.0 stops with `CalledProcessError` (`apt-get download`, exit
+100), and leaves only `nginx-common_1.26.3-3+deb13u9_all.deb` behind. 1.1.1
+says `apt's candidate would not download, trying nginx 1.26.3-3+deb13u7`, then
+fetches both packages at that version. `tests/test_nginx.py` passes on that
+binary, under a throwaway `HOME`, so the real `nginx.conf` was served by it.
+
+**A filled cache hides this.** `~/.cache/nginx_rig` already holds a `root`, so
+every rig run returns from `fetch()` before the changed code. It also holds that
+same stray `nginx-common` file, which the next real fetch deletes. So the runs
+below show the bump broke nothing, and only the empty-cache run shows the fix.
+
+**Measured, before and after the bump, on the same worktree:** 52 node tests, 8
+`test_nginx` tests with `NGINX_RIG=1`, and 158 pages with `NGINX_RIG=1`. All
+passed, none skipped, and the test names match. The pin tool refuses the 1.1.0
+file under the 1.1.1 lock. No rig process was left.
+
+**A stale fact, not fixed in this PR.** `CLAUDE.md` says the rig's nginx is 1.24.
+It is 1.26.3 here. `changes.d/77.md` carries the correction.
+
 ## 2026-10-31 — blog#75: a post on Google's 26 Oct drop of ps·db
 
 **What.** One post, 19 January at 07:00 UTC, a week after the 12 Jan post:

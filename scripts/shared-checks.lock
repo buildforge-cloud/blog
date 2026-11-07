@@ -17,8 +17,8 @@
     },
     "tests/nginx_rig.py": {
       "placed": true,
-      "sha256": "a65cdd0cbfb0759c87cf4b9c051a4b552f691787f10c9f3fc45384e337adf2e0",
-      "version": "1.1.0"
+      "sha256": "8a4d17d0d6e8cb5e362b85bdf673905d2fb49c189b0840f46c0d9ffe02383a52",
+      "version": "1.1.1"
     },
     "tools/psi.py": {
       "placed": true,
