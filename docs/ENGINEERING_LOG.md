@@ -3,6 +3,17 @@
 What changed in this repo and why, newest first. `CLAUDE.md` holds the rules
 that stand; this file holds the evidence behind them.
 
+## 2026-11-07 — blog#79: About names Vedlikeholdsloggen, and the note from blog#77
+
+**What.** `about.md` lists Vedlikeholdsloggen with the other products.
+`tests/posts.test.mjs` now pins the link to each product STRATEGY.md's Goal
+names. Before the page edit it failed with `about.md: no link to
+Vedlikeholdsloggen`. Breaking each of the other three links in turn failed the
+same test, naming that product. `changes.d/77.md` is folded into `CLAUDE.md`.
+
+**Still stale, outside this issue's scope.** `README.md:43` and the docstring at
+`tests/test_nginx.py:7` still say Ubuntu's nginx 1.24.
+
 ## 2026-11-07 — blog#77: nginx_rig 1.1.1
 
 **What.** `python3 scripts/shared_checks.py update nginx_rig 1.1.1`: the part
