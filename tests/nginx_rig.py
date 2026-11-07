@@ -28,6 +28,14 @@ rig (buildforge-starter#96).
   extracted cache is reused. Every repo and worker shares the default cache,
   so a fetch holds a lock on it (`flock`), and one that must wait says so.
   Under the lock it removes the temp folder a killed fetch left.
+  ⚠️ A package index can name a binary that has left upstream: a 404, exit 100
+  (ps-db#698, `1.26.3-3+deb13u9`). The fetch then says so and takes the next
+  version in `apt-cache policy`'s table, both packages at that one version.
+  ⚠️ The failed try still leaves `nginx-common` in the folder, so each try
+  starts by removing every `.deb`, or a fallback's binary would be extracted
+  with the newer version's files. Every command has `APT_TIMEOUT`, as each
+  runs under the lock all repos share. A timeout raises, as a hang says
+  nothing about whether a version is there.
 - `render(text, replaces)`: drops every full-line `#` comment, then makes each
   `(old, new)` or `(old, new, count)` replace in order. Each must hit exactly
   its count, 1 when unnamed, or it raises `ValueError`: a template that
@@ -69,17 +77,18 @@ answers 403 for a folder with no index file, so the folder stays 403 with its
 `deny` rule deleted. On profile-homepage, with `^~ /tests/` deleted, `/tests/`
 was still 403 and `/tests/page-health.spec.js` was 200 (profile-homepage#28).
 
-⚠️ **This is Ubuntu 24.04's nginx 1.24, not the image's** (`nginx:alpine`,
-1.31 on staging). A directive newer than 1.24 fails `nginx -t` here even
-where the image takes it: `add_header_inherit` came in 1.29.3. A test of
-such a config cannot run on this rig.
+⚠️ **This is the nginx of the machine's own apt, not the image's**: Debian 13's
+1.26 on this host (measured 2026-11-06), and `nginx:alpine`, 1.31, on staging.
+A directive newer than the machine's fails `nginx -t` here even where the image
+takes it: `add_header_inherit` came in 1.29.3. A test of such a config cannot
+run on this rig.
 
 ## A child repo
 
 A shared part, pinned like `access_stub`: a release of buildforge-starter,
 byte for byte, never edited in place. It goes beside the tests that use it:
 
-    python3 scripts/shared_checks.py update nginx_rig 1.1.0 --into <its tests folder>
+    python3 scripts/shared_checks.py update nginx_rig 1.1.1 --into <its tests folder>
 
 A browser suite meets the real nginx headers (the CSP among them) with
 `serve-dir` as Playwright's server, in `playwright.config`:
@@ -125,17 +134,59 @@ from collections.abc import Iterator
 from contextlib import contextmanager, suppress
 from pathlib import Path
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 BINARY, MIME_TYPES = "usr/sbin/nginx", "etc/nginx/mime.types"
 TEMP_PATHS = ("client_body", "proxy", "fastcgi", "uwsgi", "scgi")
 READY = "start worker processes"  # nginx's notice once its sockets are open
 READY_TIMEOUT = 20.0  # s: a bind nginx cannot make gives up after 2.5 s
 STOP_TIMEOUT = 10.0  # s
+APT_TIMEOUT = 300.0  # s: for each of fetch's commands, on two packages of under 1 MB
 STOP_SIGNALS = (signal.SIGTERM, signal.SIGINT)  # serve-dir's: Playwright's gracefulShutdown, and Ctrl-C
 
 # A word, a quoted string, a comment, or one of `{`, `}`, `;`.
 _TOKEN = re.compile(r""""(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|#[^\n]*|[{};]|[^\s{};]+""")
+
+
+def _download(cache: Path, *packages: str) -> None:
+    """These packages' .debs in `cache`, and no other .deb: an earlier try's name can sort after this one's."""
+    for older in cache.glob("*.deb"):
+        older.unlink()
+    subprocess.run(["apt-get", "download", *packages], cwd=cache, check=True, timeout=APT_TIMEOUT)
+
+
+def _other_versions() -> list[str]:
+    """Each version of nginx in apt's table, in its order, but the candidate that just failed.
+
+    LC_ALL=C because apt translates the `Candidate:` label this reads."""
+    policy = subprocess.run(
+        ["apt-cache", "policy", "nginx"],
+        env={**os.environ, "LC_ALL": "C"},
+        check=True,
+        capture_output=True,
+        text=True,
+        errors="replace",  # a source's URL is whatever sources.list holds
+        timeout=APT_TIMEOUT,
+    ).stdout
+    # A version's row is `[***] <version> <priority>`; the rows of its sources under it have more words.
+    versions = re.findall(r"^\s+(?:\*\*\*\s+)?(\S+)\s+\d+$", policy, re.MULTILINE)
+    return [version for version in versions if f"Candidate: {version}\n" not in policy]
+
+
+def _download_nginx(cache: Path) -> None:
+    """apt's candidate, or else the next version of its table with both packages still upstream."""
+    try:
+        _download(cache, "nginx", "nginx-common")
+    except subprocess.CalledProcessError as failure:
+        versions = _other_versions()
+        for version in versions:
+            print(f"nginx_rig: apt's candidate would not download, trying nginx {version}", file=sys.stderr, flush=True)
+            try:
+                _download(cache, f"nginx={version}", f"nginx-common={version}")
+                return
+            except subprocess.CalledProcessError:
+                continue
+        raise RuntimeError(f"apt-get download failed for apt's candidate and each other version: {versions}") from failure
 
 
 def fetch(cache: Path | None = None) -> Path:
@@ -153,13 +204,11 @@ def fetch(cache: Path | None = None) -> Path:
             shutil.rmtree(leftover, ignore_errors=True)
         if (root / BINARY).exists() and (root / MIME_TYPES).exists():
             return root / BINARY
-        for older in cache.glob("*.deb"):  # an earlier fetch's: its name can sort after this one's
-            older.unlink()
-        subprocess.run(["apt-get", "download", "nginx", "nginx-common"], cwd=cache, check=True)
+        _download_nginx(cache)
         # Extracted aside and renamed in one step, so `root` is whole or absent, even after a kill.
         with tempfile.TemporaryDirectory(dir=cache) as extracted:  # its cleanup skips it once renamed
             for deb in sorted(cache.glob("*.deb")):
-                subprocess.run(["dpkg-deb", "-x", str(deb), extracted], check=True)
+                subprocess.run(["dpkg-deb", "-x", str(deb), extracted], check=True, timeout=APT_TIMEOUT)
             shutil.rmtree(root, ignore_errors=True)  # a half one, left by an extract before this
             Path(extracted).rename(root)
     return root / BINARY
