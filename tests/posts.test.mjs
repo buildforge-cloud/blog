@@ -131,6 +131,26 @@ test("no post or page has an em dash", () => {
   }
 });
 
+// The products STRATEGY.md's Goal names, each at its public page. The blog-post
+// skill's link list is read only when a post is written, so the About page can
+// go stale unseen (blog#1, blog#79). The name must be the link's own text.
+test("the About page links each public product", () => {
+  const { body } = read(new URL("about.md", PAGES));
+  for (const [name, url] of [
+    ["ps·db", "https://ps-db.cloud"],
+    [
+      "ISO Pathfinder Buddy",
+      "https://iso-pathfinder-buddy.lovable.app/roadmap",
+    ],
+    ["Skredda", "https://skredda.no"],
+    ["Vedlikeholdsloggen", "https://vedlikeholdsloggen.buildforge.no/"],
+  ])
+    assert.ok(
+      body.includes(`[${name}](${url})`),
+      `about.md: no link to ${name}`
+    );
+});
+
 test("no post links to a private repo", () => {
   // blog is the org's only public repo (CLAUDE.md); a link to any other one
   // is a 404 for a reader. A repo starts under Hysas and moves to the org,

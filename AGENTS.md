@@ -330,9 +330,12 @@ serves the real `nginx.conf` on a real nginx with the part's `serve_dir()`,
 only with `NGINX_RIG=1` (never in CI): run it after any `nginx.conf` change.
 `NGINX_RIG=1 npm run test:pages` serves `dist/` the same way, with the
 part's `serve-dir` as Playwright's server; there is no serve script of this
-repo's own. The rig's nginx is 1.24, so a
-newer directive (such as `add_header_inherit`, 1.29.3) fails `nginx -t` there
-even where the image's nginx takes it.
+repo's own. The rig's nginx comes from the machine's own apt: 1.26.3 on this
+host (Debian 13, measured 2026-11-07), and it may not match what another
+machine's apt offers. A newer directive (such as `add_header_inherit`, 1.29.3)
+fails `nginx -t` there even where the image's nginx takes it. A rig run on a
+filled `~/.cache/nginx_rig` does not exercise the part's fetch: to test a
+fetch, run it with an empty cache (blog#77).
 
 `ci.yml` installs Chromium after the build and then runs the contrast check
 (see "Design"), on `ubuntu-latest`, so a pull request starts it. That raised
