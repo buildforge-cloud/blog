@@ -249,3 +249,187 @@ test("a timeout cannot land between the container recreate and the health check"
     `${left} min of the job's bound is left for the recreate and the health check; want at least 5`
   );
 });
+
+// blog#85. `playwright install --with-deps` runs apt-get, and a dead apt
+// mirror hung CI three times on 2026-11-11 until the 8-minute job bound
+// cancelled it. So the browser is cached, keyed on the @playwright/test
+// version in package-lock.json, and apt-get runs only when that cache misses.
+const ciJob = () =>
+  Object.values(workflow("ci.yml").jobs).find(j =>
+    (j.steps ?? []).some(s => /playwright install/.test(s.run ?? ""))
+  );
+const browserSteps = job =>
+  (job.steps ?? []).filter(s => /playwright install/.test(s.run ?? ""));
+const cacheStep = (job, kind) =>
+  (job.steps ?? []).find(
+    s =>
+      new RegExp(`^actions/cache/${kind}@`).test(s.uses ?? "") &&
+      String(s.with?.path).includes("~/.cache/ms-playwright")
+  );
+const onMiss = id => `steps.${id}.outputs.cache-hit != 'true'`;
+
+test("ci.yml caches the Playwright browser, keyed on the version in package-lock.json", () => {
+  const job = ciJob();
+  assert.ok(job, "no ci.yml job runs `playwright install`");
+  const restore = cacheStep(job, "restore");
+  assert.ok(
+    restore,
+    "no actions/cache/restore step holds ~/.cache/ms-playwright"
+  );
+  assert.ok(
+    job.steps.indexOf(restore) < job.steps.indexOf(browserSteps(job)[0]),
+    "the cache must be restored before the install"
+  );
+  const ref = String(restore.with.key).match(
+    /steps\.([\w-]+)\.outputs\.[\w-]+/
+  );
+  assert.ok(ref, "the cache key must use a step output (the version)");
+  const versionStep = job.steps.find(s => s.id === ref[1]);
+  assert.ok(
+    versionStep &&
+      /package-lock\.json/.test(versionStep.run ?? "") &&
+      /@playwright\/test/.test(versionStep.run ?? ""),
+    `step ${ref[1]} must read @playwright/test's version from package-lock.json`
+  );
+});
+
+// A hit skips apt-get, so it trusts the runner image to have Chromium's
+// libraries. A new image (ubuntu-latest moving on a release) must miss once.
+// The `env` context holds only the workflow's own variables, not the
+// runner's, so `${{ env.ImageOS }}` is empty: the image is read in a step.
+test("the browser cache key names the runner image", () => {
+  const job = ciJob();
+  const key = String(cacheStep(job, "restore")?.with?.key);
+  assert.doesNotMatch(
+    key,
+    /env\.ImageOS/,
+    "${{ env.ImageOS }} is always empty"
+  );
+  const fromImage = [
+    ...key.matchAll(/steps\.([\w-]+)\.outputs\.([\w-]+)/g),
+  ].some(([, id, out]) =>
+    new RegExp(`\\b${out}=\\$\\{?ImageOS\\b`).test(
+      job.steps.find(s => s.id === id)?.run ?? ""
+    )
+  );
+  assert.ok(
+    fromImage,
+    "the cache key must hold a step output read from $ImageOS"
+  );
+});
+
+// apt-get is the part that hangs, and on a miss the browser itself comes
+// from Playwright's own download, not apt. So no step runs `--with-deps`:
+// scripts/browser-libs.mjs checks the libraries, and apt-get runs only when
+// one is missing (blog#85, second run: apt's mirror did not resolve).
+test("ci.yml downloads the browser only on a miss, and never with apt-get", () => {
+  const job = ciJob();
+  const id = cacheStep(job, "restore")?.id;
+  assert.ok(id, "the restore step needs an id");
+  const runs = browserSteps(job).map(s => s.run.trim());
+  assert.deepEqual(
+    runs.filter(r => /--with-deps/.test(r)),
+    [],
+    "no step may run `playwright install --with-deps`"
+  );
+  const download = browserSteps(job).find(
+    s => s.run.trim() === "npx playwright install chromium"
+  );
+  assert.ok(download, "no step runs `npx playwright install chromium`");
+  assert.equal(String(download.if ?? "").trim(), onMiss(id));
+});
+
+test("ci.yml runs apt-get only when the browser lacks a library", () => {
+  const job = ciJob();
+  const runs = (job.steps ?? []).map(s => (s.run ?? "").trim());
+  const libs = runs.indexOf(
+    "node scripts/browser-libs.mjs ~/.cache/ms-playwright || npx playwright install-deps chromium"
+  );
+  assert.ok(libs >= 0, "no step checks the libraries before install-deps");
+  const download = runs.indexOf("npx playwright install chromium");
+  const pages = runs.indexOf("npm run test:pages");
+  assert.ok(
+    download < libs && libs < pages,
+    "the library check runs after the download and before the page tests"
+  );
+  assert.equal(
+    runs.filter(r => /install-deps/.test(r)).length,
+    1,
+    "install-deps may run only behind the library check"
+  );
+});
+
+// A stalled cache service must not fail the job: the restore times out, its
+// cache-hit is empty, and the install runs as on a miss.
+test("a hung cache restore falls through to the install", () => {
+  assert.equal(cacheStep(ciJob(), "restore")?.["continue-on-error"], true);
+});
+
+// actions/cache's own post-job save has no bound of its own, so the save is
+// a step: after the page tests, only on a miss, and a failed save never fails
+// the run.
+test("ci.yml saves the browser as its own step, only on a miss", () => {
+  const job = ciJob();
+  const restore = cacheStep(job, "restore");
+  const save = cacheStep(job, "save");
+  assert.ok(save, "no actions/cache/save step holds ~/.cache/ms-playwright");
+  assert.ok(
+    job.steps.indexOf(save) >
+      job.steps.findIndex(s => (s.run ?? "").trim() === "npm run test:pages"),
+    "the save must come after the page tests, so only a browser that ran is cached"
+  );
+  assert.equal(String(save.if ?? "").trim(), onMiss(restore.id));
+  // The key is written out, not taken from the restore's outputs: a restore
+  // that timed out sets none, and the save would then get an empty key.
+  assert.equal(save.with.key, restore.with.key);
+  assert.equal(save["continue-on-error"], true);
+});
+
+// A hang while fetching the browser (the restore, the install or the save)
+// should name that step and stop in 3 minutes, not run on to the job's
+// 8-minute bound.
+const MAX_BROWSER_MINUTES = 3;
+const fetchesBrowser = s =>
+  /playwright install/.test(s.run ?? "") ||
+  String(s.with?.path ?? "").includes("ms-playwright");
+const slowBrowserSteps = job =>
+  (job.steps ?? [])
+    .filter(fetchesBrowser)
+    .filter(s => !(s["timeout-minutes"] <= MAX_BROWSER_MINUTES))
+    .map(s => s.name);
+
+test("each step that fetches the browser has its own bound of 3 minutes at most", () => {
+  assert.deepEqual(slowBrowserSteps(ciJob()), []);
+});
+
+test("the browser bound check takes 3 minutes and refuses 4 or none", () => {
+  const step = (name, minutes) => ({
+    name,
+    run: "npx playwright install chromium",
+    ...(minutes === undefined ? {} : { "timeout-minutes": minutes }),
+  });
+  const job = {
+    steps: [
+      step("three", 3),
+      step("four", 4),
+      step("none"),
+      {
+        name: "cache",
+        uses: "actions/cache@v4",
+        with: { path: "~/.cache/ms-playwright" },
+      },
+      { name: "other", run: "true" },
+    ],
+  };
+  assert.deepEqual(slowBrowserSteps(job), ["four", "none", "cache"]);
+});
+
+// A pull request's cache is visible to that pull request only, but a cache
+// saved on `main` is visible to every pull request. CI runs on a push to
+// `main` so the browser is cached there, and a new pull request's first run
+// skips apt-get too.
+test("ci.yml runs on a push to main, so pull requests can read its cache", () => {
+  const on = triggers(workflow("ci.yml"));
+  assert.deepEqual(on.push?.branches, ["main"]);
+  assert.ok("pull_request" in on, "ci.yml must still run on pull_request");
+});

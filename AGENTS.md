@@ -110,6 +110,10 @@ ps·db at `ps-db.buildforge.cloud` for two and a half weeks after it moved to
 still 301s — but a redirect only passes SEO signal once Google re-crawls the old
 URL, which it hadn't done since the day before the move. When a fleet project
 changes domain, grep this whole repo for the old hostname, not just the posts.
+`tests/posts.test.mjs` (in `npm test`) now catches that for `about.md`: it
+fails when the page loses its link to a product STRATEGY.md's Goal names, or
+when that link's address changes. A new public product or a new domain needs
+its line in that test too (blog#79).
 
 ## Comments (giscus)
 
