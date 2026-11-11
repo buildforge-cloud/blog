@@ -62,25 +62,39 @@ jobs:
         run: npm run build
 
       # blog#85: `--with-deps` runs apt-get, and a dead apt mirror hung CI
-      # three times on 2026-11-11. The browser is cached, keyed on the
-      # @playwright/test version in package-lock.json, and apt-get runs only
-      # on a miss; on a hit the runner image already has Chromium's libraries.
-      - name: "🔢 Read the Playwright version"
+      # three times on 2026-11-11. The browser is cached, keyed on the runner
+      # image and the @playwright/test version in package-lock.json, and
+      # apt-get runs only on a miss; on a hit the image already has Chromium's
+      # libraries. A stalled restore falls through to the install, and the
+      # save is a step of its own so that it has a bound too.
+      - name: "🔢 Read the runner image and the Playwright version"
         id: playwright
-        run: echo "version=$(node -p 'require("./package-lock.json").packages["node_modules/@playwright/test"].version')" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "image=${ImageOS:?the runner image is unknown}" >> "$GITHUB_OUTPUT"
+          echo "version=$(node -p 'require("./package-lock.json").packages["node_modules/@playwright/test"].version')" >> "$GITHUB_OUTPUT"
 
       - name: "🗄️ Restore the Playwright browser"
         id: playwright-cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         timeout-minutes: 3
+        continue-on-error: true
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+          key: playwright-${{ steps.playwright.outputs.image }}-${{ steps.playwright.outputs.version }}
 
       - name: "🎭 Install Chromium for Playwright"
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         timeout-minutes: 3
         run: npx playwright install --with-deps chromium
+
+      - name: "🗄️ Save the Playwright browser"
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        timeout-minutes: 3
+        continue-on-error: true
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ steps.playwright-cache.outputs.cache-primary-key }}
 
       - name: "🎨 Check text contrast on the built site"
         run: npm run test:pages

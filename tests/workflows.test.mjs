@@ -260,24 +260,31 @@ const ciJob = () =>
   );
 const browserSteps = job =>
   (job.steps ?? []).filter(s => /playwright install/.test(s.run ?? ""));
+const cacheStep = (job, kind) =>
+  (job.steps ?? []).find(
+    s =>
+      new RegExp(`^actions/cache/${kind}@`).test(s.uses ?? "") &&
+      String(s.with?.path).includes("~/.cache/ms-playwright")
+  );
+const onMiss = id => `steps.${id}.outputs.cache-hit != 'true'`;
 
 test("ci.yml caches the Playwright browser, keyed on the version in package-lock.json", () => {
   const job = ciJob();
   assert.ok(job, "no ci.yml job runs `playwright install`");
-  const steps = job.steps;
-  const cache = steps.findIndex(
-    s =>
-      /^actions\/cache@/.test(s.uses ?? "") &&
-      String(s.with?.path).includes("~/.cache/ms-playwright")
+  const restore = cacheStep(job, "restore");
+  assert.ok(
+    restore,
+    "no actions/cache/restore step holds ~/.cache/ms-playwright"
   );
-  assert.ok(cache >= 0, "no actions/cache step holds ~/.cache/ms-playwright");
-  const install = steps.indexOf(browserSteps(job)[0]);
-  assert.ok(cache < install, "the cache must be restored before the install");
-  const ref = String(steps[cache].with.key).match(
+  assert.ok(
+    job.steps.indexOf(restore) < job.steps.indexOf(browserSteps(job)[0]),
+    "the cache must be restored before the install"
+  );
+  const ref = String(restore.with.key).match(
     /steps\.([\w-]+)\.outputs\.[\w-]+/
   );
   assert.ok(ref, "the cache key must use a step output (the version)");
-  const versionStep = steps.find(s => s.id === ref[1]);
+  const versionStep = job.steps.find(s => s.id === ref[1]);
   assert.ok(
     versionStep &&
       /package-lock\.json/.test(versionStep.run ?? "") &&
@@ -286,22 +293,73 @@ test("ci.yml caches the Playwright browser, keyed on the version in package-lock
   );
 });
 
+// A hit skips apt-get, so it trusts the runner image to have Chromium's
+// libraries. A new image (ubuntu-latest moving on a release) must miss once.
+// The `env` context holds only the workflow's own variables, not the
+// runner's, so `${{ env.ImageOS }}` is empty: the image is read in a step.
+test("the browser cache key names the runner image", () => {
+  const job = ciJob();
+  const key = String(cacheStep(job, "restore")?.with?.key);
+  assert.doesNotMatch(
+    key,
+    /env\.ImageOS/,
+    "${{ env.ImageOS }} is always empty"
+  );
+  const fromImage = [
+    ...key.matchAll(/steps\.([\w-]+)\.outputs\.([\w-]+)/g),
+  ].some(([, id, out]) =>
+    new RegExp(`\\b${out}=\\$\\{?ImageOS\\b`).test(
+      job.steps.find(s => s.id === id)?.run ?? ""
+    )
+  );
+  assert.ok(
+    fromImage,
+    "the cache key must hold a step output read from $ImageOS"
+  );
+});
+
 test("ci.yml runs apt-get for the browser only when the cache misses", () => {
   const job = ciJob();
-  const cacheId = job.steps.find(s =>
-    /^actions\/cache@/.test(s.uses ?? "")
-  )?.id;
-  assert.ok(cacheId, "the actions/cache step needs an id");
-  for (const step of browserSteps(job).filter(s => /--with-deps/.test(s.run))) {
-    assert.match(
-      String(step.if ?? ""),
-      new RegExp(`steps\\.${cacheId}\\.outputs\\.cache-hit != 'true'`),
+  const id = cacheStep(job, "restore")?.id;
+  assert.ok(id, "the restore step needs an id");
+  const withDeps = browserSteps(job).filter(s => /--with-deps/.test(s.run));
+  assert.ok(withDeps.length > 0, "no step installs the system parts on a miss");
+  for (const step of withDeps) {
+    assert.equal(
+      String(step.if ?? "").trim(),
+      onMiss(id),
       `"${step.name}" runs apt-get; it must run only on a cache miss`
     );
   }
 });
 
-// A hang while fetching the browser (the cache restore or the install)
+// A stalled cache service must not fail the job: the restore times out, its
+// cache-hit is empty, and the install runs as on a miss.
+test("a hung cache restore falls through to the install", () => {
+  assert.equal(cacheStep(ciJob(), "restore")?.["continue-on-error"], true);
+});
+
+// actions/cache's own post-job save has no bound of its own, so the save is
+// a step: after the install, only on a miss, and a failed save never fails
+// the run.
+test("ci.yml saves the browser as its own step, only on a miss", () => {
+  const job = ciJob();
+  const restore = cacheStep(job, "restore");
+  const save = cacheStep(job, "save");
+  assert.ok(save, "no actions/cache/save step holds ~/.cache/ms-playwright");
+  assert.ok(
+    job.steps.indexOf(save) > job.steps.indexOf(browserSteps(job).at(-1)),
+    "the save must come after the install"
+  );
+  assert.equal(String(save.if ?? "").trim(), onMiss(restore.id));
+  assert.equal(
+    save.with.key,
+    `\${{ steps.${restore.id}.outputs.cache-primary-key }}`
+  );
+  assert.equal(save["continue-on-error"], true);
+});
+
+// A hang while fetching the browser (the restore, the install or the save)
 // should name that step and stop in 3 minutes, not run on to the job's
 // 8-minute bound.
 const MAX_BROWSER_MINUTES = 3;
