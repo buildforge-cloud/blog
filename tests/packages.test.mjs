@@ -104,6 +104,21 @@ test("astro, a direct dependency, is in the lockfile", () => {
   );
 });
 
+// astro 7.2.10 and later want @astrojs/markdown-remark ^7.3, and every
+// @astrojs/mdx 7.x pins 7.2.x. While mdx is on 7, a range like ^7.2.9 lets
+// `npm update` or `npm audit fix` reach for a newer astro and stop with
+// ERESOLVE, which blocks every other update in the same run.
+test("while @astrojs/mdx is on major 7, astro is pinned below 7.2.10", () => {
+  const pkg = JSON.parse(
+    readFileSync(new URL("../package.json", import.meta.url), "utf8")
+  );
+  const mdx = pkg.dependencies["@astrojs/mdx"];
+  const astro = pkg.dependencies.astro;
+  if (!/^[\^~]?7\./.test(mdx)) return; // mdx 8 lifts the cap
+  assert.match(astro, /^\d+\.\d+\.\d+$/, `astro "${astro}" is a range`);
+  assert.equal(compare(astro, "7.2.10"), -1, `astro ${astro} needs mdx 8`);
+});
+
 for (const advisory of ADVISORIES) {
   test(`no locked copy of ${advisory.name} is below ${advisory.fixed}`, () => {
     const bad = copies(lock, advisory.name).filter(([, version]) =>
