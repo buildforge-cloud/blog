@@ -249,3 +249,103 @@ test("a timeout cannot land between the container recreate and the health check"
     `${left} min of the job's bound is left for the recreate and the health check; want at least 5`
   );
 });
+
+// blog#85. `playwright install --with-deps` runs apt-get, and a dead apt
+// mirror hung CI three times on 2026-11-11 until the 8-minute job bound
+// cancelled it. So the browser is cached, keyed on the @playwright/test
+// version in package-lock.json, and apt-get runs only when that cache misses.
+const ciJob = () =>
+  Object.values(workflow("ci.yml").jobs).find(j =>
+    (j.steps ?? []).some(s => /playwright install/.test(s.run ?? ""))
+  );
+const browserSteps = job =>
+  (job.steps ?? []).filter(s => /playwright install/.test(s.run ?? ""));
+
+test("ci.yml caches the Playwright browser, keyed on the version in package-lock.json", () => {
+  const job = ciJob();
+  assert.ok(job, "no ci.yml job runs `playwright install`");
+  const steps = job.steps;
+  const cache = steps.findIndex(
+    s =>
+      /^actions\/cache@/.test(s.uses ?? "") &&
+      String(s.with?.path).includes("~/.cache/ms-playwright")
+  );
+  assert.ok(cache >= 0, "no actions/cache step holds ~/.cache/ms-playwright");
+  const install = steps.indexOf(browserSteps(job)[0]);
+  assert.ok(cache < install, "the cache must be restored before the install");
+  const ref = String(steps[cache].with.key).match(
+    /steps\.([\w-]+)\.outputs\.[\w-]+/
+  );
+  assert.ok(ref, "the cache key must use a step output (the version)");
+  const versionStep = steps.find(s => s.id === ref[1]);
+  assert.ok(
+    versionStep &&
+      /package-lock\.json/.test(versionStep.run ?? "") &&
+      /@playwright\/test/.test(versionStep.run ?? ""),
+    `step ${ref[1]} must read @playwright/test's version from package-lock.json`
+  );
+});
+
+test("ci.yml runs apt-get for the browser only when the cache misses", () => {
+  const job = ciJob();
+  const cacheId = job.steps.find(s =>
+    /^actions\/cache@/.test(s.uses ?? "")
+  )?.id;
+  assert.ok(cacheId, "the actions/cache step needs an id");
+  for (const step of browserSteps(job).filter(s => /--with-deps/.test(s.run))) {
+    assert.match(
+      String(step.if ?? ""),
+      new RegExp(`steps\\.${cacheId}\\.outputs\\.cache-hit != 'true'`),
+      `"${step.name}" runs apt-get; it must run only on a cache miss`
+    );
+  }
+});
+
+// A hang while fetching the browser (the cache restore or the install)
+// should name that step and stop in 3 minutes, not run on to the job's
+// 8-minute bound.
+const MAX_BROWSER_MINUTES = 3;
+const fetchesBrowser = s =>
+  /playwright install/.test(s.run ?? "") ||
+  String(s.with?.path ?? "").includes("ms-playwright");
+const slowBrowserSteps = job =>
+  (job.steps ?? [])
+    .filter(fetchesBrowser)
+    .filter(s => !(s["timeout-minutes"] <= MAX_BROWSER_MINUTES))
+    .map(s => s.name);
+
+test("each step that fetches the browser has its own bound of 3 minutes at most", () => {
+  assert.deepEqual(slowBrowserSteps(ciJob()), []);
+});
+
+test("the browser bound check takes 3 minutes and refuses 4 or none", () => {
+  const step = (name, minutes) => ({
+    name,
+    run: "npx playwright install chromium",
+    ...(minutes === undefined ? {} : { "timeout-minutes": minutes }),
+  });
+  const job = {
+    steps: [
+      step("three", 3),
+      step("four", 4),
+      step("none"),
+      {
+        name: "cache",
+        uses: "actions/cache@v4",
+        with: { path: "~/.cache/ms-playwright" },
+      },
+      { name: "other", run: "true" },
+    ],
+  };
+  assert.deepEqual(slowBrowserSteps(job), ["four", "none", "cache"]);
+});
+
+// A pull request's cache is visible to that pull request only, but a cache
+// saved on `main` is visible to every pull request. CI runs on a push to
+// `main` so the browser is cached there, and a new pull request's first run
+// skips apt-get too.
+test("ci.yml runs on a push to main, so pull requests can read its cache", () => {
+  const on = triggers(workflow("ci.yml"));
+  assert.deepEqual(on.push?.branches, ["main"]);
+  assert.ok("pull_request" in on, "ci.yml must still run on pull_request");
+});

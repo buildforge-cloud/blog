@@ -4,6 +4,11 @@ permissions:
   contents: read
 
 on:
+  # blog#85: a run on main saves the Playwright browser cache where every
+  # pull request can read it (a pull request's own cache is its own only).
+  push:
+    branches:
+      - main
   pull_request:
     types:
       - opened
@@ -56,7 +61,25 @@ jobs:
       - name: "🚀 Build the project"
         run: npm run build
 
+      # blog#85: `--with-deps` runs apt-get, and a dead apt mirror hung CI
+      # three times on 2026-11-11. The browser is cached, keyed on the
+      # @playwright/test version in package-lock.json, and apt-get runs only
+      # on a miss; on a hit the runner image already has Chromium's libraries.
+      - name: "🔢 Read the Playwright version"
+        id: playwright
+        run: echo "version=$(node -p 'require("./package-lock.json").packages["node_modules/@playwright/test"].version')" >> "$GITHUB_OUTPUT"
+
+      - name: "🗄️ Restore the Playwright browser"
+        id: playwright-cache
+        uses: actions/cache@v4
+        timeout-minutes: 3
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
       - name: "🎭 Install Chromium for Playwright"
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        timeout-minutes: 3
         run: npx playwright install --with-deps chromium
 
       - name: "🎨 Check text contrast on the built site"
