@@ -318,19 +318,45 @@ test("the browser cache key names the runner image", () => {
   );
 });
 
-test("ci.yml runs apt-get for the browser only when the cache misses", () => {
+// apt-get is the part that hangs, and on a miss the browser itself comes
+// from Playwright's own download, not apt. So no step runs `--with-deps`:
+// scripts/browser-libs.mjs checks the libraries, and apt-get runs only when
+// one is missing (blog#85, second run: apt's mirror did not resolve).
+test("ci.yml downloads the browser only on a miss, and never with apt-get", () => {
   const job = ciJob();
   const id = cacheStep(job, "restore")?.id;
   assert.ok(id, "the restore step needs an id");
-  const withDeps = browserSteps(job).filter(s => /--with-deps/.test(s.run));
-  assert.ok(withDeps.length > 0, "no step installs the system parts on a miss");
-  for (const step of withDeps) {
-    assert.equal(
-      String(step.if ?? "").trim(),
-      onMiss(id),
-      `"${step.name}" runs apt-get; it must run only on a cache miss`
-    );
-  }
+  const runs = browserSteps(job).map(s => s.run.trim());
+  assert.deepEqual(
+    runs.filter(r => /--with-deps/.test(r)),
+    [],
+    "no step may run `playwright install --with-deps`"
+  );
+  const download = browserSteps(job).find(
+    s => s.run.trim() === "npx playwright install chromium"
+  );
+  assert.ok(download, "no step runs `npx playwright install chromium`");
+  assert.equal(String(download.if ?? "").trim(), onMiss(id));
+});
+
+test("ci.yml runs apt-get only when the browser lacks a library", () => {
+  const job = ciJob();
+  const runs = (job.steps ?? []).map(s => (s.run ?? "").trim());
+  const libs = runs.indexOf(
+    "node scripts/browser-libs.mjs ~/.cache/ms-playwright || npx playwright install-deps chromium"
+  );
+  assert.ok(libs >= 0, "no step checks the libraries before install-deps");
+  const download = runs.indexOf("npx playwright install chromium");
+  const pages = runs.indexOf("npm run test:pages");
+  assert.ok(
+    download < libs && libs < pages,
+    "the library check runs after the download and before the page tests"
+  );
+  assert.equal(
+    runs.filter(r => /install-deps/.test(r)).length,
+    1,
+    "install-deps may run only behind the library check"
+  );
 });
 
 // A stalled cache service must not fail the job: the restore times out, its
