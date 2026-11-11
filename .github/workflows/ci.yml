@@ -100,7 +100,7 @@ jobs:
         continue-on-error: true
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ steps.playwright-cache.outputs.cache-primary-key }}
+          key: playwright-${{ steps.playwright.outputs.image }}-${{ steps.playwright.outputs.version }}
 
       - name: "🎨 Check text contrast on the built site"
         run: npm run test:pages

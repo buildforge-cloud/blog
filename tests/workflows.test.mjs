@@ -378,10 +378,9 @@ test("ci.yml saves the browser as its own step, only on a miss", () => {
     "the save must come after the install"
   );
   assert.equal(String(save.if ?? "").trim(), onMiss(restore.id));
-  assert.equal(
-    save.with.key,
-    `\${{ steps.${restore.id}.outputs.cache-primary-key }}`
-  );
+  // The key is written out, not taken from the restore's outputs: a restore
+  // that timed out sets none, and the save would then get an empty key.
+  assert.equal(save.with.key, restore.with.key);
   assert.equal(save["continue-on-error"], true);
 });
 
