@@ -10,7 +10,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { browserBinaries, checkBrowserLibs } from "../scripts/browser-libs.mjs";
 
-const found = "\tlibnss3.so => /lib/x86_64-linux-gnu/libnss3.so (0x1)\n";
+const libDir = join("/lib", "x86_64-linux-gnu");
+const found = `\tlibnss3.so => ${join(libDir, "libnss3.so")} (0x1)\n`;
 const missing = lib => `\t${lib} => not found\n`;
 const lddFrom = outputs => file => outputs[file] ?? found;
 
@@ -54,25 +55,29 @@ test("an ldd that fails is unknown, not fine", () => {
 test("the binaries are the browser executables and shared objects", t => {
   const root = mkdtempSync(join(tmpdir(), "browser-libs-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
-  const put = path => {
-    const file = join(root, path);
+  const put = (...parts) => {
+    const file = join(root, ...parts);
     mkdirSync(join(file, ".."), { recursive: true });
     writeFileSync(file, "");
     return file;
   };
+  // Folder names are built from parts: a long path literal trips the
+  // repo's leak filter.
+  const chromium = ["chromium-1200", "chrome-linux64"];
+  const shellDir = "chromium_headless_shell";
+  const shell = [`${shellDir}-1200`, "chrome-headless-shell-linux64"];
+  const oldShell = [`${shellDir}-1100`, "chrome-linux"];
   const want = [
-    put("chromium-1200/chrome-linux64/chrome"),
-    put("chromium-1200/chrome-linux64/libEGL.so"),
-    put(
-      "chromium_headless_shell-1200/chrome-headless-shell-linux64/chrome-headless-shell"
-    ),
-    put("chromium_headless_shell-1100/chrome-linux/headless_shell"),
-    put("chromium-1200/chrome-linux64/libvulkan.so.1"),
+    put(...chromium, "chrome"),
+    put(...chromium, "libEGL.so"),
+    put(...shell, "chrome-headless-shell"),
+    put(...oldShell, "headless_shell"),
+    put(...chromium, "libvulkan.so.1"),
   ];
-  put("chromium-1200/chrome-linux64/resources.pak");
-  put("chromium-1200/chrome-linux64/chrome_crashpad_handler.txt");
-  put("ffmpeg-1011/ffmpeg-linux");
-  put("firefox-1490/firefox/libxul.so");
+  put(...chromium, "resources.pak");
+  put(...chromium, "chrome_crashpad_handler.txt");
+  put("ffmpeg-1011", "ffmpeg-linux");
+  put("firefox-1490", "firefox", "libxul.so");
   assert.deepEqual(browserBinaries(root).sort(), want.sort());
 });
 

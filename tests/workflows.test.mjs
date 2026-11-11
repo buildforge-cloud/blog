@@ -366,7 +366,7 @@ test("a hung cache restore falls through to the install", () => {
 });
 
 // actions/cache's own post-job save has no bound of its own, so the save is
-// a step: after the install, only on a miss, and a failed save never fails
+// a step: after the page tests, only on a miss, and a failed save never fails
 // the run.
 test("ci.yml saves the browser as its own step, only on a miss", () => {
   const job = ciJob();
@@ -374,8 +374,9 @@ test("ci.yml saves the browser as its own step, only on a miss", () => {
   const save = cacheStep(job, "save");
   assert.ok(save, "no actions/cache/save step holds ~/.cache/ms-playwright");
   assert.ok(
-    job.steps.indexOf(save) > job.steps.indexOf(browserSteps(job).at(-1)),
-    "the save must come after the install"
+    job.steps.indexOf(save) >
+      job.steps.findIndex(s => (s.run ?? "").trim() === "npm run test:pages"),
+    "the save must come after the page tests, so only a browser that ran is cached"
   );
   assert.equal(String(save.if ?? "").trim(), onMiss(restore.id));
   // The key is written out, not taken from the restore's outputs: a restore
