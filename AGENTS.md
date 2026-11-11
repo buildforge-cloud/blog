@@ -115,6 +115,10 @@ fails when the page loses its link to a product STRATEGY.md's Goal names, or
 when that link's address changes. A new public product or a new domain needs
 its line in that test too (blog#79).
 
+`tests/posts.test.mjs` (in `npm test`) fails when `about.md` loses its link to a
+product that STRATEGY.md's Goal names, or when that link's address changes. A new
+public product, or a new domain for one, needs its line there too (blog#79).
+
 ## Comments (giscus)
 
 Comments are [giscus](https://giscus.app) — a GitHub-Discussions-backed widget, no
