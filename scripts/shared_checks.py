@@ -34,13 +34,15 @@ A project made by `scripts/init.py` already holds the lock and the release it
 names. A repo with no lock yet adopts with these commands:
 
     gh api -H "Accept: application/vnd.github.raw" \\
-      "repos/buildforge-cloud/buildforge-starter/contents/scripts/shared_checks.py?ref=shared_checks-v1.7.1" \\
+      "repos/buildforge-cloud/buildforge-starter/contents/scripts/shared_checks.py?ref=shared_checks-v1.7.2" \\
       > scripts/shared_checks.py
-    python3 scripts/shared_checks.py update shared_checks 1.7.1 \\
+    python3 scripts/shared_checks.py update shared_checks 1.7.2 \\
       --source https://github.com/buildforge-cloud/buildforge-starter.git
-    python3 scripts/shared_checks.py update check_secrets 1.2.0
-    python3 scripts/shared_checks.py update secrets 1.3.0
+    python3 scripts/shared_checks.py update check_secrets 2.0.0
+    python3 scripts/shared_checks.py update secret_rules 1.0.0
+    python3 scripts/shared_checks.py update secrets 2.0.0
     python3 scripts/shared_checks.py update pre-commit 1.0.1
+    python3 scripts/check_secrets.py --fetch
     git config core.hooksPath .githooks
 
 `secrets` is `.github/workflows/secrets.yml`, which runs the scanner and this
@@ -52,6 +54,12 @@ cannot hold a Python line declares its version as a comment line,
 `# __version__ = "x.y.z"`. `update` gives a file its release's executable
 bit, and the pin fails a hook that lost it, which git would skip. A repo that
 held a copy takes the release over it, in one PR.
+
+⚠️ **Since check_secrets 2.0.0 the scanner runs gitleaks** (buildforge-starter#307):
+`secret_rules` is `scripts/secret_rules.toml`, the rules it hands gitleaks,
+a release of its own; `--fetch` caches the pinned gitleaks once per machine
+(the hook never fetches, and refuses until it is there); `secrets` 2.0.0
+fetches it in CI. A repo moving from 1.x takes all three, in one PR.
 
 ⚠️ The shared jobs' `runs-on` line, which `secrets.yml` now brings and
 `docs-checks.yml`'s `docs` job copies by hand:
@@ -74,7 +82,7 @@ that read it, `tests/test_workflow_ceilings.py`, `tests/test_secrets.py`,
 `backend/tests/test_deploy_workflows.py`, or its `docs` job fails.
 Moving to a new release is one command, committed as one PR:
 
-    python3 scripts/shared_checks.py update check_secrets 1.2.0
+    python3 scripts/shared_checks.py update check_secrets 2.0.0
 
 ⚠️ **`update shared_checks` is run by the OLD copy**, which writes the pin
 as the old release knew it (buildforge-starter#172): 1.5.0 knew no
@@ -121,7 +129,7 @@ import subprocess
 import sys
 import tempfile
 
-__version__ = "1.7.1"
+__version__ = "1.7.2"
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LOCK = ROOT / "scripts" / "shared-checks.lock"
