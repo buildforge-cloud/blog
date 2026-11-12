@@ -34,12 +34,12 @@ A project made by `scripts/init.py` already holds the lock and the release it
 names. A repo with no lock yet adopts with these commands:
 
     gh api -H "Accept: application/vnd.github.raw" \\
-      "repos/buildforge-cloud/buildforge-starter/contents/scripts/shared_checks.py?ref=shared_checks-v1.7.2" \\
+      "repos/buildforge-cloud/buildforge-starter/contents/scripts/shared_checks.py?ref=shared_checks-v1.7.5" \\
       > scripts/shared_checks.py
-    python3 scripts/shared_checks.py update shared_checks 1.7.2 \\
+    python3 scripts/shared_checks.py update shared_checks 1.7.5 \\
       --source https://github.com/buildforge-cloud/buildforge-starter.git
-    python3 scripts/shared_checks.py update check_secrets 2.0.0
-    python3 scripts/shared_checks.py update secret_rules 1.0.0
+    python3 scripts/shared_checks.py update check_secrets 2.1.1
+    python3 scripts/shared_checks.py update secret_rules 1.1.0
     python3 scripts/shared_checks.py update secrets 2.0.0
     python3 scripts/shared_checks.py update pre-commit 1.0.1
     python3 scripts/check_secrets.py --fetch
@@ -80,9 +80,11 @@ buildforge-starter#153's change to `tests/_runner_switch.py` (its new `LIGHT_SWI
 that read it, `tests/test_workflow_ceilings.py`, `tests/test_secrets.py`,
 `tests/test_claude_rules.py` and a web project's
 `backend/tests/test_deploy_workflows.py`, or its `docs` job fails.
-Moving to a new release is one command, committed as one PR:
+Moving to a new release is one command for each part that moved, all
+committed as one PR; the starter's README names every part a scanner
+release brings (since 1.7.3, buildforge-starter#309):
 
-    python3 scripts/shared_checks.py update check_secrets 2.0.0
+    python3 scripts/shared_checks.py update check_secrets 2.1.1
 
 ⚠️ **`update shared_checks` is run by the OLD copy**, which writes the pin
 as the old release knew it (buildforge-starter#172): 1.5.0 knew no
@@ -129,7 +131,7 @@ import subprocess
 import sys
 import tempfile
 
-__version__ = "1.7.2"
+__version__ = "1.7.5"
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LOCK = ROOT / "scripts" / "shared-checks.lock"
