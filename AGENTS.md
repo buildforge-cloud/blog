@@ -347,7 +347,16 @@ fetch, run it with an empty cache (blog#77).
 
 `ci.yml` installs Chromium after the build and then runs the contrast check
 (see "Design"), on `ubuntu-latest`, so a pull request starts it. That raised
-its job bound from 3 to 8 minutes.
+its job bound from 3 to 8 minutes. It gets the browser without apt-get
+(blog#85): it restores `~/.cache/ms-playwright`, keyed on the runner image and
+the `@playwright/test` version in `package-lock.json`. The image comes from
+`$ImageOS` read in a step, because `${{ env.ImageOS }}` is always empty. On a
+miss, `npx playwright install chromium` downloads only the browser, and
+`scripts/browser-libs.mjs` runs `ldd` on it. `playwright install-deps`
+(apt-get) runs only when a library is missing. Each of these steps is bounded
+at 3 minutes, and a restore that stalls falls through to the download. The
+cache is saved after `npm run test:pages`. `ci.yml` also runs on a push to
+`main`, so every pull request can read the saved cache.
 
 The deploy job's `timeout-minutes: 30` (blog#3) replaces GitHub's 6-hour
 default, because this runner deploys every repo in the org. It detects a hang;
@@ -419,6 +428,17 @@ this lockfile, which lacks two `@emnapi/*` entries under npm 10 and 11: run
 Without the flag Playwright deletes every other cached browser version as
 "unused", and the host's other projects download theirs again (blog#28 lost
 `chromium-1248` that way; blog#35 kept it).
+
+**astro is pinned at exactly 7.2.9 for now (blog#83).** astro 7.2.10 and
+later need `@astrojs/markdown-remark` ^7.3, but every `@astrojs/mdx` 7.x pins
+7.2.x. A newer astro therefore needs `@astrojs/mdx` 8, which is a major
+update. With a `^` range, `npm update` and `npm audit fix` reach for the newest
+astro and stop with ERESOLVE, and the rest of that run updates nothing. Never
+use `--force`. `tests/packages.test.mjs` (in `npm test`) fails while mdx is
+on 7 and astro is a range or 7.2.10 or later. It also fails when the lockfile
+holds a copy of a package, nested copies included, in a range a known advisory
+names. When a new critical or high alert is fixed, add its package, the start
+of its range and the fixed version there.
 
 ## Documentation
 
