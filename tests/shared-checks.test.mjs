@@ -16,7 +16,7 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 // shared_checks 1.7.2 (blog#87) is the starter's current pin tool.
 const FLOORS = { "scripts/shared_checks.py": "1.7.2" };
 
-const parts = v => v.split(".").map(Number);
+const parts = v => [0, 1, 2].map(i => Number(v.split(".")[i] ?? 0));
 const atLeast = (have, floor) => {
   const [a, b] = [parts(have), parts(floor)];
   for (let i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i] > b[i];
@@ -28,6 +28,8 @@ test("atLeast compares versions by number, not text", () => {
   assert.equal(atLeast("1.7.2", "1.7.2"), true);
   assert.equal(atLeast("1.10.0", "1.7.2"), true);
   assert.equal(atLeast("0.9.9", "1.7.2"), false);
+  assert.equal(atLeast("1.7", "1.7.0"), true, "a missing part counts as 0");
+  assert.equal(atLeast("x.y.z", "1.7.2"), false, "a malformed pin is below");
 });
 
 test("no shared part is pinned below its floor", () => {
