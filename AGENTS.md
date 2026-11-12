@@ -327,6 +327,11 @@ and `tools/psi.py` are buildforge-starter releases, pinned byte for byte in
 `scripts/shared-checks.lock`. Do not edit one here: `npm test` runs the pin
 tool and fails on a hand edit. Take a fix with
 `python3 scripts/shared_checks.py update <name> <version>`.
+`tests/shared-checks.test.mjs` also fails when a pin falls below its
+`FLOORS` entry (blog#87; shared_checks 1.7.5 since blog#89). Raise the floor
+in the PR that takes a release the repo must keep. blog pins no
+`check_secrets`, `secret_rules`, `secrets` or `pre-commit`, so the scanner
+steps a shared_checks release lists after `update` do not apply here.
 `tests/css-tokens.test.mjs` checks each `var()` in `src/styles/*.css` and,
 in `src/**/*.astro`, in `<style>` blocks, `style="..."` attributes and
 `class` values, a Tailwind `-(--name)` class among them (css_tokens 1.1.0,

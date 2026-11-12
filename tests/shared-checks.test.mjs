@@ -13,8 +13,8 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../", import.meta.url));
 
 // The oldest release each part may be pinned at: a downgrade fails here.
-// shared_checks 1.7.2 (blog#87) is the starter's current pin tool.
-const FLOORS = { "scripts/shared_checks.py": "1.7.2" };
+// shared_checks 1.7.5 (blog#89) is the starter's current pin tool.
+const FLOORS = { "scripts/shared_checks.py": "1.7.5" };
 
 const parts = v => [0, 1, 2].map(i => Number(v.split(".")[i] ?? 0));
 const atLeast = (have, floor) => {
@@ -26,6 +26,8 @@ const atLeast = (have, floor) => {
 test("atLeast compares versions by number, not text", () => {
   assert.equal(atLeast("1.7.1", "1.7.2"), false);
   assert.equal(atLeast("1.7.2", "1.7.2"), true);
+  assert.equal(atLeast("1.7.4", "1.7.5"), false);
+  assert.equal(atLeast("1.7.5", "1.7.5"), true);
   assert.equal(atLeast("1.10.0", "1.7.2"), true);
   assert.equal(atLeast("0.9.9", "1.7.2"), false);
   assert.equal(atLeast("1.7", "1.7.0"), true, "a missing part counts as 0");
