@@ -141,5 +141,6 @@ The numbers, from 12 and 13 November:
 - The first proof run: green, about 7 KB sent.
 - The first scheduled night: both runs started over six hours late.
 
-The next reading is on 26 November: how many of the last seven nights had a
-green backup run, for each app.
+I wrote this on 13 November, the day after both apps' setups merged. The
+first reading was set for 26 November: how many of the last seven nights had
+a green backup run, for each app.

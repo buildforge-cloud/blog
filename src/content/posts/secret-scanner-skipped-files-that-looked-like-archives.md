@@ -8,7 +8,7 @@ draft: false
 tags:
   - security
   - testing
-description: My pre-commit secret scan runs gitleaks 8.30.1. A text file with tar's magic bytes in the right place was skipped as binary, and the hook still printed OK. How an agent found it, and the fix that makes each file prove it was read.
+description: My secret scan runs gitleaks 8.30.1. A text file with tar's magic bytes in the right place was skipped as binary, and the hook still printed OK. How an agent updating ISO Pathfinder Buddy found it, and the fix that makes each file prove it was read.
 ---
 
 The hook printed `OK: 1 staged file(s) scanned`. The file it had just
@@ -140,4 +140,6 @@ The numbers, from the fix's pull request on 12 November:
 Each project that pins the scanner takes a new release with one update
 command. ISO Pathfinder Buddy, [ps·db](https://ps-db.cloud) and
 [Vedlikeholdsloggen](https://vedlikeholdsloggen.buildforge.no/) all took
-2.1.0 the same evening.
+2.1.0 the same evening. I wrote this the day after, on 13 November. Nothing
+more is planned for the read check. The two limits stay written down until a
+real file runs into one of them.
