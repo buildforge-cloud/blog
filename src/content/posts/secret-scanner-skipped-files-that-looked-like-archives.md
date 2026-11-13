@@ -1,7 +1,7 @@
 ---
 author: Stefan M. Gulbrandsen
 pubDatetime: 2027-01-26T07:00:00Z
-title: "Gitleaks skipped text files that looked like archives, and my scan still said OK"
+title: "Gitleaks skipped text files that looked like archives"
 slug: secret-scanner-skipped-files-that-looked-like-archives
 featured: false
 draft: false
@@ -137,8 +137,8 @@ The numbers, from the fix's pull request on 12 November:
 - Padding that would have covered them: 32 KB per file.
 - Tracked files the scanner read in its own repo after the fix: 276.
 
-Each project that pins the scanner takes a new release with one update
-command. ISO Pathfinder Buddy, [ps·db](https://ps-db.cloud) and
+Each project that pins the scanner took 2.1.0 with two update commands:
+first the pin tool's own release, then the scanner's. ISO Pathfinder Buddy, [ps·db](https://ps-db.cloud) and
 [Vedlikeholdsloggen](https://vedlikeholdsloggen.buildforge.no/) all took
 2.1.0 the same evening. I wrote this the day after, on 13 November. Nothing
 more is planned for the read check. The two limits stay written down until a

@@ -8,7 +8,7 @@ draft: false
 tags:
   - infrastructure
   - security
-description: Two of my apps' Postgres databases now get a pg_dump every night from a GitHub Actions job, sent with rsync to a home NAS. The server's key can only write, so a stolen server can't wipe the backups. What it took, and what is still open.
+description: Two of my apps' Postgres databases now get a pg_dump every night from a GitHub Actions job, sent with rsync to a machine at home, and a NAS pulls them from there. The server's key can only write, so a stolen server can't wipe the backups. What it took, and what is still open.
 ---
 
 Until November, the only backup of my apps' databases was my hosting
