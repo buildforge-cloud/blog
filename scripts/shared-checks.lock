@@ -2,8 +2,8 @@
   "files": {
     "scripts/shared_checks.py": {
       "executable": true,
-      "sha256": "357e1f5d64227824c47beb17269949efb13e44c15df3a6c4a43903f3b269fa0c",
-      "version": "1.7.5"
+      "sha256": "2bdc0e74d8c6d0eef185fc6680e3c0c8245eeb50e801cdd30330795a76368297",
+      "version": "1.10.3"
     },
     "tests/check_nginx_headers.py": {
       "placed": true,
