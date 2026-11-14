@@ -36,14 +36,14 @@ A project made by `scripts/init.py` already holds the lock and the release it
 names. A repo with no lock yet adopts with these commands:
 
     gh api -H "Accept: application/vnd.github.raw" \\
-      "repos/buildforge-cloud/buildforge-starter/contents/scripts/shared_checks.py?ref=shared_checks-v1.10.3" \\
+      "repos/buildforge-cloud/buildforge-starter/contents/scripts/shared_checks.py?ref=shared_checks-v1.11.1" \\
       > scripts/shared_checks.py
-    python3 scripts/shared_checks.py update shared_checks 1.10.3 \\
+    python3 scripts/shared_checks.py update shared_checks 1.11.1 \\
       --source https://github.com/buildforge-cloud/buildforge-starter.git
-    python3 scripts/shared_checks.py update fetch_first 1.4.0
+    python3 scripts/shared_checks.py update fetch_first 1.6.0
     python3 scripts/shared_checks.py update check_secrets 2.4.1
-    python3 scripts/shared_checks.py update gitleaks_pin 1.3.0
-    python3 scripts/shared_checks.py update secret_rules 1.6.0
+    python3 scripts/shared_checks.py update gitleaks_pin 1.3.1
+    python3 scripts/shared_checks.py update secret_rules 1.8.0
     python3 scripts/shared_checks.py update secrets 2.0.0
     python3 scripts/shared_checks.py update pre-commit 1.0.1
     python3 scripts/check_secrets.py --fetch
@@ -112,11 +112,19 @@ needs no gitleaks says so on a comment line (buildforge-starter#339); since
 fetch_first 1.3.0 in its header, and an `if:` is read in each state of the
 run, `!failure()` too (buildforge-starter#362); since fetch_first 1.4.0
 a `set -e` only where it surely runs, a `trap` on EXIT or ERR, a step that
-moves `HOME` or `XDG_CACHE_HOME`, and `|| exit 1` (buildforge-starter#361). Since
-1.10.0 this file runs the very bytes of the part it hashed, registered as an
-import would be, refuses it once with one fix, and never places it in
-another folder: `--into` is refused, and a placed pin goes back to its path
-(buildforge-starter#347).
+moves `HOME` or `XDG_CACHE_HOME`, and `|| exit 1` (buildforge-starter#361);
+since fetch_first 1.5.0 a cleanup `trap`, `|| { ...; exit 1; }`, git's
+abbreviated options, a docstring above the header's marker, and what a
+step writes to `$GITHUB_ENV` (buildforge-starter#374); since fetch_first
+1.6.0 a CRLF header in linear time, a run's states in the order it passes
+them, and a `$GITHUB_ENV` move mended only by a fetch sure to run (the same issue,
+from the review of recall#231). Since 1.10.0 this
+file runs the very bytes of the part it hashed, registered as an import
+would be, refuses it once with one fix, and never places it in another
+folder: `--into` is refused, and a placed pin goes back to its path
+(buildforge-starter#347). Since 1.11.0 that holds for every part another
+pinned file loads by its path: the scanner, its rules, this file, the
+hook, the pinned workflows and their parts (buildforge-starter#374).
 
 ⚠️ **`update shared_checks` is run by the OLD copy**, which writes the pin
 as the old release knew it (buildforge-starter#172): 1.5.0 knew no
@@ -164,7 +172,7 @@ import sys
 import tempfile
 import types
 
-__version__ = "1.10.3"
+__version__ = "1.11.1"
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LOCK = ROOT / "scripts" / "shared-checks.lock"
@@ -293,7 +301,19 @@ MODULE = "_shared_checks_fetch_first"
 # the pin tool loads fetch_first, the scanner gitleaks_pin. So `update` never
 # places one with `--into` (buildforge-starter#347): 1.9.3 pinned fetch_first
 # in the folder named, and then called it missing, and kept the folder.
-LOADED_AT_ITS_PATH = "scripts/secretslib"
+# ⚠️ **So is every part another pinned file loads by its path**
+# (buildforge-starter#374, from the review of iso-pathfinder-buddy#48): the
+# scanner its rules, the hook and `secrets.yml` the scanner and this file, git
+# the hook, GitHub a workflow, `security-scan.yml` its part, the tests the
+# runner switch. 1.10.3 placed the scanner and its rules wherever it was told.
+LOADED_AT_ITS_PATH = ("scripts/secretslib/", "scripts/check_secrets.py", "scripts/secret_rules.toml",
+                      "scripts/shared_checks.py", ".githooks/", ".github/workflows/", "parts/security_scan.py",
+                      "tests/_runner_switch.py")
+
+
+def _loaded_at_its_path(relative: str) -> bool:
+    """Whether another pinned file loads the part at `relative` by that path: a file named, or one in a folder."""
+    return any(relative == path or path.endswith("/") and relative.startswith(path) for path in LOADED_AT_ITS_PATH)
 
 
 def _load_part(lock: dict) -> tuple[object | None, str, str]:
@@ -520,7 +540,7 @@ def update(name: str, version: str, source: str | None, into: str | None = None)
     if fetched is None:
         return 1
     relative, data, executable = fetched
-    loaded_at_its_path = pathlib.PurePosixPath(relative).parent.as_posix() == LOADED_AT_ITS_PATH
+    loaded_at_its_path = _loaded_at_its_path(relative)
     if into is not None and loaded_at_its_path:
         print(f"REFUSING: {relative} is loaded at that path by the check that runs it, so it takes no --into.",
               file=sys.stderr)
