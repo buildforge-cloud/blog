@@ -70,6 +70,16 @@ const QUEUED = [
     "2027-01-19T07:00:00.000Z",
     "blog#75",
   ],
+  [
+    "secret-scanner-skipped-files-that-looked-like-archives",
+    "2027-01-26T07:00:00.000Z",
+    "blog#92",
+  ],
+  [
+    "nightly-database-backups-write-only-ssh-key",
+    "2027-02-02T07:00:00.000Z",
+    "blog#93",
+  ],
 ];
 
 const WEEK = 7 * 24 * 60 * 60 * 1000;
@@ -114,6 +124,10 @@ test("a product post links its product first", () => {
       "vedlikeholdsloggen.buildforge.no",
     ],
     ["google-stopped-showing-our-site-in-a-day", "ps-db.cloud"],
+    [
+      "secret-scanner-skipped-files-that-looked-like-archives",
+      "iso-pathfinder-buddy.lovable.app",
+    ],
   ]) {
     const link = firstLink(bySlug(slug).body);
     assert.equal(
