@@ -13,8 +13,8 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../", import.meta.url));
 
 // The oldest release each part may be pinned at: a downgrade fails here.
-// shared_checks 1.7.5 (blog#89) is the starter's current pin tool.
-const FLOORS = { "scripts/shared_checks.py": "1.7.5" };
+// shared_checks 1.10.3 (blog#91) is the starter's current pin tool.
+const FLOORS = { "scripts/shared_checks.py": "1.10.3" };
 
 const parts = v => [0, 1, 2].map(i => Number(v.split(".")[i] ?? 0));
 const atLeast = (have, floor) => {

@@ -83,6 +83,12 @@ when a post has an image but no page, or a page but no image. `npm run dev` show
 future-dated post as normal (`import.meta.env.DEV ||` in `postFilter.ts`), so the
 preview cannot tell you a date is wrong.
 
+For the same reason `npm run test:pages` never opens a queued post: the build
+it serves leaves the post out, so its contrast and CSP are first measured on
+the morning it goes live. To check one before merge, give it a past
+`pubDatetime`, `npm run build`, `npx playwright test`, then restore the date
+(blog#92 did this for two posts).
+
 GitHub can start a scheduled run late when Actions is busy, and it turns schedules
 off in a public repo after 60 days with no repository activity. If a scheduled
 post has not appeared, check the Actions tab for the 07:05 run first.
