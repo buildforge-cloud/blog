@@ -1006,3 +1006,58 @@ scripts/shared_checks.py` says `OK: shared_checks 1.7.5, check_nginx_headers
 1.0.0, css_tokens 1.1.0, nginx_rig 1.1.1, psi 1.2.0`. Two mutations of
 `atLeast` in a scratch copy (equal counts as below; the last part ignored)
 each failed `atLeast compares versions by number, not text`.
+
+## 2026-11-13: #92: post on the secret scanner that skipped archive-like files
+
+**What.** `src/content/posts/secret-scanner-skipped-files-that-looked-like-archives.md`,
+queued for 2027-01-26 07:00 UTC, the week after blog#75's post. It tells
+buildforge-starter PR #313 (check_secrets 2.1.0) as a story: the hole as
+iso-pathfinder-buddy PR #29's self-review found it, why gitleaks 8.30.1
+skipped the file, the padding idea #313 dropped, the read marker and the
+one-byte retry, the last-line allowlist hole, and #313's two Known limits.
+Neither private repo is named or linked. The post names ISO Pathfinder Buddy,
+the public product, and links its public page first, so it is pinned in
+`tests/posts.test.mjs`'s first-link test. `strategy/STRATEGY.md`: Now step 5,
+and a Users line for readers who scan commits for leaked keys.
+
+**Tests.** `tests/posts.test.mjs`'s `QUEUED` gained the post (and blog#93's),
+red first with `no post with slug secret-scanner-...` and `Now does not name
+blog#92`. The first-link test then caught the draft linking gitleaks before
+the product. A date moved one day early turned `each queued post keeps its
+date` red. STRATEGY.md hit 82 lines, so two wrapped lines were joined.
+
+**Facts from outside PR #313**, read 2026-11-13: ps-db, vedlikeholdsloggen
+and iso-pathfinder-buddy each closed their "Shared parts up to date:
+check_secrets 2.1.0" issue on 2026-11-12 (#732, #282, #32), which the post's
+last paragraph says.
+
+**The queued posts are not measured by `npm run test:pages`.** A production
+build leaves a future post out, so the contrast and CSP walk never opens it.
+To measure them, both posts were dated 2026-11-13 for one build and one
+`playwright test` run (184 passed, the two new pages included, desktop and
+390 px), then given their queued dates back.
+
+## 2026-11-13: #93: post on nightly database backups with a write-only key
+
+**What.** `src/content/posts/nightly-database-backups-write-only-ssh-key.md`,
+queued for 2027-02-02 07:00 UTC, the week after blog#92's post. Facts from
+the two issues and PRs that #93 names: the weekly whole-server backup before;
+dump, keep 14 days, send with rsync over ssh, NAS pull; the `rrsync -wo
+-no-del -no-overwrite` key, one per app, and the NAS's read-only second key;
+the runner's account not being the one with the route home, and the review
+finding that its route ran a binary from the everyday user's home folder; the
+default-branch guard; the fakes and the mutation counts (30 and 43); the
+second worker stopping because the first workflow was not on the default
+branch yet; the `.gitignore` `parts/` catch; the 12 Nov proof run. No repo,
+app, host, user name, folder path or IP is in the post, and no word on how
+the server reaches home (grepped).
+
+**Facts from outside the two PRs**, read 2026-11-13 with `gh run list` and
+`gh run view --log-failed`: both first scheduled nights started more than six
+hours after their cron time, after the NAS pull. The first app's run was
+green; the second's was red because its key was not made yet. A restore
+drill PR for the second app merged on 2026-11-13. The post says both.
+
+**Tests.** As in `92.md`: the post is in `QUEUED` and STRATEGY.md's Now
+step 5, both seen red first. No first-link pin: the post has no product,
+since both apps are private.
