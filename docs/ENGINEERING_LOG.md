@@ -1111,3 +1111,28 @@ after `update` do not apply.
 names as a run on `origin/main`.
 
 **Also.** Folded `changes.d/91.md` into CLAUDE.md's "Shared parts".
+
+## 2026-11-15 — #98: shared_checks 1.11.4
+
+**What.** `python3 scripts/shared_checks.py update shared_checks 1.11.4`: the
+pin tool and its pin, nothing else. The floor in
+`tests/shared-checks.test.mjs` moved from 1.11.1 to 1.11.4 first, and went red
+with `scripts/shared_checks.py is pinned at 1.11.1, below its floor 1.11.4`.
+`python3 scripts/shared_checks.py` then says `OK: shared_checks 1.11.4,
+check_nginx_headers 1.0.0, css_tokens 1.1.0, nginx_rig 1.1.1, psi 1.2.0`.
+Under the new lock, the 1.11.1 file is refused (`REFUSING:
+scripts/shared_checks.py is not the release its pin names`).
+
+**What 1.11.2 to 1.11.4 add.** The starter's README at the tags
+`shared_checks-v1.11.2`, `-v1.11.3` and `-v1.11.4` changes in three places. It
+names newer scanner releases in the adoption command (fetch_first 1.7.0 to
+1.9.0, secret_rules 1.8.1). It describes the exit and `BASH_ENV` cases
+fetch_first 1.8.0 and 1.9.0 now catch. And since 1.11.3, `update` refuses
+`--into` for `runner_tools` too. blog pins no scanner part and no
+`runner_tools`, and its `psi` stays in `tools/`, so no step beyond `update`
+applies.
+
+**Tests.** `node --test tests/*.test.mjs`: 88 of 88 pass, the same 88 test
+names as a run on `origin/main`.
+
+**Also.** Folded `changes.d/96.md` into CLAUDE.md's "Shared parts".
