@@ -36,14 +36,14 @@ A project made by `scripts/init.py` already holds the lock and the release it
 names. A repo with no lock yet adopts with these commands:
 
     gh api -H "Accept: application/vnd.github.raw" \\
-      "repos/buildforge-cloud/buildforge-starter/contents/scripts/shared_checks.py?ref=shared_checks-v1.11.1" \\
+      "repos/buildforge-cloud/buildforge-starter/contents/scripts/shared_checks.py?ref=shared_checks-v1.11.4" \\
       > scripts/shared_checks.py
-    python3 scripts/shared_checks.py update shared_checks 1.11.1 \\
+    python3 scripts/shared_checks.py update shared_checks 1.11.4 \\
       --source https://github.com/buildforge-cloud/buildforge-starter.git
-    python3 scripts/shared_checks.py update fetch_first 1.6.0
+    python3 scripts/shared_checks.py update fetch_first 1.9.0
     python3 scripts/shared_checks.py update check_secrets 2.4.1
     python3 scripts/shared_checks.py update gitleaks_pin 1.3.1
-    python3 scripts/shared_checks.py update secret_rules 1.8.0
+    python3 scripts/shared_checks.py update secret_rules 1.8.1
     python3 scripts/shared_checks.py update secrets 2.0.0
     python3 scripts/shared_checks.py update pre-commit 1.0.1
     python3 scripts/check_secrets.py --fetch
@@ -118,13 +118,27 @@ abbreviated options, a docstring above the header's marker, and what a
 step writes to `$GITHUB_ENV` (buildforge-starter#374); since fetch_first
 1.6.0 a CRLF header in linear time, a run's states in the order it passes
 them, and a `$GITHUB_ENV` move mended only by a fetch sure to run (the same issue,
-from the review of recall#231). Since 1.10.0 this
+from the review of recall#231); since fetch_first 1.7.0 a rescue group's
+bare `exit` only as its first command, and its `exec`, `return`, `.`,
+`source` or a step's function, `BASH_ENV` only where it is set, and
+python's `-bW` and coverage's `--module` (buildforge-starter#383, from the
+review of luna-ios#73); since fetch_first 1.8.0 `builtin eval`, `trap` and
+`set`, an `exit` the step defines or `enable -n` turns off, `BASH_ENV` on a
+`shell:` line, an ERR trap that sets `+e`, `HOME=` for `printenv`, and no
+exit from a group's subshell (buildforge-starter#385, from the reviews of
+agent-os#506 and vedlikeholdsloggen#312); since fetch_first 1.9.0 python's
+`-XW`, `BASH_FUNC_` on a `shell:` line, and a `BASH_ENV` or `BASH_FUNC_` an
+earlier step names, writes by any line to `$GITHUB_ENV`, or an action outside
+a few of GitHub's may write (buildforge-starter#388,
+from the review of luna-ios#81). Since 1.10.0 this
 file runs the very bytes of the part it hashed, registered as an import
 would be, refuses it once with one fix, and never places it in another
 folder: `--into` is refused, and a placed pin goes back to its path
 (buildforge-starter#347). Since 1.11.0 that holds for every part another
 pinned file loads by its path: the scanner, its rules, this file, the
-hook, the pinned workflows and their parts (buildforge-starter#374).
+hook, the pinned workflows and their parts (buildforge-starter#374), and
+since 1.11.3 `runner_tools`, which a target's workflows run
+(buildforge-starter#385).
 
 ⚠️ **`update shared_checks` is run by the OLD copy**, which writes the pin
 as the old release knew it (buildforge-starter#172): 1.5.0 knew no
@@ -172,7 +186,7 @@ import sys
 import tempfile
 import types
 
-__version__ = "1.11.1"
+__version__ = "1.11.4"
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LOCK = ROOT / "scripts" / "shared-checks.lock"
@@ -306,9 +320,13 @@ MODULE = "_shared_checks_fetch_first"
 # scanner its rules, the hook and `secrets.yml` the scanner and this file, git
 # the hook, GitHub a workflow, `security-scan.yml` its part, the tests the
 # runner switch. 1.10.3 placed the scanner and its rules wherever it was told.
+# And a target's workflows, a project's own once `init.py` copies them, run
+# `runner_tools` (buildforge-starter#385, from the review of agent-os#506).
+# `psi` and `psi_audit` they run too, but a project with an audit of its own
+# places them with `--into tools` (docs/SHARED_PARTS.md).
 LOADED_AT_ITS_PATH = ("scripts/secretslib/", "scripts/check_secrets.py", "scripts/secret_rules.toml",
                       "scripts/shared_checks.py", ".githooks/", ".github/workflows/", "parts/security_scan.py",
-                      "tests/_runner_switch.py")
+                      "tests/_runner_switch.py", "parts/runner_tools.py")
 
 
 def _loaded_at_its_path(relative: str) -> bool:
