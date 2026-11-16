@@ -36,14 +36,16 @@ A project made by `scripts/init.py` already holds the lock and the release it
 names. A repo with no lock yet adopts with these commands:
 
     gh api -H "Accept: application/vnd.github.raw" \\
-      "repos/buildforge-cloud/buildforge-starter/contents/scripts/shared_checks.py?ref=shared_checks-v1.11.4" \\
+      "repos/buildforge-cloud/buildforge-starter/contents/scripts/shared_checks.py?ref=shared_checks-v1.13.1" \\
       > scripts/shared_checks.py
-    python3 scripts/shared_checks.py update shared_checks 1.11.4 \\
+    python3 scripts/shared_checks.py update shared_checks 1.13.1 \\
       --source https://github.com/buildforge-cloud/buildforge-starter.git
-    python3 scripts/shared_checks.py update fetch_first 1.9.0
-    python3 scripts/shared_checks.py update check_secrets 2.4.1
+    python3 scripts/shared_checks.py update fetch_first 1.10.0
+    python3 scripts/shared_checks.py update shell_reader 1.0.0
+    python3 scripts/shared_checks.py update check_secrets 2.5.0
     python3 scripts/shared_checks.py update gitleaks_pin 1.3.1
-    python3 scripts/shared_checks.py update secret_rules 1.8.1
+    python3 scripts/shared_checks.py update gitleaks_run 1.0.0
+    python3 scripts/shared_checks.py update secret_rules 1.9.0
     python3 scripts/shared_checks.py update secrets 2.0.0
     python3 scripts/shared_checks.py update pre-commit 1.0.1
     python3 scripts/check_secrets.py --fetch
@@ -69,6 +71,10 @@ Since check_secrets 2.2.0, which gitleaks and its fetch are `gitleaks_pin`,
 with the scanner, which refuses without it (buildforge-starter#322);
 check_secrets 2.3.0 needs gitleaks_pin 1.1.0 (buildforge-starter#331),
 and check_secrets 2.4.0 and later need 1.2.0 (buildforge-starter#336).
+Since check_secrets 2.5.0 the run of gitleaks on each text is a second
+part, `gitleaks_run`, `scripts/secretslib/gitleaks_run.py`, moved out of
+the scanner whole: a repo takes both, and 2.5.0 needs it
+(buildforge-starter#403).
 
 ⚠️ The shared jobs' `runs-on` line, which `secrets.yml` now brings and
 `docs-checks.yml`'s `docs` job copies by hand:
@@ -93,7 +99,7 @@ Moving to a new release is one command for each part that moved, all
 committed as one PR; the starter's README names every part a scanner
 release brings (since 1.7.3, buildforge-starter#309):
 
-    python3 scripts/shared_checks.py update check_secrets 2.4.1
+    python3 scripts/shared_checks.py update check_secrets 2.5.0
 
 ⚠️ **Since 1.8.0 a job whose tests need gitleaks runs the fetch before
 them** (buildforge-starter#320, from profile-homepage#72): with check_secrets
@@ -138,7 +144,24 @@ folder: `--into` is refused, and a placed pin goes back to its path
 pinned file loads by its path: the scanner, its rules, this file, the
 hook, the pinned workflows and their parts (buildforge-starter#374), and
 since 1.11.3 `runner_tools`, which a target's workflows run
-(buildforge-starter#385).
+(buildforge-starter#385). Since 1.12.0 the fetch check is two parts, the
+second `shell_reader`, `scripts/secretslib/shell_reader.py`, which reads a
+step's script as bash would: moved out of fetch_first 1.10.0 whole, with no
+change to what is refused. This file hashes and runs each as it did the one,
+the reader first, and refuses in one run each part that is missing or not its
+release; a repo takes the three together (buildforge-starter#372).
+
+⚠️ **Since 1.13.0 a pinned file names the parts it needs**, on a line of its
+own, `__needs__ = "gitleaks_pin 1.2.0, secret_rules 1.9.0"`: each with the
+oldest release that serves it. This file refuses a lock that pins such a part
+older, or not at all, and names the `update` (buildforge-starter#352): 1.12.1
+said OK to a repo that took check_secrets 2.4.0 without gitleaks_pin, and to
+one that dropped the part from its lock and edited it. A need marked `if
+pinned` binds only a repo whose lock pins the part. The needs are read only
+between releases: a file that is not its release is refused as that, once.
+`update` names each need its new lock leaves unmet, and still exits 0.
+Since then a project `init.py` made pins `status`, `test_init_script` and
+`test_secrets` too, which move with the scanner; other repos hold none.
 
 ⚠️ **`update shared_checks` is run by the OLD copy**, which writes the pin
 as the old release knew it (buildforge-starter#172): 1.5.0 knew no
@@ -165,7 +188,9 @@ keeps that folder; without `--into`, a part lands at the release's own path
    `git tag check_secrets-v<version> <merge sha> && git push origin check_secrets-v<version>`
 
 A new shared check joins the same way: give it a `__version__` (a comment
-line in a file that is not Python), release it.
+line in a file that is not Python), release it. A release that needs a newer
+release of another part, or a part it did not need, says so on its
+`__needs__` line, below its `__version__` (a Python file only, for now).
 The tag's own lock says where each check lives, so `update` finds a check
 the repo has never held, makes its folder, and -- when a release moved a
 check -- drops the old pin and names it, so the PR can fix its callers.
@@ -186,7 +211,7 @@ import sys
 import tempfile
 import types
 
-__version__ = "1.11.4"
+__version__ = "1.13.1"
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LOCK = ROOT / "scripts" / "shared-checks.lock"
@@ -234,8 +259,8 @@ def is_release(data: bytes | None, runnable: bool, pin: dict) -> bool:
     worst edit there is. ⚠️ So is a pin marked `executable` whose file is not:
     git skips such a hook, and every commit passes (buildforge-starter#166).
     """
-    return data is not None and hashlib.sha256(data).hexdigest() == pin["sha256"] and (
-        declared_version(data) == pin["version"]) and (runnable or not pin.get("executable"))
+    return data is not None and hashlib.sha256(data).hexdigest() == pin.get("sha256") and (
+        declared_version(data) == pin.get("version")) and (runnable or not pin.get("executable"))
 
 
 def mismatched(lock: dict) -> list[str]:
@@ -257,6 +282,71 @@ def unflagged(lock: dict) -> list[str]:
         relative for relative, pin in sorted(lock["files"].items())
         if not pin.get("executable") and (ROOT / relative).is_file() and (ROOT / relative).stat().st_mode & 0o100
     ]
+
+
+# ⚠️ **A part the lock does not pin is a part nothing checks**
+# (buildforge-starter#352): luna-ios#22 took check_secrets 2.4.0 without the
+# gitleaks_pin it needs, and agent-os#502 dropped that part from its lock and
+# edited it, and both times this file said OK. So a pinned file names what it
+# needs on a line of its own, as it names its version.
+NEEDS = re.compile(rb'^__needs__ = "([^"]*)"$', re.MULTILINE)
+RELEASE = re.compile(r"\d+\.\d+\.\d+")
+NEED = re.compile(rf"([\w.-]+) ({RELEASE.pattern})( if pinned)?")
+
+
+def declared_needs(data: bytes) -> list[tuple[str, str, bool]] | None:
+    """[(a part, the oldest release of it that serves, whether only where the
+    lock pins it)] the file declares: [] for none, None when its line cannot
+    be read, which is never "none"."""
+    found = NEEDS.search(data)
+    if found is None:
+        return []
+    try:
+        needs = [NEED.fullmatch(each.strip()) for each in found.group(1).decode("utf-8").split(",")]
+    except UnicodeDecodeError:
+        return None
+    return [(need[1], need[2], bool(need[3])) for need in needs] if all(needs) else None
+
+
+def unmet_needs(lock: dict) -> list[str]:
+    """The refusal of each need of a pinned release that the lock does not meet.
+
+    ⚠️ **Read only between releases** (buildforge-starter#352): a pin's
+    version is evidence only while its file is the release it names. A file
+    that is not, needer or needed, is refused as that by `mismatched()`, once;
+    read as a need, a lock that said 0.0.1 for the scanner's 2.4.2 bytes was
+    told to take 2.2.0, a downgrade."""
+    unmet = []
+    for relative, pin in sorted(lock["files"].items()):
+        data, runnable = held(relative)
+        if not is_release(data, runnable, pin):
+            continue
+        needer, needs = f"{pathlib.PurePath(relative).stem} {pin.get('version')}", declared_needs(data)
+        if needs is None:
+            unmet.append(f"{needer} declares needs this cannot read, so none was checked.\n  It is the release its"
+                         " pin names, so taking it again mends nothing: report it to buildforge-starter.")
+            continue
+        for part, oldest, if_pinned in needs:
+            pinned = find(lock, part)
+            if pinned is not None and not is_release(*held(pinned), lock["files"][pinned]):
+                continue
+            have = None if pinned is None else lock["files"][pinned].get("version")
+            need = f"{needer} needs {part} {oldest} or later{' where the lock pins it' if if_pinned else ''}"
+            take = f"  Take it:  python3 scripts/shared_checks.py update {part} {oldest}"
+            if pinned is None:
+                if not if_pinned:
+                    unmet.append(f"{need}, and the lock pins none.\n{take}")
+            elif not (isinstance(have, str) and RELEASE.fullmatch(have)):
+                unmet.append(f"{need}, and the lock pins it as {have!r}, which is not a release this can compare.\n"
+                             f"{take}")
+            elif _release(have) < _release(oldest):
+                unmet.append(f"{need}, and the lock pins {have}.\n{take}")
+    return unmet
+
+
+def _release(version: str) -> tuple[int, ...]:
+    """A release as numbers, so 1.10.0 is later than 1.2.0."""
+    return tuple(int(number) for number in version.split("."))
 
 
 def summary(lock: dict) -> str:
@@ -301,18 +391,29 @@ def renamed_dependabot_branch() -> list[str]:
 
 # ⚠️ **Since 1.9.0 the fetch check is a release of its own**, `fetch_first`
 # (buildforge-starter#343): moved out whole, so this file stays short.
+# ⚠️ **Since 1.12.0 it is two** (buildforge-starter#372): `shell_reader`, how
+# bash reads a step's script, moved out of `fetch_first` whole for its size.
+# Each is loaded as the one part was, the reader first: `fetch_first` takes it
+# from `sys.modules` under its name, never from the import path.
 PART = "scripts/secretslib/fetch_first.py"
-TAKE_PART = "python3 scripts/shared_checks.py update fetch_first <version>"
+SHELL_PART = "scripts/secretslib/shell_reader.py"
 # ⚠️ **What fails here is the release itself, so taking it again mends
 # nothing** (buildforge-starter#347, from the review of ps-db#746): 1.9.3 said
 # "Take its release" to a repo that held it.
-RELEASE_FAILS = ("It is the release its pin names, so taking it again mends nothing: take shared_checks and\n"
-                 "  fetch_first as one pair the starter's README names, or report this to buildforge-starter.")
-# Its own name, with no dot: a dotted one would need its parent registered
+RELEASE_FAILS = ("It is the release its pin names, so taking it again mends nothing: take shared_checks,\n"
+                 "  fetch_first and shell_reader as the set the starter's README names, or report this to\n"
+                 "  buildforge-starter.")
+# Their own names, with no dot: a dotted one would need its parent registered
 # too, as the scanner does for its part (buildforge-starter#336).
 MODULE = "_shared_checks_fetch_first"
+SHELL_MODULE = "_shared_checks_shell_reader"
+# In the order they load: each part, its module, what a refusal says it does,
+# and what this file takes from it, with the type it must be (None: any).
+PARTS = ((SHELL_PART, SHELL_MODULE, "which reads each step's script for the fetch check", {}),
+         (PART, MODULE, "which holds each job to a fetch before tests that need gitleaks",
+          {"unfetched_suites": None, "FETCH_COMMAND": str}))
 # ⚠️ **A part here is loaded at its release path by the check that runs it**:
-# the pin tool loads fetch_first, the scanner gitleaks_pin. So `update` never
+# the pin tool loads fetch_first and shell_reader, the scanner gitleaks_pin and gitleaks_run. So `update` never
 # places one with `--into` (buildforge-starter#347): 1.9.3 pinned fetch_first
 # in the folder named, and then called it missing, and kept the folder.
 # ⚠️ **So is every part another pinned file loads by its path**
@@ -323,10 +424,13 @@ MODULE = "_shared_checks_fetch_first"
 # And a target's workflows, a project's own once `init.py` copies them, run
 # `runner_tools` (buildforge-starter#385, from the review of agent-os#506).
 # `psi` and `psi_audit` they run too, but a project with an audit of its own
-# places them with `--into tools` (docs/SHARED_PARTS.md).
+# places them with `--into tools` (docs/SHARED_PARTS.md). And the scanner's
+# tests and `status`, which a pinned workflow, pytest and `init.py` find at
+# theirs (buildforge-starter#352).
 LOADED_AT_ITS_PATH = ("scripts/secretslib/", "scripts/check_secrets.py", "scripts/secret_rules.toml",
                       "scripts/shared_checks.py", ".githooks/", ".github/workflows/", "parts/security_scan.py",
-                      "tests/_runner_switch.py", "parts/runner_tools.py")
+                      "tests/_runner_switch.py", "parts/runner_tools.py", "tests/test_secrets.py",
+                      "tests/test_init_script.py", "scripts/initlib/status.py")
 
 
 def _loaded_at_its_path(relative: str) -> bool:
@@ -334,8 +438,43 @@ def _loaded_at_its_path(relative: str) -> bool:
     return any(relative == path or path.endswith("/") and relative.startswith(path) for path in LOADED_AT_ITS_PATH)
 
 
-def _load_part(lock: dict) -> tuple[object | None, str, str]:
-    """(the fetch part at ROOT / PART, by its file, or None; why not; the fix).
+def _load_part(lock: dict) -> tuple[object | None, list[tuple[str, str, str]]]:
+    """(`fetch_first`, run after the `shell_reader` it takes, or None; each
+    part that is not, why not and its fix). ⚠️ **A part that fails leaves
+    neither in `sys.modules`** (buildforge-starter#372): nothing was checked.
+    ⚠️ **Nothing runs after it, but each part after it is still held to its
+    pin** (the review of buildforge-starter#393), so a repo with neither is told both at once."""
+    module, failed = None, []
+    for relative, name, _, needs in PARTS:
+        data, why, fix = _pinned_release(lock, relative)
+        if not why and not failed:
+            module, why, fix = _load_one(relative, name, needs, data)
+        failed += [(relative, why, fix)] if why else []
+    if failed:
+        for _, loaded, _, _ in PARTS:
+            sys.modules.pop(loaded, None)
+        return None, failed
+    return module, []
+
+
+def _pinned_release(lock: dict, relative: str) -> tuple[bytes, str, str]:
+    """(the part's bytes, when they are the release its pin names; else why not; the fix)."""
+    path, pin, stem = ROOT / relative, lock["files"].get(relative), pathlib.PurePath(relative).stem
+    fix = f"Take its release:  python3 scripts/shared_checks.py update {stem} <version>" if pin is None else (
+        f"Put the release back:  python3 scripts/shared_checks.py update {stem} {pin.get('version', '<version>')}")
+    if not path.is_file():
+        return b"", "is missing", fix
+    if pin is None:
+        return b"", "is not pinned in the lock", fix
+    data, runnable = held(relative)
+    if not is_release(data, runnable, pin):
+        return b"", "is not the release its pin names", fix
+    return data, "", ""
+
+
+def _load_one(relative: str, name: str, needs: dict[str, type | None],
+              data: bytes) -> tuple[object | None, str, str]:
+    """(the pinned bytes of the part at ROOT / relative, run as module `name`, or None; why not; the fix).
 
     ⚠️ A part that is missing or cannot load -- another release's names, a
     broken edit -- is refused, never a traceback, and never called missing
@@ -351,28 +490,19 @@ def _load_part(lock: dict) -> tuple[object | None, str, str]:
     that file. So none is read, and none is left in the repo.
     ⚠️ **In `sys.modules` while it runs and after**, as an import puts it:
     outside it, a release using `@dataclass` or pickle could not load."""
-    path, pin = ROOT / PART, lock["files"].get(PART)
-    fix = f"Take its release:  {TAKE_PART}" if pin is None else (
-        f"Put the release back:  python3 scripts/shared_checks.py update fetch_first {pin['version']}")
-    if not path.is_file():
-        return None, "is missing", fix
-    if pin is None:
-        return None, "is not pinned in the lock", fix
-    data, runnable = held(PART)
-    if not is_release(data, runnable, pin):
-        return None, "is not the release its pin names", fix
+    path = ROOT / relative
     try:
-        module = sys.modules[MODULE] = types.ModuleType(MODULE)
+        module = sys.modules[name] = types.ModuleType(name)
         module.__file__ = str(path)
         exec(compile(data, str(path), "exec", dont_inherit=True), module.__dict__)  # noqa: S102 -- the pinned release
-        for needed in ("unfetched_suites", "FETCH_COMMAND"):
+        for needed, kind in needs.items():
             if not hasattr(module, needed):
-                raise ImportError(f"cannot import name {needed!r} from {PART}")
-        if not isinstance(module.FETCH_COMMAND, str):
-            raise TypeError(f"FETCH_COMMAND is {type(module.FETCH_COMMAND).__name__}, not text")
+                raise ImportError(f"cannot import name {needed!r} from {relative}")
+            if kind is not None and not isinstance(getattr(module, needed), kind):
+                raise TypeError(f"{needed} is {type(getattr(module, needed)).__name__}, not {kind.__name__}")
     except Exception as error:  # noqa: BLE001 -- any failure: nothing can be checked
         # As Python's own import does: no half-run module is left to be found (code review).
-        sys.modules.pop(MODULE, None)
+        sys.modules.pop(name, None)
         return None, f"cannot be loaded ({type(error).__name__}: {error})", RELEASE_FAILS
     return module, "", ""
 
@@ -392,7 +522,7 @@ def runs_gitleaks(lock: dict) -> bool:
 def verify() -> int:
     lock = load_lock()
     # Loaded only where its check applies, so `update` and `init.py` never need it.
-    part, unloaded, fix = _load_part(lock) if runs_gitleaks(lock) else (None, "", "")
+    part, unloaded = _load_part(lock) if runs_gitleaks(lock) else (None, [])
     try:
         # A list of text here, so an answer of the wrong shape fails here too, never in the loop
         # below; text itself would be a list of characters, each a refusal (code review).
@@ -401,10 +531,11 @@ def verify() -> int:
         if isinstance(answer, str) or not all(isinstance(where, str) for where in unfetched):
             raise TypeError(f"unfetched_suites() answered {type(answer).__name__}, not lines of text")
     except Exception as error:  # noqa: BLE001 -- another release's check: as one that cannot load
-        part, unfetched, unloaded, fix = None, [], f"cannot run ({type(error).__name__}: {error})", RELEASE_FAILS
-    if unloaded:
-        print(f"REFUSING: {PART}, which holds each job to a fetch before tests that need gitleaks, {unloaded},"
-              f" so no workflow was checked.\n  {fix}", file=sys.stderr)
+        part, unfetched, unloaded = None, [], [(PART, f"cannot run ({type(error).__name__}: {error})", RELEASE_FAILS)]
+    for failed, why, fix in unloaded:
+        does = next(does for relative, _, does, _ in PARTS if relative == failed)
+        print(f"REFUSING: {failed}, {does}, {why}, so no workflow was checked.\n  {fix}", file=sys.stderr)
+    refused = {failed for failed, _, _ in unloaded}
     for where in unfetched:
         print(f"REFUSING: {where}.", file=sys.stderr)
     if unfetched:
@@ -424,9 +555,12 @@ def verify() -> int:
             "`dependabot/` and keeps off the home machine. Remove the option (buildforge-starter#134).\n",
             file=sys.stderr,
         )
+    unmet = unmet_needs(lock)
+    for why in unmet:
+        print(f"REFUSING: {why}", file=sys.stderr)
     # ⚠️ **One refusal for the part, with one fix** (buildforge-starter#347):
     # 1.9.3 refused an edited or missing one again here, with another.
-    wrong = [relative for relative in mismatched(lock) if not (unloaded and relative == PART)]
+    wrong = [relative for relative in mismatched(lock) if relative not in refused]
     if wrong:
         for relative in wrong:
             print(f"REFUSING: {relative} is not the release its pin names.", file=sys.stderr)
@@ -437,7 +571,7 @@ def verify() -> int:
             file=sys.stderr,
         )
         return 1
-    loose = [relative for relative in unflagged(lock) if not (unloaded and relative == PART)]
+    loose = [relative for relative in unflagged(lock) if relative not in refused]
     for relative in loose:
         print(
             f"REFUSING: {relative} is executable, and its pin does not say so. Take its release again:\n"
@@ -445,7 +579,7 @@ def verify() -> int:
             f" {lock['files'][relative]['version']}",
             file=sys.stderr,
         )
-    if renamed or loose or unfetched or unloaded:
+    if renamed or loose or unfetched or unloaded or unmet:
         return 1
     print(f"OK: {summary(lock)}")
     return 0
@@ -616,6 +750,11 @@ def update(name: str, version: str, source: str | None, into: str | None = None)
         # just saved. Flushed first: exec drops what is buffered.
         print(f"Handing over to {relative} {version}, to write its pin as it knows it.", flush=True)
         os.execv(sys.executable, [sys.executable, str(ROOT / relative), "update", name, version])
+    # ⚠️ **Said now, not on the next run** (code review of buildforge-starter#352):
+    # a release that needs a part the lock lacks was "Pinned", and refused only
+    # after the commit. Exit 0 still: a repo takes its parts one `update` at a time.
+    for why in unmet_needs(lock):
+        print(f"Not met yet: {why}")
     return 0
 
 
