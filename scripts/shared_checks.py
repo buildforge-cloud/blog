@@ -36,17 +36,17 @@ A project made by `scripts/init.py` already holds the lock and the release it
 names. A repo with no lock yet adopts with these commands:
 
     gh api -H "Accept: application/vnd.github.raw" \\
-      "repos/buildforge-cloud/buildforge-starter/contents/scripts/shared_checks.py?ref=shared_checks-v1.13.1" \\
+      "repos/buildforge-cloud/buildforge-starter/contents/scripts/shared_checks.py?ref=shared_checks-v1.13.3" \\
       > scripts/shared_checks.py
-    python3 scripts/shared_checks.py update shared_checks 1.13.1 \\
+    python3 scripts/shared_checks.py update shared_checks 1.13.3 \\
       --source https://github.com/buildforge-cloud/buildforge-starter.git
-    python3 scripts/shared_checks.py update fetch_first 1.10.0
     python3 scripts/shared_checks.py update shell_reader 1.0.0
-    python3 scripts/shared_checks.py update check_secrets 2.5.0
+    python3 scripts/shared_checks.py update fetch_first 1.10.1
     python3 scripts/shared_checks.py update gitleaks_pin 1.3.1
     python3 scripts/shared_checks.py update gitleaks_run 1.0.0
-    python3 scripts/shared_checks.py update secret_rules 1.9.0
-    python3 scripts/shared_checks.py update secrets 2.0.0
+    python3 scripts/shared_checks.py update secret_rules 1.10.0
+    python3 scripts/shared_checks.py update check_secrets 2.5.1
+    python3 scripts/shared_checks.py update secrets 2.0.1
     python3 scripts/shared_checks.py update pre-commit 1.0.1
     python3 scripts/check_secrets.py --fetch
     git config core.hooksPath .githooks
@@ -99,7 +99,7 @@ Moving to a new release is one command for each part that moved, all
 committed as one PR; the starter's README names every part a scanner
 release brings (since 1.7.3, buildforge-starter#309):
 
-    python3 scripts/shared_checks.py update check_secrets 2.5.0
+    python3 scripts/shared_checks.py update check_secrets 2.5.1
 
 ⚠️ **Since 1.8.0 a job whose tests need gitleaks runs the fetch before
 them** (buildforge-starter#320, from profile-homepage#72): with check_secrets
@@ -162,6 +162,8 @@ between releases: a file that is not its release is refused as that, once.
 `update` names each need its new lock leaves unmet, and still exits 0.
 Since then a project `init.py` made pins `status`, `test_init_script` and
 `test_secrets` too, which move with the scanner; other repos hold none.
+Since 1.13.2 also the `initlib` helpers `status` imports, which take no
+`--into`, and a pin with no version is no release (buildforge-starter#415, #416).
 
 ⚠️ **`update shared_checks` is run by the OLD copy**, which writes the pin
 as the old release knew it (buildforge-starter#172): 1.5.0 knew no
@@ -211,7 +213,7 @@ import sys
 import tempfile
 import types
 
-__version__ = "1.13.1"
+__version__ = "1.13.3"
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LOCK = ROOT / "scripts" / "shared-checks.lock"
@@ -258,9 +260,13 @@ def is_release(data: bytes | None, runnable: bool, pin: dict) -> bool:
     reason from it. ⚠️ A MISSING file is a mismatch: no scanner at all is the
     worst edit there is. ⚠️ So is a pin marked `executable` whose file is not:
     git skips such a hook, and every commit passes (buildforge-starter#166).
+    ⚠️ **And one with no version**: `release` pins none, and 1.13.1 took a
+    file that declares none, pinned with none, for the release, then failed
+    with a KeyError where it named the version (buildforge-starter#416).
     """
-    return data is not None and hashlib.sha256(data).hexdigest() == pin.get("sha256") and (
-        declared_version(data) == pin.get("version")) and (runnable or not pin.get("executable"))
+    version = declared_version(data) if data is not None else None
+    return version is not None and hashlib.sha256(data).hexdigest() == pin.get("sha256") and (
+        version == pin.get("version")) and (runnable or not pin.get("executable"))
 
 
 def mismatched(lock: dict) -> list[str]:
@@ -426,11 +432,12 @@ PARTS = ((SHELL_PART, SHELL_MODULE, "which reads each step's script for the fetc
 # `psi` and `psi_audit` they run too, but a project with an audit of its own
 # places them with `--into tools` (docs/SHARED_PARTS.md). And the scanner's
 # tests and `status`, which a pinned workflow, pytest and `init.py` find at
-# theirs (buildforge-starter#352).
+# theirs (buildforge-starter#352). And every block of `init.py` that is a part,
+# `status` and the helpers it imports (buildforge-starter#415).
 LOADED_AT_ITS_PATH = ("scripts/secretslib/", "scripts/check_secrets.py", "scripts/secret_rules.toml",
                       "scripts/shared_checks.py", ".githooks/", ".github/workflows/", "parts/security_scan.py",
                       "tests/_runner_switch.py", "parts/runner_tools.py", "tests/test_secrets.py",
-                      "tests/test_init_script.py", "scripts/initlib/status.py")
+                      "tests/test_init_script.py", "scripts/initlib/")
 
 
 def _loaded_at_its_path(relative: str) -> bool:
