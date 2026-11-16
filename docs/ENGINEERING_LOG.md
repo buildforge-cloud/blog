@@ -1162,3 +1162,28 @@ beyond `update` applies.
 names as a run on `origin/main`.
 
 **Also.** Folded `changes.d/98.md` into CLAUDE.md's "Shared parts".
+
+## 2026-11-16 — #102: shared_checks 1.13.3
+
+**What.** `python3 scripts/shared_checks.py update shared_checks 1.13.3`: the
+pin tool and its pin, nothing else. The floor in
+`tests/shared-checks.test.mjs` moved from 1.13.1 to 1.13.3 first, and went red
+against main's pin with `scripts/shared_checks.py is pinned at 1.13.1, below
+its floor 1.13.3`. `python3 scripts/shared_checks.py` then says `OK:
+shared_checks 1.13.3, check_nginx_headers 1.0.0, css_tokens 1.1.0, nginx_rig
+1.1.1, psi 1.2.0`.
+
+**What 1.13.2 and 1.13.3 add.** The pin tool itself changes in two places:
+since 1.13.2 a pin with no version is no release (1.13.1 took one and then
+failed with a KeyError, buildforge-starter#416), and every `scripts/initlib/`
+file loads at its own path (buildforge-starter#415). The starter's README and
+`docs/SHARED_PARTS.md` between `shared_checks-v1.13.1` and `-v1.13.3` name
+new releases of the secret scanner parts, the `initlib` helpers,
+`security_scan` 1.0.1 (actions at a commit SHA, buildforge-starter#430) and
+`project_layout`. blog pins none of those, so no step beyond `update` applies.
+
+**Tests.** `node --test tests/*.test.mjs`: 88 of 88 pass, the same 88 test
+names as a run on `origin/main`.
+
+**Also.** Folded `changes.d/100.md` into CLAUDE.md's "Shared parts", with the
+floor this PR sets.
