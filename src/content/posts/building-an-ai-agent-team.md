@@ -9,7 +9,7 @@ tags:
   - claude-code
   - orchestrator
   - directing-ai
-description: One Claude Code session reviews and merges, and the others each take one GitHub issue. In eight weeks the code came fast. What went wrong sat in the rules, the checks and my own answers.
+description: One Claude Code session reviews and merges, and the others each take one GitHub issue. In eight weeks the code came fast. What went wrong sat in the rules and the checks around it.
 ---
 
 AI wrote this post, as it writes everything I build. I read it and edited
@@ -46,8 +46,8 @@ together get linked, and one that isn't used fades. There is no server and
 there are no embeddings.
 
 All three started in the same week, in late September. By 18 November,
-agent-orchestrator alone had over 620 merged pull requests, 114 of them in
-its busiest week. At the median, a review took 11 minutes.
+agent-orchestrator alone had 623 merged pull requests, 114 of them in its
+busiest week. At the median, a review took 11 minutes.
 
 The code was the fast part. The failures in this post sat in what I built
 around it.
@@ -88,14 +88,14 @@ On 19 November it was 133 lines and 11,999 bytes, one byte under.
 The executive is built to doubt its workers. A worker's pull request ends
 with its own report, what it did and which tests it ran. The executive reads
 that, runs the tests again itself, and reads the whole diff against the
-issue. When something is wrong, the work goes back to the worker. In the
-last 10 merges of orchestrator work, that happened twice. In the last 10
-of product work, it happened twice as well.
+issue. When something is wrong, the work goes back to the worker for
+another round. The last 10 merges of orchestrator work took 2 such rounds
+between them. The last 10 of product work took 2 as well.
 
 Then a number on the board broke a rule. On 18 November the board showed 3
-workers running, and the cap is 2. Either a third worker got past
-the cap, or the board counted wrong. When this was written, nobody had found
-out which. I had built the executive to check its workers' reports. The
+workers running, and the cap is 2. Either a third worker got past the cap,
+or the board counted wrong. When this was written, nobody had found out
+which. I had built the executive to check its workers' reports. The
 board's numbers need the same check.
 
 ## A feature that measured as noise
@@ -112,17 +112,19 @@ A later run, on 8 October, gave 20.7 against 3.4. This time the gap was
 clear of zero. The line is still off by default. Turning it back on is my
 decision, and I haven't made it.
 
-## 31 questions in one day
+## 31 alarms that were not for me
 
-I read the board on my phone, in short lines, one card per choice. I do no
-code review. The executive does that. I say yes to what goes live and to
-what changes how an app looks.
+A script checks every worker each 5 minutes. When a worker's turn has
+ended, or a prompt has waited, for 10 minutes, it tells the executive:
+"waiting on you". On 29 September it said that 31 times.
 
-On 29 September the executive raised 31 "waiting on you" alarms in one day.
-Each one was something only I could answer. That day the slowest part of the
-whole setup was me, reading a phone.
+The first draft of this post called those 31 questions that only I could
+answer. The alarm goes to the executive, not to me. I caught it when I
+read the draft.
 
-So the tools had to learn to ask less. Even so, over the eight weeks the
+My part is on my phone. I read the board in short lines, one card per
+choice. I do no code review. The executive does that. I say yes to what
+goes live and to what changes how an app looks. Over the eight weeks the
 executive put thousands of small decisions in front of me, as cards and as
 logged decisions.
 
@@ -132,8 +134,8 @@ request for my yes.
 
 The numbers, from each repo's history up to 18 November 2026:
 
-- agent-orchestrator: first commit 25 September. About 2,800 commits, over
-  620 merged pull requests, 676 issues closed and 22 open.
+- agent-orchestrator: first commit 25 September. About 2,800 commits, 623
+  merged pull requests, 676 issues closed and 22 open.
 - agent-os: first commit 26 September. About 1,300 commits, 256 merged pull
   requests, 269 issues closed and 2 open.
 - agent-memory: first commit 24 September. 95 commits, 23 merged pull
@@ -141,12 +143,16 @@ The numbers, from each repo's history up to 18 November 2026:
   against 3.6 on 24 September, 20.7 against 3.4 on 8 October (86
   sessions).
 - agent-orchestrator's merged pull requests per week, from the week of 21
-  September: 55, 82, 114, 68, 63, 96, 44, 77, and 25 in a week not yet over.
-- Review: 11 minutes at the median. Issue to merge: 105 minutes at the
-  median, then 43 and 51 minutes in the last 10 merges.
-- Sent back to the worker: 2 of the last 10 merges of orchestrator work,
-  and 2 of the last 10 of product work.
-- "Waiting on you" alarms on 29 September: 31.
+  September, in Norwegian time: 55, 82, 114, 68, 63, 96, 43, 77, and 25 in a
+  week not yet over.
+- Review, from a pull request being ready to its merge: 11 minutes at the
+  median. From an issue being opened to its merge: 105 minutes at the
+  median.
+- Dispatch to merge, from a worker's start, in the last 10 merges: 43
+  minutes at the median for orchestrator work, 51 for product work.
+- Send-back rounds in those last 10 merges: 2 for orchestrator work, 2 for
+  product work.
+- Alarms for a worker waiting 10 minutes, on 29 September: 31.
 
 I wrote this on 19 November. The next step is mine: whether the
 related-memory line goes back on. It has no date yet.
