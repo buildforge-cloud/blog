@@ -46,10 +46,8 @@ together get linked, and one that isn't used fades. There is no server and
 there are no embeddings.
 
 All three started in the same week, in late September. By 18 November,
-agent-orchestrator had about 2,800 commits and 623 merged pull requests. In
-its busiest week, from 5 October, 114 of them merged. agent-os had about
-1,300 commits and 256 merged pull requests. At the median, a review took
-11 minutes.
+agent-orchestrator alone had 623 merged pull requests, 114 of them in its
+busiest week. At the median, a review took 11 minutes.
 
 The code was the fast part. The failures in this post sat in what I built
 around it.
@@ -91,8 +89,8 @@ The executive is built to doubt its workers. A worker's pull request ends
 with its own report, what it did and which tests it ran. The executive reads
 that, runs the tests again itself, and reads the whole diff against the
 issue. When something is wrong, the work goes back to the worker. In the
-last 10 merges of orchestrator work, that happened twice. In the last 10 of
-product work, twice too.
+last 10 merges of each kind of work, orchestrator and product, that
+happened twice.
 
 Then a number on the board broke a rule. On 18 November the board showed 3
 workers running, and the cap is 2. Either a third worker got past
@@ -110,10 +108,9 @@ significant: its range ran from -2.7 to +10.7, so it could have been zero.
 And the line showed up at 94% of reads. It was mostly noise, so I turned it
 off.
 
-A later run, on 8 October over 86 sessions, gave 20.7 against 3.4, a lead of
-17.3. This time the range, +11.6 to +23.7, stayed well above zero. The line
-is still off by default. Turning it back on is my decision, and I haven't
-made it.
+A later run, on 8 October, gave 20.7 against 3.4. This time the gap was
+clear of zero. The line is still off by default. Turning it back on is my
+decision, and I haven't made it.
 
 ## 31 questions in one day
 
@@ -127,9 +124,7 @@ whole setup was me, reading a phone.
 
 So the tools had to learn to ask less. Even so, over the eight weeks the
 executive put thousands of small decisions in front of me, as cards and as
-logged decisions. At the median, an issue went from filed to merged in 105
-minutes. In the last 10 merges it was 43 minutes for orchestrator work and
-51 for product work.
+logged decisions.
 
 This post went the same way. Its issue came from a card I answered on the
 board. A worker wrote it in its own worktree, and it waited as a pull
@@ -142,7 +137,9 @@ The numbers, from each repo's history up to 18 November 2026:
 - agent-os: first commit 26 September. About 1,300 commits, 256 merged pull
   requests, 269 issues closed and 2 open.
 - agent-memory: first commit 24 September. 95 commits, 23 merged pull
-  requests.
+  requests. Related-memory line, useful suggestions per 100 reads: 7.2
+  against 3.6 on 24 September, 20.7 against 3.4 on 8 October (86
+  sessions).
 - agent-orchestrator's merged pull requests per week, from the week of 21
   September: 55, 82, 114, 68, 63, 96, 44, 77, and 25 in a week not yet over.
 - Review: 11 minutes at the median. Issue to merge: 105 minutes at the
