@@ -17,7 +17,7 @@ Source: `CLAUDE.md` "What a post is for" (decision 1245, 2026-10-12),
 ## Users
 
 - Developers who run a small site and want it in Google, or back in it (blog#28, #75), or its database backed up off the server (blog#93).
-- Developers who use coding agents and want to know when to switch (blog#35).
+- Developers who use coding agents and want to know when to switch (blog#35), or what running a team of them takes (blog#104).
 - Developers who search for GitHub Actions secrets and fork PRs (blog#46), or scan commits for leaked keys (blog#92).
 - Readers the posts bring to ps·db and Vedlikeholdsloggen (blog#42, #43, #44).
 - Indie app makers whose app is live and nobody downloads it (blog#73).
@@ -32,10 +32,10 @@ Each post goes live at the 07:05 UTC deploy on its day; check it on the site.
 2. 15, 22, 29 Dec: tests that skipped a file (blog#68), the weekly usage limit (blog#69), Comment Finder 1.9.1 (blog#70).
 3. 5, 12, 19 Jan: splitting a large file (blog#72), 17 downloads (blog#73), Google stopped showing ps·db (blog#75).
 4. Before 12 Jan: add Vedlikeholdsloggen 1.3's 1 Dec reading to blog#73's post; before 19 Jan, ps·db's 11 and 25 Nov readings to blog#75's; before 2 Feb, the 26 Nov backup reading to blog#93's.
-5. 26 Jan, 2 Feb: a secret scanner that skipped files (blog#92), nightly backups with a write-only key (blog#93).
+5. 26 Jan, 2 Feb, 9 Feb: a secret scanner that skipped files (blog#92), nightly backups with a write-only key (blog#93), eight weeks of a Claude Code agent team, the Goal's record part (blog#104).
 
 Source: blog#58 to #60 (Stefan's "Queue these 3", decision 2128); blog#68 to #70
-(decision 2293); blog#72, #73 (decision 2529); blog#75 (decision 2563); blog#92, #93 (Stefan's decision 3586).
+(decision 2293); blog#72, #73 (decision 2529); blog#75 (decision 2563); blog#92, #93 (Stefan's decision 3586); blog#104 (Stefan's card 4300).
 
 ## Not doing
 
