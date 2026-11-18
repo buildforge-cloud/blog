@@ -13,7 +13,7 @@ description: One Claude Code session reviews and merges, and the others each tak
 ---
 
 AI wrote this post, as it writes everything I build. I read it and edited
-it. The numbers come from my own repos, read on 18 November 2026.
+it. The numbers come from my own repos, read on 18 and 19 November 2026.
 
 On its second day, the session I built to check my agents' work asked one of
 them for proof. A test was meant to hold up while the machine was busy. So
@@ -46,8 +46,8 @@ together get linked, and one that isn't used fades. There is no server and
 there are no embeddings.
 
 All three started in the same week, in late September. By 18 November,
-agent-orchestrator alone had 623 merged pull requests, 114 of them in its
-busiest week. At the median, a review took 11 minutes.
+agent-orchestrator alone had over 620 merged pull requests, 114 of them in
+its busiest week. At the median, a review took 11 minutes.
 
 The code was the fast part. The failures in this post sat in what I built
 around it.
@@ -89,8 +89,8 @@ The executive is built to doubt its workers. A worker's pull request ends
 with its own report, what it did and which tests it ran. The executive reads
 that, runs the tests again itself, and reads the whole diff against the
 issue. When something is wrong, the work goes back to the worker. In the
-last 10 merges of each kind of work, orchestrator and product, that
-happened twice.
+last 10 merges of orchestrator work, that happened twice. In the last 10
+of product work, it happened twice as well.
 
 Then a number on the board broke a rule. On 18 November the board showed 3
 workers running, and the cap is 2. Either a third worker got past
@@ -132,8 +132,8 @@ request for my yes.
 
 The numbers, from each repo's history up to 18 November 2026:
 
-- agent-orchestrator: first commit 25 September. About 2,800 commits, 623
-  merged pull requests, 676 issues closed and 22 open.
+- agent-orchestrator: first commit 25 September. About 2,800 commits, over
+  620 merged pull requests, 676 issues closed and 22 open.
 - agent-os: first commit 26 September. About 1,300 commits, 256 merged pull
   requests, 269 issues closed and 2 open.
 - agent-memory: first commit 24 September. 95 commits, 23 merged pull
@@ -144,6 +144,8 @@ The numbers, from each repo's history up to 18 November 2026:
   September: 55, 82, 114, 68, 63, 96, 44, 77, and 25 in a week not yet over.
 - Review: 11 minutes at the median. Issue to merge: 105 minutes at the
   median, then 43 and 51 minutes in the last 10 merges.
+- Sent back to the worker: 2 of the last 10 merges of orchestrator work,
+  and 2 of the last 10 of product work.
 - "Waiting on you" alarms on 29 September: 31.
 
 I wrote this on 19 November. The next step is mine: whether the

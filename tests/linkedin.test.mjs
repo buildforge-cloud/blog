@@ -5,7 +5,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { linkedinProblems, postUrl, wordsIn } from "./linkedin.mjs";
+import {
+  linkedinProblems,
+  postUrl,
+  publishedSlug,
+  wordsIn,
+} from "./linkedin.mjs";
 
 const SLUG = "a-post";
 const A_URL = "https://blog.buildforge.cloud/posts/a-post/";
@@ -50,6 +55,52 @@ test("3 hashtags are in, 4 are out, and blog#104 is not one", () => {
   );
   const issue = draft(150, { opening: "AI wrote blog#104.", tags: three });
   assert.deepEqual(linkedinProblems(issue, SLUG), []);
+  const ref = draft(150, { opening: "AI fixed #104.", tags: three });
+  assert.deepEqual(linkedinProblems(ref, SLUG), [], "#104 is an issue number");
+});
+
+// The slug a draft must match: the post's own, as the build reads it.
+const post = (front, body = "Text.\n") => `---\n${front}\n---\n${body}`;
+
+test("a post's slug is read as YAML, quoted or not", () => {
+  const front = "title: A\nslug: my-post\ndraft: false";
+  assert.equal(publishedSlug("a.md", post(front)), "my-post");
+  const quoted = 'title: A\nslug: "my-post"\ndraft: false';
+  assert.equal(publishedSlug("a.md", post(quoted)), "my-post");
+});
+
+test("a post saved with CRLF line ends has its slug", () => {
+  const text = post("title: A\nslug: my-post\ndraft: false").replace(
+    /\n/g,
+    "\r\n"
+  );
+  assert.equal(publishedSlug("a.md", text), "my-post");
+});
+
+test("a slug: line in a post's body is not its slug", () => {
+  const text = post("title: A\nslug: my-post\ndraft: false", "slug: other\n");
+  assert.equal(publishedSlug("a.md", text), "my-post");
+});
+
+test("a draft post, or one the build skips, has no published slug", () => {
+  const front = "title: A\nslug: my-post\ndraft: false";
+  assert.equal(
+    publishedSlug("a.md", post(front.replace("false", "true"))),
+    null
+  );
+  assert.equal(publishedSlug("_a.md", post(front)), null);
+  assert.equal(publishedSlug("sub/_a.md", post(front)), null);
+  assert.equal(
+    publishedSlug("a.md", "slug: my-post\n"),
+    null,
+    "no front matter"
+  );
+});
+
+// content.config.ts's glob skips only a file whose own name starts with `_`.
+test("a post in a `_` folder is still built, so its slug counts", () => {
+  const front = "title: A\nslug: my-post\ndraft: false";
+  assert.equal(publishedSlug("_dir/a.md", post(front)), "my-post");
 });
 
 test("the first paragraph must say AI", () => {
@@ -92,8 +143,7 @@ const REQUIRED = ["building-an-ai-agent-team"];
 
 const slugs = readdirSync(POSTS, { recursive: true })
   .filter(path => /\.mdx?$/.test(path))
-  .map(path => readFileSync(new URL(path, POSTS), "utf8"))
-  .map(text => text.match(/^slug:\s*(\S+)\s*$/m)?.[1]);
+  .map(path => publishedSlug(path, readFileSync(new URL(path, POSTS), "utf8")));
 
 test("each LinkedIn draft belongs to a post and keeps the rules", () => {
   assert.ok(existsSync(DRAFTS), "no docs/linkedin/ folder");
