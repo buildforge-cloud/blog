@@ -112,15 +112,16 @@ A later run, on 8 October, gave 20.7 against 3.4. This time the gap was
 clear of zero. The line is still off by default. Turning it back on is my
 decision, and I haven't made it.
 
-## 31 alarms that were not for me
+## 31 alarms in one day
 
 A script checks every worker each 5 minutes. When a worker's turn has
 ended, or a prompt has waited, for 10 minutes, it tells the executive:
-"waiting on you". On 29 September it said that 31 times.
+"waiting on you". On 29 September it said that 31 times. Until 3 October it
+also fired for a worker whose pull request waited on my yes for a change to
+how an app looks, so some of the 31 may have been waiting on me.
 
-The first draft of this post called those 31 questions that only I could
-answer. The alarm goes to the executive, not to me. I caught it when I
-read the draft.
+The first draft of this post called all 31 questions that only I could
+answer. The executive's review of the draft caught that.
 
 My part is on my phone. I read the board in short lines, one card per
 choice. I do no code review. The executive does that. I say yes to what
