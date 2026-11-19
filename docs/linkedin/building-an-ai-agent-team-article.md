@@ -58,7 +58,7 @@ My part happens on my phone, on a simple web page my agents built for me. The le
 
 I don't review any code. The lead agent writes down each decision, its own and mine, in a log on that page. Mine are the answers I give it and the things I tell it in a chat there.
 
-Over the eight weeks, the lead agent put thousands of small decisions in front of me: its questions, and the decisions it wrote down, its own and mine. My answers and the decisions in that log set what gets built and what goes live.
+Over the eight weeks, the lead agent put thousands of small decisions in front of me: questions for me to answer, and the decisions it wrote down, its own and mine. My answers and the decisions in that log set what gets built and what goes live.
 
 This article was made the same way. An agent wrote it from a longer post on my blog, linked at the end, and I edited and approved it before posting it myself.
 
