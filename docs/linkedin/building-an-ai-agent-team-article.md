@@ -36,7 +36,7 @@ The other two tools grew alongside it: about 1,300 commits on the board, 95 on t
 
 ## Turn rules into hard checks
 
-The CPU burners were not my first production scare. On 7 July, before any agents, a test started one project's real Docker Compose file.
+The CPU burners were not my first production scare. On 7 July, before any of this, a test started one project's real Docker Compose file.
 
 Its container names are fixed, so the test could not run beside the live app. It took the live app's place, and my sites went down.
 
@@ -62,7 +62,7 @@ I built the executive to be suspicious. Each pull request ends with the worker's
 
 The executive treats that report as a claim. It reruns the tests and reads every changed line against the issue.
 
-When something is off, the work goes back to the worker. In the last 10 merges of each kind of work, that happened 2 times.
+When something is off, the work goes back to the worker. In the last 10 merges of each kind of work, that happened 2 times in each kind.
 
 Then my own board broke a rule. On 18 November it showed 3 workers running, with a cap of 2.
 
@@ -74,7 +74,7 @@ The suspicion I built into the reviewer has to cover my own tools as well.
 
 The memory plugin can point an agent to related notes. When the agent opens one memory, the plugin adds a line that names its neighbours.
 
-I measured it on 24 September. The plugin's own links gave 7.2 useful suggestions per 100 reads, and plain hand-written links gave 3.6.
+I measured it on 24 September. The plugin's own links gave 7.2 useful suggestions per 100 reads, and plain links written into the memories gave 3.6.
 
 That gap was too uncertain to rule out zero. Meanwhile the extra line showed up on 94% of reads, so I switched it off.
 
