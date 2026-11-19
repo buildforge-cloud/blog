@@ -1,6 +1,6 @@
 ---
 author: Stefan M. Gulbrandsen
-pubDatetime: 2027-01-19T07:00:00Z
+pubDatetime: 2027-01-26T07:00:00Z
 title: "Site disappeared from Google in one hour: still indexed, impressions down 99%"
 slug: google-stopped-showing-our-site-in-a-day
 featured: false

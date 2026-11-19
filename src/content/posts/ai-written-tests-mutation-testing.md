@@ -1,6 +1,6 @@
 ---
 author: Stefan M. Gulbrandsen
-pubDatetime: 2026-11-24T07:00:00Z
+pubDatetime: 2026-12-01T07:00:00Z
 title: "Do AI-written tests test anything? What mutation testing found"
 slug: ai-written-tests-mutation-testing
 featured: false

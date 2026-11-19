@@ -1,6 +1,6 @@
 ---
 author: Stefan M. Gulbrandsen
-pubDatetime: 2026-12-29T07:00:00Z
+pubDatetime: 2027-01-05T07:00:00Z
 title: "Search YouTube comments past the first 60 on desktop: Comment Finder 1.9.1"
 slug: search-youtube-comments-desktop
 featured: false

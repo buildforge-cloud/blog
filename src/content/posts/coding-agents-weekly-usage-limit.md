@@ -1,6 +1,6 @@
 ---
 author: Stefan M. Gulbrandsen
-pubDatetime: 2026-12-22T07:00:00Z
+pubDatetime: 2026-12-29T07:00:00Z
 title: "Keeping Claude Code agents inside a weekly usage limit, and lifting it on my word"
 slug: coding-agents-weekly-usage-limit
 featured: false

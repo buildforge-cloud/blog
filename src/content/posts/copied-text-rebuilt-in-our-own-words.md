@@ -1,6 +1,6 @@
 ---
 author: Stefan M. Gulbrandsen
-pubDatetime: 2026-12-08T07:00:00Z
+pubDatetime: 2026-12-15T07:00:00Z
 title: "AI text that copied its sources: what an originality check found"
 slug: copied-text-rebuilt-in-our-own-words
 featured: false

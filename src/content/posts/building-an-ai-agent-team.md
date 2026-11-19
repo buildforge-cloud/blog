@@ -1,6 +1,6 @@
 ---
 author: Stefan M. Gulbrandsen
-pubDatetime: 2027-02-09T07:00:00Z
+pubDatetime: 2026-11-24T07:00:00Z
 title: "What I learned running Claude Code as a team of agents for eight weeks"
 slug: building-an-ai-agent-team
 featured: false

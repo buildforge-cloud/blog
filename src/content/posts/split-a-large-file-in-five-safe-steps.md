@@ -1,6 +1,6 @@
 ---
 author: Stefan M. Gulbrandsen
-pubDatetime: 2027-01-05T07:00:00Z
+pubDatetime: 2027-01-12T07:00:00Z
 title: "Letting an AI agent refactor a large file: 3,265 lines split in five safe steps"
 slug: split-a-large-file-in-five-safe-steps
 featured: false

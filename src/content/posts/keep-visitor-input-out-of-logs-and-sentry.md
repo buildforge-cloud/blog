@@ -1,6 +1,6 @@
 ---
 author: Stefan M. Gulbrandsen
-pubDatetime: 2026-12-01T07:00:00Z
+pubDatetime: 2026-12-08T07:00:00Z
 title: "Keeping query strings out of nginx access logs and Sentry"
 slug: keep-visitor-input-out-of-logs-and-sentry
 featured: false

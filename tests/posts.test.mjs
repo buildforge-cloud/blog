@@ -1,5 +1,5 @@
 // The posts in src/content/posts/ keep the blog's standing rules, and the
-// queued posts keep their dates (`QUEUED`, from the 8 Dec post on). Run with
+// queued posts keep their dates (`QUEUED`, from the 24 Nov post on). Run with
 // `npm test`.
 //
 // A scheduled post's date is only seen on the morning it should go live
@@ -42,45 +42,53 @@ const bySlug = slug => {
 // The queued posts, oldest first, each at 07:00 UTC so the 07:05 scheduled
 // deploy publishes it (blog#9), with the issue STRATEGY.md's Now names it
 // by. A post leaves this list when it is live and Now drops it.
+// blog#106 moved the journey post (blog#104) to 24 Nov and every other one
+// a week later.
 const QUEUED = [
+  ["building-an-ai-agent-team", "2026-11-24T07:00:00.000Z", "blog#104"],
+  ["ai-written-tests-mutation-testing", "2026-12-01T07:00:00.000Z", "blog#58"],
+  [
+    "keep-visitor-input-out-of-logs-and-sentry",
+    "2026-12-08T07:00:00.000Z",
+    "blog#59",
+  ],
   [
     "copied-text-rebuilt-in-our-own-words",
-    "2026-12-08T07:00:00.000Z",
+    "2026-12-15T07:00:00.000Z",
     "blog#60",
   ],
   [
     "passing-tests-skipped-most-of-the-file",
-    "2026-12-15T07:00:00.000Z",
+    "2026-12-22T07:00:00.000Z",
     "blog#68",
   ],
-  ["coding-agents-weekly-usage-limit", "2026-12-22T07:00:00.000Z", "blog#69"],
-  ["search-youtube-comments-desktop", "2026-12-29T07:00:00.000Z", "blog#70"],
+  ["coding-agents-weekly-usage-limit", "2026-12-29T07:00:00.000Z", "blog#69"],
+  ["search-youtube-comments-desktop", "2027-01-05T07:00:00.000Z", "blog#70"],
   [
     "split-a-large-file-in-five-safe-steps",
-    "2027-01-05T07:00:00.000Z",
+    "2027-01-12T07:00:00.000Z",
     "blog#72",
   ],
   [
     "17-downloads-a-plan-before-more-code",
-    "2027-01-12T07:00:00.000Z",
+    "2027-01-19T07:00:00.000Z",
     "blog#73",
   ],
   [
     "google-stopped-showing-our-site-in-a-day",
-    "2027-01-19T07:00:00.000Z",
+    "2027-01-26T07:00:00.000Z",
     "blog#75",
   ],
   [
     "secret-scanner-skipped-files-that-looked-like-archives",
-    "2027-01-26T07:00:00.000Z",
+    "2027-02-02T07:00:00.000Z",
     "blog#92",
   ],
   [
     "nightly-database-backups-write-only-ssh-key",
-    "2027-02-02T07:00:00.000Z",
+    "2027-02-09T07:00:00.000Z",
     "blog#93",
   ],
-  ["building-an-ai-agent-team", "2027-02-09T07:00:00.000Z", "blog#104"],
 ];
 
 const WEEK = 7 * 24 * 60 * 60 * 1000;

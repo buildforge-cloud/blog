@@ -1,6 +1,6 @@
 ---
 author: Stefan M. Gulbrandsen
-pubDatetime: 2026-12-15T07:00:00Z
+pubDatetime: 2026-12-22T07:00:00Z
 title: "Passing tests that never read most of the file: a comment-stripping regex bug"
 slug: passing-tests-skipped-most-of-the-file
 featured: false
