@@ -1258,3 +1258,92 @@ widths.
 **Found, not changed.** `buildforge-cloud/invoice-scanner` is public
 (`gh repo list`, 2026-11-19), so `CLAUDE.md`'s "the org's only public repo"
 is no longer true.
+
+## 2026-11-19 — #106: the journey post on 24 Nov, the queued posts a week later
+
+**What.** Stefan's card 4371: publish the journey post (blog#104) next week,
+and move the others back one week. `building-an-ai-agent-team.md` goes from
+9 Feb 2027 to 24 Nov 2026, 07:00 UTC. The 11 posts queued from 24 Nov to
+2 Feb each move 7 days later, so 2 Feb's (blog#93) is now 9 Feb. STRATEGY.md's
+Now is regrouped by the new dates, and step 4's "before" dates follow their
+posts (19 Jan for blog#73, 26 Jan for blog#75, 9 Feb for blog#93).
+
+**Checks.** `QUEUED` in `tests/posts.test.mjs` now pins all 12 queued posts,
+from 24 Nov on (it started at 8 Dec). Red first: `building-an-ai-agent-team`
+was 2027-02-09, expected 2026-11-24. Every old date was grepped outside this
+log: each hit is a new date or a reading date. The one link between queued
+posts (22 Dec to 1 Dec) still points back in time.
+
+**Not changed.** This log's older entries keep the dates they had when they
+were written. Parked blog#81 and #82's next free date is now 16 Feb 2027 or
+later.
+
+## 2026-11-19 — #107: the agent-team story as a LinkedIn Article
+
+**What.** `docs/linkedin/building-an-ai-agent-team-article.md`, the journey
+post (blog#104) as a LinkedIn Article: headline "I ran Claude Code as a team
+of AI agents for eight weeks" (56 characters), 1,070 words, 8 sub-heads,
+paragraphs of 3 sentences at most, and a closing question. It uses only
+facts and numbers from the merged post; each number is checked against it.
+Its cover, `building-an-ai-agent-team-cover.png`, is a 1920 x 1080 text card
+in the post's OG-image design, drawn by `scripts/linkedin-cover.mjs`.
+`building-an-ai-agent-team.md` is now the Article's share text: 80 words,
+the hook first, the same closing question, no URL. (Figures as of the
+second round, below.)
+
+**Research** (sources in the PR body). LinkedIn Help: a cover is best at
+1920 x 1080, cropped to 16:9; the search title is cut at 60 characters and
+the search description is the first lines, 140 to 160 characters. Articles
+reached 0.69 times an average post's reach from March 2025 to February 2026
+(AuthoredUp), because the feed shows a card that takes a click, so a short
+share post carries the reach. A post shows about 140 characters on a phone
+before "see more". 2026 guides: a sub-head every 200 to 300 words,
+paragraphs of 2 or 3 sentences, 1,000 to 2,500 words, a closing question.
+Link studies disagree (Metricool 2025: links gave 13.6% more interactions;
+others report less reach), and hashtags are a minor factor.
+
+**Voice check** (the issue's first step). Lines of the post that read as a
+blog post, not as LinkedIn: the two relative links ("I wrote about [its first
+day](/posts/the-bugs-were-in-the-brakes/)"), which break off the blog; the
+three repo names (agent-orchestrator, agent-os, agent-memory), which mean
+nothing to a reader there; the nine-line dated numbers list and the weekly
+row "55, 82, 114, 68, 63, 96, 43, 77", a table on a phone; the confidence
+range "-2.7 to +10.7"; "This post went the same way", about the post itself;
+and the journal close "I wrote this on 19 November. The next step is mine".
+The Article names what each tool does instead of its repo, keeps a few
+numbers in the running text, links the post once for the full list, and
+ends with a question.
+
+**Checks.** `tests/linkedin.mjs` gains `articleProblems`, `shareProblems`,
+`postText`, `pngSize`, `pngTitle`, `titledPng` and `coverProblems`;
+`tests/linkedin.test.mjs` runs them on every `<slug>-article.md`, its cover
+and its share text. Red against stubs first (17 tests, then 7 more for the
+review fixes). 38 mutations, each killed by its own test.
+
+**Review fixes** (`code-review medium`, 7 nits, all fixed). The cover holds
+its headline in an iTXt "Title" chunk, and the test fails when it is not the
+Article's headline, so a retitled Article needs a new cover. sharp reads that
+chunk back, but it ignores a bad CRC, so each chunk's CRC is checked apart.
+The number check skips a link's address and reads 1,000 as 1000. A numbered
+or `*` list item counts alone, e.g., i.e. and vs. end no sentence, and a
+paragraph glued to its sub-head is counted. The 160-character preview skips
+link addresses. The cover script finds its files from its own path.
+AGENTS.md's draft rules now say a draft beside an Article is its share text.
+From the self-review checklist: an Article saved with CRLF reads as with LF,
+and the real cover must end in IEND, so a write cut short fails.
+
+**Second round** (the executive's review, changes needed). The first
+Article was a re-cut of the post: 44 of its 82 sentences and 5 of its 7
+sub-heads were the post's word for word (the review's count; the test's
+sentence split counted 38), and the AI line took 60 of the 160 preview
+characters, so the hook was cut before "see more". The Article is now new
+writing from the post's facts, as lessons for LinkedIn readers: 1 of its 78
+sentences is the post's, all 8 sub-heads are new, and it opens with a
+109-character hook, then "Written by AI, edited by me." The share text
+opens the same way. Rules added, red first on the old Article: 5 copied
+sentences at most, no post sub-head, a hook of 140 characters at most and an
+AI line of 40 at most right after it. The cover's headline went from 104 px
+to 148 px and its byline from 44 to 60 px. Also from the review: a CRLF
+headline loses its \r (`headlineOf`), and the PNG title code moved to
+`scripts/png-title.mjs`, so the cover script no longer imports from
+`tests/`. 48 mutations, each killed by its own test.
