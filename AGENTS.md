@@ -59,6 +59,19 @@ a later post shows an old claim was wrong, the old post gets one italic first
 paragraph, `_Update, <month> <year>: ..._`, that says what was wrong and links
 the newer post. Do not rewrite the old body (blog#52).
 
+**A post's LinkedIn draft** (blog#104) is `docs/linkedin/<slug>.md`, named
+after the post's slug, the text as pasted with one paragraph per line. Stefan
+edits and posts it himself; nothing in the repo posts it. `tests/linkedin.mjs`
+holds its rules and `tests/linkedin.test.mjs` (in `npm test`) runs them: a
+published post with that slug (read as YAML, so a `draft: true` post or a
+`_`-named file has none), 120 to 200 words (the URL and each hashtag count as
+one), "AI" in the first paragraph, the post's URL as the last line, 3 hashtags
+at most (a tag needs a letter, so `#104` is none) and no em dash. Its
+`REQUIRED` list keeps an empty folder from passing. The link answers 404 until
+the post's date, so the draft is posted after it. A post that opens by saying
+AI wrote it and Stefan "edited" it goes on the list in `tests/posts.test.mjs`
+that checks its first three non-empty body lines (blog#104's post is first).
+
 **`strategy/STRATEGY.md`** (decision 1943, blog#50) holds the blog's goal,
 readers, next three steps ("Now"), what it will not do, and how it is
 measured. It is reviewed once a month and has no status line: the merge after
@@ -426,6 +439,14 @@ directory, so the link shows as untracked: stage files by name, and delete the
 link before the worktree is cleaned up. And `astro dev --port N` from a
 worktree still serves under `/absproxy/5177/`, because the config's `base`
 wins over `--base`; fetch it at `http://localhost:N/absproxy/5177/...`.
+
+A dispatched worker may not do that: its brief forbids a link to anything
+outside the worktree, because removing one asks for a permission (blog#104).
+It `rsync`s the worktree, without `.git`, into its scratchpad, links the main
+checkout's `node_modules` in that copy, and runs there. For a build, set
+`cacheDir` and `vite.cacheDir` in the copy's `astro.config.ts` first, or
+Astro writes its cache (`./node_modules/.astro`) through the link into the
+main checkout. A queued post can take its past date in the copy alone.
 
 When an AI agent runs it, Astro 7 starts `astro dev` and `astro preview` as a
 detached background server by itself (it detects the agent). A Playwright
