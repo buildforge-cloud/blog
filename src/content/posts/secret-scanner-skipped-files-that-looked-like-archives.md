@@ -1,6 +1,6 @@
 ---
 author: Stefan M. Gulbrandsen
-pubDatetime: 2027-01-26T07:00:00Z
+pubDatetime: 2027-02-02T07:00:00Z
 title: "Gitleaks skipped text files that looked like archives"
 slug: secret-scanner-skipped-files-that-looked-like-archives
 featured: false

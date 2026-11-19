@@ -1,6 +1,6 @@
 ---
 author: Stefan M. Gulbrandsen
-pubDatetime: 2027-01-12T07:00:00Z
+pubDatetime: 2027-01-19T07:00:00Z
 title: "Almost no downloads for my indie app: 17 in six weeks on the App Store, and a plan before more code"
 slug: 17-downloads-a-plan-before-more-code
 featured: false

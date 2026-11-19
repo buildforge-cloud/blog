@@ -1,6 +1,6 @@
 ---
 author: Stefan M. Gulbrandsen
-pubDatetime: 2027-02-02T07:00:00Z
+pubDatetime: 2027-02-09T07:00:00Z
 title: "Nightly Postgres backups to a home NAS with a write-only ssh key"
 slug: nightly-database-backups-write-only-ssh-key
 featured: false

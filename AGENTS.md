@@ -31,7 +31,7 @@ No admin panel / CMS — this is a git-based static site. To publish:
    different posts. `tests/posts.test.mjs` (in `npm test`) fails on an em
    dash in any post or page, a post link to a buildforge-cloud repo other
    than `blog`, and a queued post whose date, `draft` or `featured` changes.
-   Its `QUEUED` list pins each queued post from the 8 Dec one on, at least a
+   Its `QUEUED` list pins each queued post from the 24 Nov one on, at least a
    week apart, with the issue STRATEGY.md's Now must name: a new queued post
    gets a line there, and leaves it when it is live and Now drops it. The test
    reads only Now's numbered steps (a step may wrap onto indented lines), so
