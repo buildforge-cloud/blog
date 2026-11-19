@@ -36,7 +36,7 @@ Each task now gets a new agent of its own, with its own copy of the code, so two
 
 The lead agent is more than Claude Code. It is also a set of small programs that AI wrote for it.
 
-They start the other agents, check the server and write down each decision the lead agent makes. Those programs are a project of their own, though not an app.
+They start the other agents, check the server and write down each decision, the lead agent's and mine. Those programs are a project of their own, though not an app.
 
 I didn't trust the lead agent with everything at once. Accepting a change makes it part of a project's code. Putting it live, where the people who use the app see it, is a separate step.
 
@@ -56,7 +56,7 @@ Some decisions stayed with me. I choose which tasks get done at all. Anything th
 
 My part happens on my phone, on a simple web page my agents built for me. The lead agent posts a short question there with a few answers to pick from, and I tap one. The same page shows which agents are running.
 
-I don't review any code. Over the eight weeks, the questions added up to thousands of small decisions. Together they decide what gets built and what goes live.
+I don't review any code. Over the eight weeks, I made thousands of small decisions: by answering the lead agent's questions, and by telling it things it then wrote down as decisions. Those decisions set what gets built and what goes live.
 
 This article was made the same way. An agent wrote it from a longer post on my blog, linked at the end, and I edited and approved it before posting it myself.
 
