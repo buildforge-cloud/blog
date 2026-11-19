@@ -4,7 +4,7 @@ For eight weeks, a team of AI agents has written and checked my code. I don't re
 
 AI wrote this article. I edited it.
 
-This is how I got there, in four stages, and what I make of it now. I build a few small apps on my own, and AI writes all of their code. I call each piece of software I keep a project, and most of my projects are apps.
+This is how I got there, in four stages, and what I make of it now. I build a few small apps on my own, and AI writes all of their code. I call each piece of software I keep a project: most are apps, and one is my blog.
 
 If you are thinking of letting AI agents take on more of your work, the pros and cons at the end are for you.
 
@@ -56,7 +56,9 @@ Some decisions stayed with me. I choose which tasks get done at all. Anything th
 
 My part happens on my phone, on a simple web page my agents built for me. The lead agent posts a short question there with a few answers to pick from, and I tap one. The same page shows which agents are running.
 
-I don't review any code. Over the eight weeks, I made thousands of small decisions: by answering the lead agent's questions, and by telling it things it then wrote down as decisions. Those decisions set what gets built and what goes live.
+I don't review any code. The lead agent writes down each decision, its own and mine, in a log on that page. Mine are the answers I give it and the things I tell it in a chat there.
+
+Over the eight weeks, the lead agent put thousands of small decisions in front of me: its questions, and the decisions it wrote down, its own and mine. My answers and the decisions in that log set what gets built and what goes live.
 
 This article was made the same way. An agent wrote it from a longer post on my blog, linked at the end, and I edited and approved it before posting it myself.
 
