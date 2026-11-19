@@ -314,6 +314,15 @@ test("an Article's links are absolute, and it has no em dash", () => {
   assert.deepEqual(articleProblems(dash, POST_TEXT), ["an em dash"]);
 });
 
+test("an Article saved with CRLF line ends is read as with LF", () => {
+  const crlf = article().replace(/\n/g, "\r\n");
+  assert.deepEqual(articleProblems(crlf, POST_TEXT), []);
+  const long = article({ head: `# ${"a".repeat(61)}` }).replace(/\n/g, "\r\n");
+  assert.deepEqual(articleProblems(long, POST_TEXT), [
+    "its headline is 61 characters, not 60 or fewer",
+  ]);
+});
+
 test("an empty Article lists its problems and does not throw", () => {
   assert.deepEqual(articleProblems("", POST_TEXT), [
     'its first line is not a "# " headline',
@@ -436,17 +445,26 @@ const blankPng = () =>
 
 // The PNG spec: each chunk ends with the CRC of its type and data. sharp
 // reads a title with a wrong CRC all the same, so this is checked apart.
+// A chunk that runs past the end is named as cut short.
 const badCrcs = bytes => {
   const bad = [];
-  for (let at = 8; at + 12 <= bytes.length;) {
+  for (let at = 8; at + 8 <= bytes.length;) {
     const length = bytes.readUInt32BE(at);
     const body = bytes.subarray(at + 4, at + 8 + length);
-    if (bytes.readUInt32BE(at + 8 + length) !== crc32(body))
-      bad.push(body.toString("latin1", 0, 4));
+    const type = body.toString("latin1", 0, 4);
+    if (at + 12 + length > bytes.length) return [...bad, `${type} cut short`];
+    if (bytes.readUInt32BE(at + 8 + length) !== crc32(body)) bad.push(type);
     at += 12 + length;
   }
   return bad;
 };
+
+test("a PNG cut inside a chunk is named, not read past its end", async () => {
+  const png = await blankPng();
+  assert.deepEqual(badCrcs(png.subarray(0, png.length - 13)), [
+    "IDAT cut short",
+  ]);
+});
 
 test("a PNG decoder reads the title back", async () => {
   const titled = titledPng(await blankPng(), "ps·db på norsk");
@@ -528,5 +546,11 @@ test("each LinkedIn Article keeps the rules, with its cover and share text", () 
     const bytes = readFileSync(new URL(image, DRAFTS));
     assert.deepEqual(coverProblems(bytes, headline), [], image);
     assert.deepEqual(badCrcs(bytes), [], `${image}: chunks with a bad CRC`);
+    // A write cut short leaves no IEND chunk at the end.
+    assert.equal(
+      bytes.toString("latin1", bytes.length - 8, bytes.length - 4),
+      "IEND",
+      `${image}: no IEND at the end`
+    );
   }
 });

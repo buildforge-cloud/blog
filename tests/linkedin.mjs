@@ -83,7 +83,8 @@ const sentencesIn = text =>
 // 140 to 160; a sub-head every 200 to 300 words; paragraphs of 2 or 3
 // sentences; 1,000 to 2,500 words; a closing question. Every number must be
 // in the post, so the Article states nothing the post does not.
-export function articleProblems(text, post) {
+export function articleProblems(saved, post) {
+  const text = saved.replace(/\r\n/g, "\n");
   const problems = [];
   const lines = text.split("\n");
   const headline = lines[0].match(/^# (.+)$/)?.[1];
