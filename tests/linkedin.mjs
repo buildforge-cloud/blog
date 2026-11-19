@@ -109,6 +109,44 @@ function hookProblems(paragraphs) {
   return problems;
 }
 
+// The setup's in-house words (blog#109's list): a reader with no knowledge
+// of the setup cannot follow them (Stefan, decision 4424). A whole word,
+// singular or plural, in any letter case; "Touches" only with its capital,
+// since "touches" is plain English.
+const IN_HOUSE = [
+  "executive",
+  "worker",
+  "board",
+  "card",
+  "slot",
+  "hook",
+  "worktree",
+  "agent-orchestrator",
+  "agent-os",
+  "agent-memory",
+];
+function inHouseProblems(text) {
+  const words = IN_HOUSE.filter(word =>
+    new RegExp(`(?<![\\p{L}\\p{N}])${word}s?(?![\\p{L}\\p{N}])`, "iu").test(
+      text
+    )
+  );
+  if (/\bTouches\b/.test(text)) words.push("Touches");
+  return words.map(word => `an in-house word: "${word}"`);
+}
+
+// A day with its month ("7 July", "November 18", "24 Sept") or an ISO date:
+// the journey is told in stages, not by the day of one incident (decision
+// 4425). A month alone ("in July") is not a date.
+const MONTH = "(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*";
+const DATE = new RegExp(
+  `\\b(?:\\d{1,2} ${MONTH}|${MONTH} \\d{1,2}|\\d{4}-\\d{2}-\\d{2})\\b`,
+  "g"
+);
+
+// A few overall numbers at most (blog#109): 5 different ones.
+const MAX_NUMBERS = 5;
+
 // The `## ` sub-heads of a Markdown text.
 const subHeadsOf = text => [...text.matchAll(/^## (.+)$/gm)].map(([, h]) => h);
 
@@ -119,8 +157,10 @@ const subHeadsOf = text => [...text.matchAll(/^## (.+)$/gm)].map(([, h]) => h);
 // 1,000 to 2,500 words; a closing question. Every number must be in the
 // post, so the Article states nothing the post does not, but it is new
 // writing: 5 of the post's sentences at most, and none of its sub-heads.
-// A CRLF file needs no change: headlineOf drops the \r, and the rest reads
-// \r as space.
+// It reads with no knowledge of the setup and tells a journey, not single
+// deliveries (blog#109): no in-house word, no day-and-month date, and 5
+// different numbers at most. A CRLF file needs no change: headlineOf drops
+// the \r, and the rest reads \r as space.
 export function articleProblems(text, post) {
   const problems = [];
   const lines = text.split("\n");
@@ -190,6 +230,11 @@ export function articleProblems(text, post) {
     named.add(key);
     problems.push(`${number} is not in the post`);
   }
+  const different = new Set(numbersIn(shown(text)).map(sameNumber)).size;
+  if (different > MAX_NUMBERS)
+    problems.push(`${different} numbers, not ${MAX_NUMBERS} or fewer`);
+  for (const [date] of text.matchAll(DATE)) problems.push(`a date: "${date}"`);
+  problems.push(...inHouseProblems(text));
   for (const [, target] of text.matchAll(/\]\(([^)\s]*)\)/g))
     if (!/^https?:\/\//.test(target))
       problems.push(`a relative link: ${target}`);
@@ -210,6 +255,7 @@ export function shareProblems(text) {
   problems.push(...hookProblems(paragraphs));
   const tags = hashtagsIn(text);
   if (tags > 3) problems.push(`${tags} hashtags, not 3 or fewer`);
+  problems.push(...inHouseProblems(text));
   if (text.includes("—")) problems.push("an em dash");
   return problems;
 }

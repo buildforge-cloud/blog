@@ -1,9 +1,9 @@
-On day two, my AI reviewer asked a worker agent for proof. The worker got it by loading my production server.
+For eight weeks, a team of AI agents has written and checked my code. I don't review it. I answer their questions on my phone.
 
-Written by AI, edited by me.
+AI wrote this and the article. I edited.
 
-For eight weeks I have run my projects with a team of Claude Code agents. The code came fast. The failures sat in the rules and checks around it.
+I build small apps alone. This is how I went from guiding one AI agent per app to a team, on Claude Code, an AI coding tool, with the pros and cons.
 
-If you run AI agents on real work, what was the first rule you had to turn into a hard check?
+Which decision would you never hand over to an AI agent?
 
 #ClaudeCode #AIAgents #SoftwareEngineering

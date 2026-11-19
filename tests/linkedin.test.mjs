@@ -321,7 +321,7 @@ test("a numbered list item counts alone, without its number", () => {
 test("e.g., i.e. and vs. do not end a sentence", () => {
   const short = article({
     extra:
-      "A rule vs. a hook, e.g. a check, i.e. a gate. It broke. We fixed it.",
+      "A rule vs. a block, e.g. a check, i.e. a gate. It broke. We fixed it.",
   });
   assert.deepEqual(articleProblems(short, POST_TEXT), []);
 });
@@ -393,6 +393,84 @@ test("an Article saved with CRLF line ends is read as with LF", () => {
   assert.deepEqual(articleProblems(long, POST_TEXT), [
     "its headline is 61 characters, not 60 or fewer",
   ]);
+});
+
+// blog#109: an Article is read by people who know nothing of the setup
+// (Stefan, decision 4424), and tells a journey, not single deliveries
+// (decision 4425). So no in-house word, no incident date, few numbers.
+const IN_HOUSE = [
+  "executive",
+  "worker",
+  "board",
+  "card",
+  "slot",
+  "hook",
+  "worktree",
+  "Touches",
+  "agent-orchestrator",
+  "agent-os",
+  "agent-memory",
+];
+
+test("an Article uses no in-house word, singular or plural", () => {
+  for (const word of IN_HOUSE) {
+    const one = article({ extra: `Then the ${word} said no.` });
+    assert.deepEqual(
+      articleProblems(one, POST_TEXT),
+      [`an in-house word: "${word}"`],
+      word
+    );
+    if (word === "Touches") continue; // a plural already
+    const many = article({ extra: `Then the ${word}s said no.` });
+    assert.deepEqual(
+      articleProblems(many, POST_TEXT),
+      [`an in-house word: "${word}"`],
+      `${word}s`
+    );
+  }
+  const capital = article({ extra: "The Executive said no." });
+  assert.deepEqual(articleProblems(capital, POST_TEXT), [
+    'an in-house word: "executive"',
+  ]);
+});
+
+test("a plain word with an in-house word inside it is fine", () => {
+  const plain = article({
+    extra: "A coworker hooked a keyboard up. I discard what touches it.",
+  });
+  assert.deepEqual(articleProblems(plain, POST_TEXT), []);
+});
+
+test("a share text uses no in-house word", () => {
+  assert.deepEqual(shareProblems(share(40, { hook: "The worker ran." })), [
+    'an in-house word: "worker"',
+  ]);
+});
+
+test("an Article names no day and month, but may name a month", () => {
+  const post = "On 7 July, 18 November, 24 September and 2026-11-18.";
+  for (const date of ["7 July", "18 November", "November 18", "24 Sept"]) {
+    const dated = article({ extra: `It broke on ${date}.` });
+    assert.deepEqual(articleProblems(dated, post), [`a date: "${date}"`], date);
+  }
+  const iso = article({ extra: "It broke on 2026-11-18." });
+  assert.deepEqual(articleProblems(iso, post), ['a date: "2026-11-18"']);
+  const month = article({ extra: "It broke in July, after 7 tries." });
+  assert.deepEqual(articleProblems(month, post), []);
+});
+
+test("an Article names 5 numbers at most: 5 in, 6 out", () => {
+  const post = "1 2 3 4 5 6 1,000";
+  const five = article({ extra: "We had 1, 2, 3, 4 and 5, then 5 again." });
+  assert.deepEqual(articleProblems(five, post), []);
+  const six = article({ extra: "We had 1, 2, 3, 4, 5 and 6." });
+  assert.deepEqual(articleProblems(six, post), ["6 numbers, not 5 or fewer"]);
+  const same = article({ extra: "We had 1, 2, 3, 4, 1,000 and 1000." });
+  assert.deepEqual(articleProblems(same, post), [], "1,000 is 1000");
+  const linked = article({
+    extra: "We had 1, 2, 3, 4 and [5](https://example.com/6/).",
+  });
+  assert.deepEqual(articleProblems(linked, post), [], "a link's address");
 });
 
 test("an empty Article lists its problems and does not throw", () => {
