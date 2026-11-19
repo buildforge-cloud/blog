@@ -1187,3 +1187,74 @@ names as a run on `origin/main`.
 
 **Also.** Folded `changes.d/100.md` into CLAUDE.md's "Shared parts", with the
 floor this PR sets.
+
+## 2026-11-19 — #104: a post on eight weeks of a Claude Code agent team, and its LinkedIn draft
+
+**What.** One post, 9 February 2027 at 07:00 UTC, the first free week after
+the 2 Feb post (blog#93): `building-an-ai-agent-team.md`. It says in its
+first lines that AI wrote it and that Stefan edited it. Its spine: the
+agents' code was the fast part, and each failure it tells sat in what was
+built around the code. Six failures, from the issue's Facts: the CPU burners
+(26 Sep), the compose test that replaced live containers (7 Jul) and the
+hook after it, the instructions file that grew back to 108 KB, the board's
+3 workers against a cap of 2, the related-memory line that measured as
+noise, and 31 "waiting on you" alarms in a day. The session-start note
+(Facts item 5) was left out: the issue allows 4 to 6.
+
+**Three Facts that did not match their source** (the executive's review of
+the PR). The 31 alarms are guard.py's: a worker whose turn ended, or whose
+prompt waited, for 10 min, told to the executive, not questions for
+Stefan. Until agent-orchestrator#222 (closed 3 Oct) a worker whose PR
+waited on Stefan's UI yes alarmed too, so some of the 31 may have waited
+on him. The post now tells it as measured, says the executive's review
+caught its first draft's reading, and no longer claims Stefan was the
+slowest part; the LinkedIn draft drops it. The 43
+and 51 min are metrics.py's dispatch to merge, not issue to merge, and are
+labelled so. The send-backs are 2 rounds in each lane's last 10 merges,
+not 2 merges.
+
+One number beyond the issue's Facts, read on 2026-11-19: the executive's
+instructions file is 133 lines and 11,999 bytes against a 12,000-byte cap
+(`wc -c`, and agent-orchestrator's own pair test for the cap). "Clear of
+zero" for the 8 Oct memory run rests on agent-memory's README, whose 95%
+range is +11.6 to +23.7. The README also shows the replacement note's 19.6%
+sat just under its 1 in 5 bar when it was kept, which the issue's Facts do
+not point out. Running-text numbers were cut to the ones a section turns on;
+the rest are in the post's dated list.
+
+**LinkedIn draft.** `docs/linkedin/building-an-ai-agent-team.md`, 159 words
+by `tests/linkedin.mjs`'s count (155 without the URL and the 3 hashtags).
+Nothing posts it. Its link answers 404 until the post goes live on 9 Feb.
+
+**Tests.** `tests/linkedin.test.mjs` checks the draft rules: 120 to 200
+words, "AI" in the first paragraph, the post's URL as the last line, 3
+hashtags at most, no em dash, a post with the file's slug. It ran red against
+a stub first. `tests/posts.test.mjs` pins the post in `QUEUED` (red: `no post
+with slug building-an-ai-agent-team`, `Now does not name blog#104`) and
+checks its first three lines name AI and say "edited". 13 mutations, each
+killed by the test meant for it. Then 2 for the empty-draft test: one
+survived, because `lines[0] ?? ""` never changed a result, so the fallback
+was removed.
+
+**Self-review (`code-review medium`), fixed.** The weekly merge counts in the
+Facts added up to 624 against a total of 623. Counted again from
+agent-orchestrator's merge commits in Oslo-time ISO weeks, weeks 39 to 46
+give 55, 82, 114, 68, 63, 96, 43, 77: week 45 is 43, not the Facts' 44.
+With 43 the list sums to 623, so the post keeps 623. (It said "over 620"
+for one commit, before week 45 was settled.) The LinkedIn draft said
+"for eight weeks I have run", which is wrong on its February posting date,
+so it now says "since late September". The send-backs line was ambiguous,
+and the opening dated every number 18 Nov when one is from 19 Nov. The
+draft check read slugs with a regex; it now reads the front matter as YAML,
+skips drafts and `_` files, and takes CRLF (`publishedSlug`). An issue
+number such as `#104` no longer counts as a hashtag. 7 more mutations, each
+killed.
+
+**Page check before merge.** In a scratchpad copy only, with the post dated
+18 Nov, `npm run build` then `npx playwright test`: 180 passed, 2 skipped
+(the giscus checks, rig only). The post's page met AA and the CSP at both
+widths.
+
+**Found, not changed.** `buildforge-cloud/invoice-scanner` is public
+(`gh repo list`, 2026-11-19), so `CLAUDE.md`'s "the org's only public repo"
+is no longer true.
