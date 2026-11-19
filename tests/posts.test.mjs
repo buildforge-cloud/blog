@@ -80,6 +80,7 @@ const QUEUED = [
     "2027-02-02T07:00:00.000Z",
     "blog#93",
   ],
+  ["building-an-ai-agent-team", "2027-02-09T07:00:00.000Z", "blog#104"],
 ];
 
 const WEEK = 7 * 24 * 60 * 60 * 1000;
@@ -135,6 +136,21 @@ test("a product post links its product first", () => {
       product,
       `${slug}: first link is ${link}, not ${product}`
     );
+  }
+});
+
+// A post that says in its first three lines that AI wrote it and that Stefan
+// edited it (blog#104). The lines are the body's first three non-empty ones,
+// as the file wraps them, so a later edit can't push it further down.
+test("a post that says AI wrote it says so in its first three lines", () => {
+  for (const slug of ["building-an-ai-agent-team"]) {
+    const top = bySlug(slug)
+      .body.split("\n")
+      .filter(line => line.trim())
+      .slice(0, 3)
+      .join(" ");
+    assert.match(top, /\bAI\b/, `${slug}: no "AI" in its first three lines`);
+    assert.match(top, /\bedited\b/, `${slug}: no "edited" in them`);
   }
 });
 
