@@ -10,16 +10,16 @@ import sharp from "sharp";
 import {
   articleProblems,
   coverProblems,
+  headlineOf,
   linkedinProblems,
   pngSize,
-  pngTitle,
   postText,
   postUrl,
   publishedSlug,
   shareProblems,
-  titledPng,
   wordsIn,
 } from "./linkedin.mjs";
+import { pngTitle, titledPng } from "../scripts/png-title.mjs";
 
 const SLUG = "a-post";
 const A_URL = "https://blog.buildforge.cloud/posts/a-post/";
@@ -145,13 +145,14 @@ test("an em dash is a problem", () => {
 });
 
 // A LinkedIn Article (blog#107): `<slug>-article.md`, read against its post.
-// The fixture's headline is 3 words, its opening 7 and its end 5; each
-// section is a 2-word sub-head and `n` filler words, in one-sentence
+// The fixture's headline is 3 words, its hook 3, its AI line 4 and its end
+// 5; each section is a 2-word sub-head and `n` filler words, in one-sentence
 // paragraphs of up to 50 words. No digit appears, so no number is checked.
 const POST_TEXT =
   "In its busiest week it merged 114 pull requests, 7.2 per 100.";
 const HEAD = "# A plain headline";
-const OPEN = "AI wrote this, and I edited it.";
+const HOOK = "It loaded everything.";
+const LINE = "AI wrote, I edited.";
 const END = "What would you check first?";
 const section = n => {
   const paragraphs = [];
@@ -162,12 +163,13 @@ const section = n => {
 // 15 + the sum of (n + 2) words: [245, 245, 245, 245] is 1,003.
 const article = ({
   head = HEAD,
-  open = OPEN,
+  hook = HOOK,
+  line = LINE,
   sections = [245, 245, 245, 245],
   extra = "",
   end = END,
 } = {}) =>
-  [head, open, ...sections.map(section), extra, end]
+  [head, hook, line, ...sections.map(section), extra, end]
     .filter(Boolean)
     .join("\n\n") + "\n";
 
@@ -188,17 +190,88 @@ test("an Article's headline is its first line, 60 characters in, 61 out", () => 
   ]);
 });
 
+// "edited" ends 30 characters after a hook of `pad`: 130 in, 131 out.
 test('an Article says "AI" and "edited" in its first 160 characters', () => {
-  const at = pad => article({ open: `${"x".repeat(pad)} ${OPEN}` });
-  assert.deepEqual(articleProblems(at(132), POST_TEXT), []);
-  assert.deepEqual(articleProblems(at(133), POST_TEXT), [
+  const at = pad =>
+    article({
+      hook: "x".repeat(pad),
+      line: "AI wrote it and then I edited it.",
+    });
+  assert.deepEqual(articleProblems(at(130), POST_TEXT), []);
+  assert.deepEqual(articleProblems(at(131), POST_TEXT), [
     'its first 160 characters do not say "edited"',
   ]);
-  const late = article({ open: "I wrote this, and then I checked." });
+  const late = article({ hook: "I wrote this.", line: "And I checked it." });
   assert.deepEqual(articleProblems(late, POST_TEXT), [
+    'its second paragraph does not say "AI" and "edited"',
     'its first 160 characters do not say "AI"',
     'its first 160 characters do not say "edited"',
   ]);
+});
+
+// The hook shows whole before "see more" on a phone (about 140
+// characters), and a short AI line follows it (blog#107's review).
+test("an Article's hook is 140 characters at most: 140 in, 141 out", () => {
+  const at = n => article({ hook: "x".repeat(n) });
+  assert.deepEqual(articleProblems(at(140), POST_TEXT), []);
+  assert.deepEqual(articleProblems(at(141), POST_TEXT), [
+    "its hook is 141 characters, not 140 or fewer",
+  ]);
+});
+
+test("a short AI line follows the hook: 40 characters in, 41 out", () => {
+  const at = n => article({ line: `AI wrote, I edited, ${"x".repeat(n)}.` });
+  assert.equal(`AI wrote, I edited, ${"x".repeat(19)}.`.length, 40);
+  assert.deepEqual(articleProblems(at(19), POST_TEXT), []);
+  assert.deepEqual(articleProblems(at(20), POST_TEXT), [
+    "its AI line is 41 characters, not 40 or fewer",
+  ]);
+  const first = article({ hook: LINE, line: HOOK });
+  assert.deepEqual(articleProblems(first, POST_TEXT), [
+    'its second paragraph does not say "AI" and "edited"',
+  ]);
+  assert.deepEqual(articleProblems(article({ line: "I edited it." }), ""), [
+    'its second paragraph does not say "AI" and "edited"',
+    'its first 160 characters do not say "AI"',
+  ]);
+  assert.deepEqual(articleProblems(article({ line: "AI wrote it." }), ""), [
+    'its second paragraph does not say "AI" and "edited"',
+    'its first 160 characters do not say "edited"',
+  ]);
+});
+
+// The post's own sentences, at most 5, and none of its sub-heads: an
+// Article written for LinkedIn, not a cut of the post (Stefan, 4408).
+test("an Article copies 5 of the post's sentences at most: 5 in, 6 out", () => {
+  const post =
+    "One went. Two\nwent. Three went. Four went. Five went. Six went.";
+  const five = article({
+    extra: "One went. Two went. Three went.\n\nFour went. Five went.",
+  });
+  assert.deepEqual(articleProblems(five, post), []);
+  const six = article({
+    extra: "One went. Two went. Three went.\n\nFour went. Five went. Six went.",
+  });
+  assert.deepEqual(articleProblems(six, post), [
+    "6 sentences word for word from the post, not 5 or fewer",
+  ]);
+});
+
+test("an Article's sub-heads are not the post's, in any letter case", () => {
+  const post = "Text.\n\n## What came fast\n\nMore text.";
+  const same = article({ extra: "## What came fast\n\nIt went." });
+  assert.deepEqual(articleProblems(same, post), [
+    'a sub-head from the post: "What came fast"',
+  ]);
+  const cased = article({ extra: "## What Came Fast\n\nIt went." });
+  assert.deepEqual(articleProblems(cased, post), [
+    'a sub-head from the post: "What Came Fast"',
+  ]);
+});
+
+test("a headline saved with CRLF is read without its \\r", () => {
+  assert.equal(headlineOf("# A headline\r\nText.\r\n"), "A headline");
+  assert.equal(headlineOf("A headline\n"), undefined);
 });
 
 test("an Article has a sub-head every 300 words: 300 in, 301 out", () => {
@@ -297,9 +370,8 @@ test("a number in a link's address is no claim, and 1,000 is 1000", () => {
 
 test("the first 160 characters are read without link addresses", () => {
   const target = `https://example.com/${"x".repeat(120)}`;
-  const linked = article({
-    open: `[My post](${target}) says AI wrote it, and I edited it.`,
-  });
+  // Shown, the hook is "My post says it all." and the AI line follows it.
+  const linked = article({ hook: `[My post](${target}) says it all.` });
   assert.deepEqual(articleProblems(linked, POST_TEXT), []);
 });
 
@@ -327,6 +399,7 @@ test("an empty Article lists its problems and does not throw", () => {
   assert.deepEqual(articleProblems("", POST_TEXT), [
     'its first line is not a "# " headline',
     "0 words, not 1,000 to 2,500",
+    'its second paragraph does not say "AI" and "edited"',
     'its first 160 characters do not say "AI"',
     'its first 160 characters do not say "edited"',
     "its last paragraph is not a question",
@@ -338,11 +411,13 @@ test("a post's text is its title, description and body", () => {
   assert.equal(postText(text), "T 1\nD 2\nBody 3.\n");
 });
 
-// The share text that goes with an Article: `<slug>.md` beside it.
-const share = (words, { opening = "AI wrote this.", tags = ["#ai"] } = {}) =>
+// The share text that goes with an Article: `<slug>.md` beside it. Its
+// hook (3 words) and AI line (4 words) come first, as in the Article.
+const share = (words, { hook = HOOK, line = LINE, tags = ["#ai"] } = {}) =>
   [
-    opening,
-    Array(words - 3 - tags.length)
+    hook,
+    line,
+    Array(words - 7 - tags.length)
       .fill("word")
       .join(" "),
     tags.join(" "),
@@ -354,10 +429,21 @@ test("a share text is 80 words at most", () => {
   assert.deepEqual(shareProblems(share(81)), ["81 words, not 80 or fewer"]);
 });
 
-test('a share text says "AI" first, and names no URL', () => {
-  assert.deepEqual(shareProblems(share(40, { opening: "I wrote it." })), [
-    'its first paragraph does not say "AI"',
+test("a share text's hook fits before 'see more', the AI line after it", () => {
+  assert.deepEqual(shareProblems(share(40, { hook: "x".repeat(140) })), []);
+  assert.deepEqual(shareProblems(share(40, { hook: "x".repeat(141) })), [
+    "its hook is 141 characters, not 140 or fewer",
   ]);
+  assert.deepEqual(shareProblems(share(40, { hook: LINE, line: HOOK })), [
+    'its second paragraph does not say "AI" and "edited"',
+  ]);
+  const long = `AI wrote, I edited, ${"x".repeat(20)}.`;
+  assert.deepEqual(shareProblems(share(40, { line: long })), [
+    "its AI line is 41 characters, not 40 or fewer",
+  ]);
+});
+
+test("a share text names no URL", () => {
   const linked = share(40).replace("word", A_URL);
   assert.deepEqual(shareProblems(linked), [
     "a URL: LinkedIn attaches the Article",
@@ -369,13 +455,13 @@ test("a share text has 3 hashtags at most, and no em dash", () => {
   assert.deepEqual(shareProblems(share(40, { tags: four })), [
     "4 hashtags, not 3 or fewer",
   ]);
-  const dash = share(40, { opening: "AI wrote this — mostly." });
+  const dash = share(40, { hook: "It held — mostly." });
   assert.deepEqual(shareProblems(dash), ["an em dash"]);
 });
 
 test("an empty share text lists its problem and does not throw", () => {
   assert.deepEqual(shareProblems(""), [
-    'its first paragraph does not say "AI"',
+    'its second paragraph does not say "AI" and "edited"',
   ]);
 });
 
@@ -542,7 +628,7 @@ test("each LinkedIn Article keeps the rules, with its cover and share text", () 
     assert.ok(files.includes(`${slug}.md`), `no share text ${slug}.md`);
     const image = `${slug}-cover.png`;
     assert.ok(files.includes(image), `no docs/linkedin/${image}`);
-    const headline = text.split("\n")[0].replace(/^# /, "");
+    const headline = headlineOf(text);
     const bytes = readFileSync(new URL(image, DRAFTS));
     assert.deepEqual(coverProblems(bytes, headline), [], image);
     assert.deepEqual(badCrcs(bytes), [], `${image}: chunks with a bad CRC`);

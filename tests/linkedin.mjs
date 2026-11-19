@@ -5,8 +5,12 @@
 // A draft is the post's text as it is pasted: one paragraph per line, and
 // its file is named after the post's slug.
 
-import { crc32 } from "node:zlib";
 import { parse } from "yaml";
+import { pngTitle } from "../scripts/png-title.mjs";
+
+// An Article's headline: its first line after "# ", without a CRLF's \r;
+// undefined when the first line is not a "# " headline.
+export const headlineOf = text => text.split(/\r?\n/)[0].match(/^# (.+)$/)?.[1];
 
 // A word is a run of non-space characters with a letter or a digit in it, so
 // the URL and each hashtag count as one, and a lone "·" or "-" does not.
@@ -75,19 +79,52 @@ const shown = text => text.replace(/\[([^\]]*)\]\([^)\s]*\)/g, "$1");
 
 // A sentence ends at . ! or ?, after any closing quote or bracket, before a
 // space or the end. 7.2 and 11,999 end none, and neither do e.g., i.e., vs.
-const sentencesIn = text =>
-  (text.match(/(?<!\b(?:e\.g|i\.e|vs))[.!?]["')\]]*(?=\s|$)/g) ?? []).length;
+const END = /(?<!\b(?:e\.g|i\.e|vs))[.!?]["')\]]*(?=\s|$)/g;
+const sentencesOf = text => {
+  const sentences = [];
+  let start = 0;
+  for (const end of text.matchAll(END)) {
+    const stop = end.index + end[0].length;
+    sentences.push(text.slice(start, stop).trim());
+    start = stop;
+  }
+  return sentences;
+};
+
+// Text as one line, as LinkedIn shows it.
+const flat = text => shown(text).replace(/\s+/g, " ").trim();
+
+// The hook and the AI line (blog#107's review): the first paragraph shows
+// whole before "see more" on a phone, about 140 characters, and the short
+// line after it says AI wrote the text and Stefan edited it.
+function hookProblems(paragraphs) {
+  const problems = [];
+  const [hook = "", line = ""] = paragraphs.map(flat);
+  if (hook.length > 140)
+    problems.push(`its hook is ${hook.length} characters, not 140 or fewer`);
+  if (!/\bAI\b/.test(line) || !/\bedited\b/.test(line))
+    problems.push('its second paragraph does not say "AI" and "edited"');
+  else if (line.length > 40)
+    problems.push(`its AI line is ${line.length} characters, not 40 or fewer`);
+  return problems;
+}
+
+// The `## ` sub-heads of a Markdown text.
+const subHeadsOf = text => [...text.matchAll(/^## (.+)$/gm)].map(([, h]) => h);
 
 // What the research in blog#107's PR found for an Article read on a phone:
 // LinkedIn's search title shows 60 characters, and its preview the first
-// 140 to 160; a sub-head every 200 to 300 words; paragraphs of 2 or 3
-// sentences; 1,000 to 2,500 words; a closing question. Every number must be
-// in the post, so the Article states nothing the post does not.
-export function articleProblems(saved, post) {
-  const text = saved.replace(/\r\n/g, "\n");
+// 140 to 160; a hook that shows whole before "see more", then a short AI
+// line; a sub-head every 200 to 300 words; paragraphs of 2 or 3 sentences;
+// 1,000 to 2,500 words; a closing question. Every number must be in the
+// post, so the Article states nothing the post does not, but it is new
+// writing: 5 of the post's sentences at most, and none of its sub-heads.
+// A CRLF file needs no change: headlineOf drops the \r, and the rest reads
+// \r as space.
+export function articleProblems(text, post) {
   const problems = [];
   const lines = text.split("\n");
-  const headline = lines[0].match(/^# (.+)$/)?.[1];
+  const headline = headlineOf(text);
   if (headline === undefined)
     problems.push('its first line is not a "# " headline');
   else if (headline.length > 60)
@@ -97,6 +134,18 @@ export function articleProblems(saved, post) {
   const words = wordsIn(text);
   if (words < 1000 || words > 2500)
     problems.push(`${words} words, not 1,000 to 2,500`);
+  // A paragraph is a block between blank lines after the headline's line,
+  // without its heading lines; each list item ("- ", "* " or "1. ") is its
+  // own, without its marker.
+  const paragraphs = lines
+    .slice(1)
+    .join("\n")
+    .split(/\n\s*\n/)
+    .map(block => block.replace(/^#{1,6} .*$/gm, ""))
+    .flatMap(block => block.split(/\n(?=(?:\d+\.|-|\*) )/))
+    .map(block => block.trim().replace(/^(?:\d+\.|-|\*) /, ""))
+    .filter(Boolean);
+  problems.push(...hookProblems(paragraphs));
   const preview = shown(lines.slice(1).join(" "))
     .replace(/\s+/g, " ")
     .trim()
@@ -109,16 +158,8 @@ export function articleProblems(saved, post) {
     if (count > 300)
       problems.push(`a section of ${count} words, not 300 or fewer`);
   }
-  // A paragraph is a block between blank lines, without its heading lines;
-  // each list item ("- ", "* " or "1. ") is its own, without its marker.
-  const paragraphs = text
-    .split(/\n\s*\n/)
-    .map(block => block.replace(/^#{1,6} .*$/gm, ""))
-    .flatMap(block => block.split(/\n(?=(?:\d+\.|-|\*) )/))
-    .map(block => block.trim().replace(/^(?:\d+\.|-|\*) /, ""))
-    .filter(Boolean);
   for (const paragraph of paragraphs) {
-    const count = sentencesIn(paragraph);
+    const count = sentencesOf(paragraph).length;
     if (count > 3)
       problems.push(
         `a paragraph of ${count} sentences, not 3 or fewer: ${paragraph.slice(0, 40)}`
@@ -126,6 +167,20 @@ export function articleProblems(saved, post) {
   }
   if (!(paragraphs.at(-1) ?? "").endsWith("?"))
     problems.push("its last paragraph is not a question");
+  // Written for LinkedIn, not cut from the post (Stefan, decision 4408): 5 of
+  // the post's sentences at most, word for word, and none of its sub-heads.
+  const source = flat(post);
+  const copied = paragraphs
+    .flatMap(paragraph => sentencesOf(flat(paragraph)))
+    .filter(sentence => source.includes(sentence)).length;
+  if (copied > 5)
+    problems.push(
+      `${copied} sentences word for word from the post, not 5 or fewer`
+    );
+  const postHeads = new Set(subHeadsOf(post).map(h => h.toLowerCase()));
+  for (const head of subHeadsOf(text))
+    if (postHeads.has(head.toLowerCase()))
+      problems.push(`a sub-head from the post: "${head}"`);
   // A number in a link's address is no claim, in the post or the Article.
   const known = new Set(numbersIn(shown(post)).map(sameNumber));
   const named = new Set();
@@ -144,16 +199,15 @@ export function articleProblems(saved, post) {
 
 // The share text posted with an Article: a few lines (LinkedIn Help), so 80
 // words at most, and no URL, because LinkedIn attaches the Article itself.
-// Like a post's draft, it says "AI" first, with 3 hashtags at most.
+// Like the Article, a hook and then a short AI line; 3 hashtags at most.
 export function shareProblems(text) {
   const problems = [];
   const words = wordsIn(text);
   if (words > 80) problems.push(`${words} words, not 80 or fewer`);
   if (/https?:\/\//.test(text))
     problems.push("a URL: LinkedIn attaches the Article");
-  const first = text.split("\n").find(line => line.trim());
-  if (!/\bAI\b/.test(first))
-    problems.push('its first paragraph does not say "AI"');
+  const paragraphs = text.split(/\r?\n\s*\r?\n/).filter(p => p.trim());
+  problems.push(...hookProblems(paragraphs));
   const tags = hashtagsIn(text);
   if (tags > 3) problems.push(`${tags} hashtags, not 3 or fewer`);
   if (text.includes("—")) problems.push("an em dash");
@@ -168,47 +222,6 @@ export function pngSize(bytes) {
   if (PNG.some((byte, i) => bytes[i] !== byte)) return null;
   if (bytes.toString("latin1", 12, 16) !== "IHDR") return null;
   return { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
-}
-
-// A PNG's chunks after the signature, as { type, data }, until the bytes end
-// or a chunk runs past them.
-function* chunksOf(bytes) {
-  for (let at = 8; at + 8 <= bytes.length;) {
-    const length = bytes.readUInt32BE(at);
-    const end = at + 12 + length;
-    if (end > bytes.length) return;
-    const type = bytes.toString("latin1", at + 4, at + 8);
-    yield { type, data: bytes.subarray(at + 8, at + 8 + length) };
-    at = end;
-  }
-}
-
-// The start of an iTXt chunk named "Title": the keyword and its 0, no
-// compression (0, 0), then an empty language tag and translated keyword,
-// each ended by a 0. The UTF-8 text follows.
-const TITLE = Buffer.from("Title\0\0\0\0\0", "latin1");
-
-// The headline a cover was drawn with, or null.
-export function pngTitle(bytes) {
-  for (const { type, data } of chunksOf(bytes))
-    if (type === "iTXt" && data.subarray(0, TITLE.length).equals(TITLE))
-      return data.subarray(TITLE.length).toString("utf8");
-  return null;
-}
-
-// The PNG with an iTXt "Title" chunk just after its IHDR chunk, which ends
-// at byte 33. scripts/linkedin-cover.mjs writes it.
-export function titledPng(png, title) {
-  const data = Buffer.concat([TITLE, Buffer.from(title, "utf8")]);
-  const chunk = Buffer.alloc(12 + data.length);
-  chunk.writeUInt32BE(data.length, 0);
-  chunk.write("iTXt", 4, "latin1");
-  data.copy(chunk, 8);
-  chunk.writeUInt32BE(
-    crc32(chunk.subarray(4, 8 + data.length)),
-    8 + data.length
-  );
-  return Buffer.concat([png.subarray(0, 33), chunk, png.subarray(33)]);
 }
 
 // LinkedIn Help: a cover is best at 1920 x 1080 pixels, and is cropped to

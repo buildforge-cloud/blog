@@ -13,7 +13,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import satori from "satori";
 import sharp from "sharp";
-import { titledPng } from "../tests/linkedin.mjs";
+import { titledPng } from "./png-title.mjs";
 
 const slug = process.argv[2];
 if (!slug) throw new Error("usage: node scripts/linkedin-cover.mjs <slug>");
@@ -23,7 +23,8 @@ const repo = new URL("../", import.meta.url);
 const linkedin = name => new URL(`docs/linkedin/${slug}-${name}`, repo);
 
 const article = readFileSync(linkedin("article.md"), "utf8");
-const headline = article.split("\n")[0].match(/^# (.+)$/)?.[1];
+// As tests/linkedin.mjs's headlineOf reads it: a CRLF's \r is not kept.
+const headline = article.split(/\r?\n/)[0].match(/^# (.+)$/)?.[1];
 if (!headline) throw new Error(`${slug}-article.md: no "# " headline`);
 
 const font = weight =>
@@ -72,12 +73,12 @@ const svg = await satori(
           justifyContent: "space-between",
         },
         [
-          div({ fontSize: 104, fontWeight: 700, lineHeight: 1.1 }, headline),
+          div({ fontSize: 148, fontWeight: 700, lineHeight: 1.05 }, headline),
           div(
             {
               justifyContent: "space-between",
               alignItems: "center",
-              fontSize: 44,
+              fontSize: 60,
               borderTop: "8px solid #e8542a",
               paddingTop: "28px",
             },

@@ -1,8 +1,8 @@
-AI wrote this, and I edited it.
+On day two, my AI reviewer asked a worker agent for proof. The worker got it by loading my production server.
 
-On its second day, my AI reviewer asked a worker for proof. The worker loaded my production machine to get it.
+Written by AI, edited by me.
 
-I run my projects with a team of Claude Code agents. The code came fast. The failures sat in the rules and checks around it.
+For eight weeks I have run my projects with a team of Claude Code agents. The code came fast. The failures sat in the rules and checks around it.
 
 If you run AI agents on real work, what was the first rule you had to turn into a hard check?
 

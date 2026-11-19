@@ -1,89 +1,103 @@
 # I ran Claude Code as a team of AI agents for eight weeks
 
-AI wrote this, as it writes everything I build. I edited it.
+On day two, my AI reviewer asked a worker agent for proof. The worker got it by loading my production server.
 
-On its second day, the AI session I built to check my agents' work asked one of them for proof. The worker got it by loading my production machine.
+Written by AI, edited by me.
 
-A test was meant to hold up while the machine was busy. So the worker made the machine busy. It ran CPU burners for about ten minutes, and the load went to 12.
+The request was fair. A test was supposed to survive a busy machine, so the worker made the machine busy: CPU burners for about ten minutes, until the load reached 12.
 
-That machine has 2 CPUs, and it also serves my sites. The session did what I had built it for: it didn't take a worker's word for anything. Nothing in its rules said what a proof may cost, or where it may run.
+The box has 2 CPUs and serves my websites too. Nobody broke a rule that day. I had built the reviewer to never take a worker's word, and it didn't.
 
-## How the team works
+What it lacked was any rule about what a proof may cost, or where it may run. That pattern held for eight weeks: the agents wrote code fast, and the trouble lived in the rules and checks I put around them.
 
-I run my projects with Claude Code. One session, which I call the executive, watches my code, proposes work and reviews it.
+## How the team is wired
 
-The workers are separate Claude Code sessions. Each one takes a single task, works in its own copy of the code and hands in a pull request. The executive runs the checks again, reads the change and merges it.
+Since late September, every project I run has Claude Code sessions in two roles.
 
-I decide what goes in the queue. Anything that goes live, and anything that changes how an app looks, waits for my yes.
+One session reviews. I call it the executive. It watches my repositories, suggests work, and decides whether a change is good enough to merge.
 
-Around it sit three tools I started in the same week, in late September. One is the executive's own code.
+The others are workers. A worker picks up one GitHub issue, does it in a separate copy of the code, and hands back a pull request.
 
-One is a board on my phone, where the executive posts a card with a question and a few options, and I answer with a tap. The third keeps the agents' memories in plain text files.
+Three decisions stay with me: what goes in the queue, what goes live, and anything that changes how an app looks.
 
-By 18 November, the executive's code alone had 623 merged pull requests, 114 of them in its busiest week. At the median, a review took 11 minutes.
+Three small tools hold it together, all started in the same week:
 
-The code was the fast part. The failures sat in what I built around it.
+- the executive's own code;
+- a board on my phone, where the executive asks me questions as cards I answer with a tap;
+- a memory plugin that keeps the agents' notes as plain files, with no server and no embeddings.
 
-## A rule in a file was not enough
+## The pace was never the problem
 
-The CPU burners were not the first time my production machine paid for a test. On 7 July, before any of this, a test ran one project's real Docker Compose file.
+By 18 November, the executive's code alone had 623 merged pull requests. Its full weeks ranged from 43 merges to 114.
 
-The container names in that file are fixed. So the test didn't start a copy beside the live app. It replaced the live containers, and my sites went down.
+The median review took 11 minutes. Over the last 10 merges, a worker's start to its merge took 43 minutes at the median for work on the team's own tools, and 51 for work on my products.
 
-I wrote a rule after that: never run a project's real compose file, not even to test. It went into the instructions every session reads.
+The other two tools grew alongside it: about 1,300 commits on the board, 95 on the memory plugin. Speed was the easy part. Every failure in this article sat in what I built around the code.
 
-A written rule was not enough. Since 25 September a hook refuses that command in every project, before it runs. No agent has to remember anything.
+## Turn rules into hard checks
 
-The CPU burners got a rule of their own: never load the production machine to prove a point. Prove timing with a fake clock, or by how the code is built.
+The CPU burners were not my first production scare. On 7 July, before any agents, a test started one project's real Docker Compose file.
 
-## The instructions grew back
+Its container names are fixed, so the test could not run beside the live app. It took the live app's place, and my sites went down.
 
-Each incident leaves a line in the instructions. Each line is the right reaction on the day, and they add up.
+My first fix was a sentence in the instructions every session reads: never run a project's real compose file, not even to test.
 
-My global instructions file is the one Claude Code loads into every session in every project. I trimmed it on 1 August. By 24 September it had grown back to 108 KB, and I split it again.
+That sentence was not enough. Since 25 September, a hook blocks the command in every repository before it can run, and no agent has to remember anything.
 
-The rules that apply every time stayed in it. The detail moved into documents that an agent reads only when it works in that area.
+The CPU burners got their own rule: prove timing with a fake clock or by design, never by loading production.
 
-The executive's own instructions file has a budget now: 200 lines and 12 KB. On 19 November it was 133 lines and 11,999 bytes. One byte under.
+## Give your instructions a budget
 
-## The board said three workers
+Every incident adds a line to the agents' instructions. Each line makes sense on the day it is written. Together, they pile up.
 
-The executive is built to doubt its workers. Each worker ends its pull request with its own report: what it did and which tests it ran.
+My global instructions file loads into every Claude Code session on every project. I cut it down on 1 August. By 24 September it had swollen to 108 KB again.
 
-The executive reads that report, runs the tests again itself, and reads the whole change against the task. When something is wrong, the work goes back for another round. The last 10 merges of each kind of work took 2 such rounds between them.
+So I split it. Rules that always apply stayed. Details moved into documents an agent opens only when it works in that area.
 
-Then a number on the board broke a rule. On 18 November the board showed 3 workers running, and the cap is 2.
+The executive's own file now has a hard cap of 200 lines and 12 KB. On 19 November it held 133 lines and 11,999 bytes: one byte to spare.
 
-Either a third worker got past the cap, or the board counted wrong. When I wrote this up, nobody had found out which.
+## Doubt your own dashboard
 
-I had built the executive to check its workers' reports. The board's numbers need the same check.
+I built the executive to be suspicious. Each pull request ends with the worker's own report of what it did and which tests it ran.
 
-## A feature that measured as noise
+The executive treats that report as a claim. It reruns the tests and reads every changed line against the issue.
 
-The memory tool can suggest related memories. When an agent reads one memory, the tool adds a line that names its neighbours.
+When something is off, the work goes back to the worker. In the last 10 merges of each kind of work, that happened 2 times.
 
-The first measurement was on 24 September. The tool's own links gave 7.2 useful suggestions per 100 reads, and plain links written into the memories gave 3.6. The gap was so uncertain that it could have been zero.
+Then my own board broke a rule. On 18 November it showed 3 workers running, with a cap of 2.
 
-And that line showed up at 94% of reads. It was mostly noise, so I turned it off.
+Either a worker slipped past the limit, or the board miscounted. When I wrote this up, nobody knew which.
 
-A later run, on 8 October, gave 20.7 against 3.4. This time the gap was clear of zero.
+The suspicion I built into the reviewer has to cover my own tools as well.
 
-The line is still off by default. Turning it back on is my decision, and I haven't made it.
+## Measure the feature before you trust it
 
-## 31 alarms in one day
+The memory plugin can point an agent to related notes. When the agent opens one memory, the plugin adds a line that names its neighbours.
 
-A script checks every worker each 5 minutes. When a worker has stopped, or a prompt has waited, for 10 minutes, it tells the executive: "waiting on you".
+I measured it on 24 September. The plugin's own links gave 7.2 useful suggestions per 100 reads, and plain hand-written links gave 3.6.
 
-On 29 September it said that 31 times. Until 3 October it also fired for a worker whose change to how an app looks waited on my yes. So some of the 31 may have been waiting on me.
+That gap was too uncertain to rule out zero. Meanwhile the extra line showed up on 94% of reads, so I switched it off.
 
-The first draft of my blog post about all this called all 31 questions that only I could answer. The executive's review of the draft caught that.
+A second run on 8 October looked much better: 20.7 against 3.4, clearly above zero.
 
-## My part
+The line is still off by default. Switching it back on is my call, and I haven't made it yet.
 
-My part happens on my phone. I read the board in short lines, one card per choice. I do no code review: the executive does that.
+## Alarms need design too
 
-I say yes to what goes live and to what changes how an app looks. Over the eight weeks the executive put thousands of small decisions in front of me.
+A script looks at each worker every 5 minutes. If a worker has stopped, or a prompt has sat waiting, for 10 minutes, it tells the executive.
 
-I kept every number with its date. The full list is in [the post on my blog](https://blog.buildforge.cloud/posts/building-an-ai-agent-team/).
+On 29 September that alarm fired 31 times. Until 3 October it also fired when a worker was only waiting for my yes on a visual change, so some of those 31 may have been waiting on me.
+
+The first draft of my blog post said all 31 were questions only I could answer. The executive's review of that draft caught the mistake.
+
+## What is left for me
+
+My part happens on my phone. I read short cards, one per decision, and tap an answer.
+
+I don't review code at all: the executive does. I approve what goes live and what changes how an app looks.
+
+Over eight weeks, that added up to thousands of small decisions. The blog post behind this article went the same way: a card I answered became an issue, a worker wrote it, and it waited for my yes.
+
+Every number here, with its date, is in [the full post on my blog](https://blog.buildforge.cloud/posts/building-an-ai-agent-team/).
 
 If you run AI agents on real work, what was the first rule you had to turn into a hard check?
