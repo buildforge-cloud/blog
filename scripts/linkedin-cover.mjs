@@ -3,24 +3,33 @@
 // (src/pages/posts/[...slug]/index.png.ts): paper, an ink frame, the
 // headline in Space Grotesk. A text card: no photo, no picture of people.
 //
-// Run from the repo root, after a change to the Article's headline:
+// Run it after a change to the Article's headline:
 //   node scripts/linkedin-cover.mjs <slug>
 // It reads the "# " first line of docs/linkedin/<slug>-article.md and writes
-// docs/linkedin/<slug>-cover.png. tests/linkedin.test.mjs checks the size.
+// docs/linkedin/<slug>-cover.png, with the headline in the PNG's "Title"
+// text. tests/linkedin.test.mjs checks the size and that the title is the
+// Article's headline, so a cover left from an older headline fails.
 
 import { readFileSync, writeFileSync } from "node:fs";
 import satori from "satori";
 import sharp from "sharp";
+import { titledPng } from "../tests/linkedin.mjs";
 
 const slug = process.argv[2];
 if (!slug) throw new Error("usage: node scripts/linkedin-cover.mjs <slug>");
 
-const article = readFileSync(`docs/linkedin/${slug}-article.md`, "utf8");
+// Paths from this file, so it runs from any folder.
+const repo = new URL("../", import.meta.url);
+const linkedin = name => new URL(`docs/linkedin/${slug}-${name}`, repo);
+
+const article = readFileSync(linkedin("article.md"), "utf8");
 const headline = article.split("\n")[0].match(/^# (.+)$/)?.[1];
 if (!headline) throw new Error(`${slug}-article.md: no "# " headline`);
 
 const font = weight =>
-  readFileSync(`src/assets/fonts/space-grotesk-${weight}-normal.ttf`);
+  readFileSync(
+    new URL(`src/assets/fonts/space-grotesk-${weight}-normal.ttf`, repo)
+  );
 
 const INK = "#141a22";
 const PAPER = "#f5f2ea";
@@ -91,6 +100,7 @@ const svg = await satori(
   }
 );
 
-const out = `docs/linkedin/${slug}-cover.png`;
-writeFileSync(out, await sharp(Buffer.from(svg)).png().toBuffer());
-process.stdout.write(`${out}\n`);
+const png = await sharp(Buffer.from(svg)).png().toBuffer();
+const out = linkedin("cover.png");
+writeFileSync(out, titledPng(png, headline));
+process.stdout.write(`${out.pathname}\n`);

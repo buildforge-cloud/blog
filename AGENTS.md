@@ -68,7 +68,10 @@ published post with that slug (read as YAML, so a `draft: true` post or a
 one), "AI" in the first paragraph, the post's URL as the last line, 3 hashtags
 at most (a tag needs a letter, so `#104` is none) and no em dash. Its
 `REQUIRED` list keeps an empty folder from passing. The link answers 404 until
-the post's date, so the draft is posted after it. A post that opens by saying
+the post's date, so the draft is posted after it. With a LinkedIn Article
+beside it (`<slug>-article.md`, blog#107), the draft is instead the Article's
+share text, under other rules: no URL, 80 words at most (`changes.d/107.md`
+until it is folded in). A post that opens by saying
 AI wrote it and Stefan "edited" it goes on the list in `tests/posts.test.mjs`
 that checks its first three non-empty body lines (blog#104's post is first).
 

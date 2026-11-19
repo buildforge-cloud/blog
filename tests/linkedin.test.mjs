@@ -5,15 +5,19 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { crc32 } from "node:zlib";
+import sharp from "sharp";
 import {
   articleProblems,
   coverProblems,
   linkedinProblems,
   pngSize,
+  pngTitle,
   postText,
   postUrl,
   publishedSlug,
   shareProblems,
+  titledPng,
   wordsIn,
 } from "./linkedin.mjs";
 
@@ -234,6 +238,28 @@ test("an Article's paragraph has 3 sentences at most", () => {
   assert.deepEqual(articleProblems(listed, POST_TEXT), [], "each list item");
 });
 
+test("a numbered list item counts alone, without its number", () => {
+  const steps = article({
+    extra: "1. Run it. Then wait. Then look.\n2. Check it.\n3. Merge it.",
+  });
+  assert.deepEqual(articleProblems(steps, "Steps 1, 2 and 3."), []);
+});
+
+test("e.g., i.e. and vs. do not end a sentence", () => {
+  const short = article({
+    extra:
+      "A rule vs. a hook, e.g. a check, i.e. a gate. It broke. We fixed it.",
+  });
+  assert.deepEqual(articleProblems(short, POST_TEXT), []);
+});
+
+test("a paragraph glued to its sub-head is still counted", () => {
+  const glued = article({ extra: "## Glued head\nOne. Two. Three. Four." });
+  assert.deepEqual(articleProblems(glued, POST_TEXT), [
+    "a paragraph of 4 sentences, not 3 or fewer: One. Two. Three. Four.",
+  ]);
+});
+
 test("an Article ends with a question", () => {
   assert.deepEqual(
     articleProblems(article({ end: "That is all." }), POST_TEXT),
@@ -255,6 +281,26 @@ test("each number in an Article is in its post", () => {
   assert.deepEqual(articleProblems(twice, POST_TEXT), [
     "115 is not in the post",
   ]);
+});
+
+test("a number in a link's address is no claim, and 1,000 is 1000", () => {
+  const post = "It took 1000 reads. See [it](https://example.com/issues/104).";
+  const fromLink = article({ extra: "It took 104 reads." });
+  assert.deepEqual(articleProblems(fromLink, post), ["104 is not in the post"]);
+  const commas = article({ extra: "It took 1,000 reads." });
+  assert.deepEqual(articleProblems(commas, post), []);
+  const linked = article({
+    extra: "See [it](https://example.com/issues/999).",
+  });
+  assert.deepEqual(articleProblems(linked, post), []);
+});
+
+test("the first 160 characters are read without link addresses", () => {
+  const target = `https://example.com/${"x".repeat(120)}`;
+  const linked = article({
+    open: `[My post](${target}) says AI wrote it, and I edited it.`,
+  });
+  assert.deepEqual(articleProblems(linked, POST_TEXT), []);
 });
 
 test("an Article's links are absolute, and it has no em dash", () => {
@@ -324,10 +370,10 @@ test("an empty share text lists its problem and does not throw", () => {
   ]);
 });
 
-// A PNG's first 24 bytes: the signature, then the IHDR chunk's length, type,
-// width and height.
+// A PNG's first 33 bytes: the signature, then the whole IHDR chunk (its
+// length, type, width, height, 5 more bytes of data and a CRC left at 0).
 const pngHead = (width, height) => {
-  const head = Buffer.alloc(24);
+  const head = Buffer.alloc(33);
   Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]).copy(head);
   head.writeUInt32BE(13, 8);
   head.write("IHDR", 12, "latin1");
@@ -350,15 +396,75 @@ test("a PNG's size is read from its header", () => {
   assert.equal(pngSize(cut), null, "a header cut short");
 });
 
+const cover = (width, height, title = "A headline") =>
+  titledPng(pngHead(width, height), title);
+
 test("a cover is a 1920 x 1080 PNG", () => {
-  assert.deepEqual(coverProblems(pngHead(1920, 1080)), []);
-  assert.deepEqual(coverProblems(pngHead(1200, 627)), [
+  assert.deepEqual(coverProblems(cover(1920, 1080), "A headline"), []);
+  assert.deepEqual(coverProblems(cover(1200, 627), "A headline"), [
     "1200 x 627, not 1920 x 1080",
   ]);
-  assert.deepEqual(coverProblems(pngHead(1920, 1200)), [
+  assert.deepEqual(coverProblems(cover(1920, 1200), "A headline"), [
     "1920 x 1200, not 1920 x 1080",
   ]);
-  assert.deepEqual(coverProblems(Buffer.from("GIF89a")), ["not a PNG"]);
+  assert.deepEqual(coverProblems(Buffer.from("GIF89a"), "A headline"), [
+    "not a PNG",
+  ]);
+});
+
+// The cover keeps the headline it was drawn with, so a new headline with an
+// old cover fails (blog#107's review).
+test("a cover carries the headline it was drawn with", () => {
+  assert.equal(pngTitle(cover(1920, 1080)), "A headline");
+  assert.equal(pngTitle(pngHead(1920, 1080)), null, "no title");
+  assert.equal(pngTitle(cover(1920, 1080, "ps·db på norsk")), "ps·db på norsk");
+  assert.deepEqual(coverProblems(cover(1920, 1080), "A new headline"), [
+    'drawn for "A headline", not "A new headline": draw it again',
+  ]);
+  assert.deepEqual(coverProblems(pngHead(1920, 1080), "A headline"), [
+    "no title: draw it with scripts/linkedin-cover.mjs",
+  ]);
+});
+
+// A real 2 x 2 PNG, made by sharp.
+const blankPng = () =>
+  sharp({
+    create: { width: 2, height: 2, channels: 3, background: "#ffffff" },
+  })
+    .png()
+    .toBuffer();
+
+// The PNG spec: each chunk ends with the CRC of its type and data. sharp
+// reads a title with a wrong CRC all the same, so this is checked apart.
+const badCrcs = bytes => {
+  const bad = [];
+  for (let at = 8; at + 12 <= bytes.length;) {
+    const length = bytes.readUInt32BE(at);
+    const body = bytes.subarray(at + 4, at + 8 + length);
+    if (bytes.readUInt32BE(at + 8 + length) !== crc32(body))
+      bad.push(body.toString("latin1", 0, 4));
+    at += 12 + length;
+  }
+  return bad;
+};
+
+test("a PNG decoder reads the title back", async () => {
+  const titled = titledPng(await blankPng(), "ps·db på norsk");
+  const { comments } = await sharp(titled).metadata();
+  assert.deepEqual(comments, [{ keyword: "Title", text: "ps·db på norsk" }]);
+});
+
+test("the title chunk's CRC is the CRC of its type and data", async () => {
+  const png = await blankPng();
+  assert.deepEqual(badCrcs(png), [], "sharp's own chunks");
+  assert.deepEqual(badCrcs(titledPng(png, "A headline")), []);
+});
+
+test("a title is read from the chunks after IHDR, and a cut file stops it", () => {
+  const titled = cover(1920, 1080);
+  assert.equal(pngTitle(titled.subarray(0, titled.length - 1)), null);
+  const after = Buffer.concat([titled, Buffer.from("trailing bytes")]);
+  assert.equal(pngTitle(after), "A headline");
 });
 
 // The real drafts. A listed one must exist, so the check can't pass on an
@@ -416,12 +522,11 @@ test("each LinkedIn Article keeps the rules, with its cover and share text", () 
       `${slug}-article.md`
     );
     assert.ok(files.includes(`${slug}.md`), `no share text ${slug}.md`);
-    const cover = `${slug}-cover.png`;
-    assert.ok(files.includes(cover), `no docs/linkedin/${cover}`);
-    assert.deepEqual(
-      coverProblems(readFileSync(new URL(cover, DRAFTS))),
-      [],
-      cover
-    );
+    const image = `${slug}-cover.png`;
+    assert.ok(files.includes(image), `no docs/linkedin/${image}`);
+    const headline = text.split("\n")[0].replace(/^# /, "");
+    const bytes = readFileSync(new URL(image, DRAFTS));
+    assert.deepEqual(coverProblems(bytes, headline), [], image);
+    assert.deepEqual(badCrcs(bytes), [], `${image}: chunks with a bad CRC`);
   }
 });

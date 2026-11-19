@@ -5,6 +5,7 @@
 // A draft is the post's text as it is pasted: one paragraph per line, and
 // its file is named after the post's slug.
 
+import { crc32 } from "node:zlib";
 import { parse } from "yaml";
 
 // A word is a run of non-space characters with a letter or a digit in it, so
@@ -62,13 +63,20 @@ export function postText(text) {
   return `${data.title}\n${data.description}\n${body}`;
 }
 
-// A number as written: 7.2, 2,800 and 11,999 are one each; the sign of -2.7
-// is not part of it.
+// A number as written in digits: 7.2, 2,800 and 11,999 are one each; the
+// sign of -2.7 is not part of it. A number in words ("ten") is not read.
 const numbersIn = text => text.match(/\d+(?:[.,]\d+)*/g) ?? [];
 
+// 1,000 and 1000 are the same number.
+const sameNumber = number => number.replace(/,/g, "");
+
+// Text as LinkedIn shows it: a Markdown link's text without its address.
+const shown = text => text.replace(/\[([^\]]*)\]\([^)\s]*\)/g, "$1");
+
 // A sentence ends at . ! or ?, after any closing quote or bracket, before a
-// space or the end. 7.2 and 11,999 end none.
-const sentencesIn = text => (text.match(/[.!?]["')\]]*(?=\s|$)/g) ?? []).length;
+// space or the end. 7.2 and 11,999 end none, and neither do e.g., i.e., vs.
+const sentencesIn = text =>
+  (text.match(/(?<!\b(?:e\.g|i\.e|vs))[.!?]["')\]]*(?=\s|$)/g) ?? []).length;
 
 // What the research in blog#107's PR found for an Article read on a phone:
 // LinkedIn's search title shows 60 characters, and its preview the first
@@ -88,9 +96,7 @@ export function articleProblems(text, post) {
   const words = wordsIn(text);
   if (words < 1000 || words > 2500)
     problems.push(`${words} words, not 1,000 to 2,500`);
-  const preview = lines
-    .slice(1)
-    .join(" ")
+  const preview = shown(lines.slice(1).join(" "))
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, 160);
@@ -102,12 +108,14 @@ export function articleProblems(text, post) {
     if (count > 300)
       problems.push(`a section of ${count} words, not 300 or fewer`);
   }
-  // A paragraph is a block between blank lines; each list item is its own.
+  // A paragraph is a block between blank lines, without its heading lines;
+  // each list item ("- ", "* " or "1. ") is its own, without its marker.
   const paragraphs = text
     .split(/\n\s*\n/)
-    .flatMap(block => block.split(/\n(?=- )/))
-    .map(block => block.trim())
-    .filter(block => block && !block.startsWith("#"));
+    .map(block => block.replace(/^#{1,6} .*$/gm, ""))
+    .flatMap(block => block.split(/\n(?=(?:\d+\.|-|\*) )/))
+    .map(block => block.trim().replace(/^(?:\d+\.|-|\*) /, ""))
+    .filter(Boolean);
   for (const paragraph of paragraphs) {
     const count = sentencesIn(paragraph);
     if (count > 3)
@@ -117,9 +125,15 @@ export function articleProblems(text, post) {
   }
   if (!(paragraphs.at(-1) ?? "").endsWith("?"))
     problems.push("its last paragraph is not a question");
-  const known = new Set(numbersIn(post));
-  for (const number of new Set(numbersIn(text)))
-    if (!known.has(number)) problems.push(`${number} is not in the post`);
+  // A number in a link's address is no claim, in the post or the Article.
+  const known = new Set(numbersIn(shown(post)).map(sameNumber));
+  const named = new Set();
+  for (const number of numbersIn(shown(text))) {
+    const key = sameNumber(number);
+    if (known.has(key) || named.has(key)) continue;
+    named.add(key);
+    problems.push(`${number} is not in the post`);
+  }
   for (const [, target] of text.matchAll(/\]\(([^)\s]*)\)/g))
     if (!/^https?:\/\//.test(target))
       problems.push(`a relative link: ${target}`);
@@ -155,12 +169,61 @@ export function pngSize(bytes) {
   return { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
 }
 
-// LinkedIn Help: a cover is best at 1920 x 1080 pixels, and is cropped to 16:9.
-export function coverProblems(bytes) {
+// A PNG's chunks after the signature, as { type, data }, until the bytes end
+// or a chunk runs past them.
+function* chunksOf(bytes) {
+  for (let at = 8; at + 8 <= bytes.length;) {
+    const length = bytes.readUInt32BE(at);
+    const end = at + 12 + length;
+    if (end > bytes.length) return;
+    const type = bytes.toString("latin1", at + 4, at + 8);
+    yield { type, data: bytes.subarray(at + 8, at + 8 + length) };
+    at = end;
+  }
+}
+
+// The start of an iTXt chunk named "Title": the keyword and its 0, no
+// compression (0, 0), then an empty language tag and translated keyword,
+// each ended by a 0. The UTF-8 text follows.
+const TITLE = Buffer.from("Title\0\0\0\0\0", "latin1");
+
+// The headline a cover was drawn with, or null.
+export function pngTitle(bytes) {
+  for (const { type, data } of chunksOf(bytes))
+    if (type === "iTXt" && data.subarray(0, TITLE.length).equals(TITLE))
+      return data.subarray(TITLE.length).toString("utf8");
+  return null;
+}
+
+// The PNG with an iTXt "Title" chunk just after its IHDR chunk, which ends
+// at byte 33. scripts/linkedin-cover.mjs writes it.
+export function titledPng(png, title) {
+  const data = Buffer.concat([TITLE, Buffer.from(title, "utf8")]);
+  const chunk = Buffer.alloc(12 + data.length);
+  chunk.writeUInt32BE(data.length, 0);
+  chunk.write("iTXt", 4, "latin1");
+  data.copy(chunk, 8);
+  chunk.writeUInt32BE(
+    crc32(chunk.subarray(4, 8 + data.length)),
+    8 + data.length
+  );
+  return Buffer.concat([png.subarray(0, 33), chunk, png.subarray(33)]);
+}
+
+// LinkedIn Help: a cover is best at 1920 x 1080 pixels, and is cropped to
+// 16:9. It must also show the Article's headline: one drawn for an older
+// headline fails.
+export function coverProblems(bytes, headline) {
   const size = pngSize(bytes);
   if (!size) return ["not a PNG"];
+  const problems = [];
   const { width, height } = size;
-  return width === 1920 && height === 1080
-    ? []
-    : [`${width} x ${height}, not 1920 x 1080`];
+  if (width !== 1920 || height !== 1080)
+    problems.push(`${width} x ${height}, not 1920 x 1080`);
+  const title = pngTitle(bytes);
+  if (title === null)
+    problems.push("no title: draw it with scripts/linkedin-cover.mjs");
+  else if (title !== headline)
+    problems.push(`drawn for "${title}", not "${headline}": draw it again`);
+  return problems;
 }
