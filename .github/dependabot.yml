@@ -1,0 +1,76 @@
+version: 2
+# Monthly, every ecosystem (Stefan, card 4454; blog#116), in the shape of
+# buildforge-starter's web template (stages-v1.1.0, buildforge-starter#458):
+# one update round a month, and each ecosystem's routine (minor and patch)
+# bumps in ONE pull request, so the blog takes them in a few deploys a month.
+# A major stays a PR of its own, since majors are the ones that break.
+# `applies-to` stays at its default (version-updates), so a security fix is
+# never held behind the month's batch: GitHub opens those at once, when the
+# repo setting "Dependabot security updates" is on.
+#
+# No `target-branch`: the blog has no staging, so PRs go to main, and CI runs
+# on GitHub's own runner. A Dependabot branch can start no self-hosted job
+# (deploy.yml runs on a push to main and on its schedule only).
+#
+# No docker-compose entry: docker-compose.yml builds the site (`build: .`)
+# and runs no image of its own, so it has nothing to move, and no database
+# image whose major would need ignoring. No pip entry: the Python files here
+# are scripts with no requirements file.
+#
+# tests/dependabot.test.mjs fails on a missing or extra ecosystem, an entry
+# that is not monthly, or one without its minor-and-patch group.
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 10
+    groups:
+      npm-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    # blog#83: astro 7.2.10 and later need @astrojs/mdx 8, a major move done
+    # by hand. tests/packages.test.mjs fails on them while mdx is on 7, so in
+    # the month's group astro would turn the whole PR red. Remove this when
+    # mdx 8 lands: tests/dependabot.test.mjs then fails until it goes.
+    ignore:
+      - dependency-name: astro
+        versions:
+          - ">= 7.2.10"
+  # Every workflow runs another repo's action by tag (actions/checkout@v4).
+  # A release waits a week first (cooldown): a hijacked one is usually caught
+  # by then.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 10
+    cooldown:
+      default-days: 7
+    groups:
+      actions-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+  # The Dockerfile's base images. deploy.yml builds with `--pull` (blog#111),
+  # so a new image of the same tag arrives on its own. node:22-alpine names a
+  # major only, so what this moves is the major (node 22 -> 24, a PR of its
+  # own; ci.yml's `node-version` moves with it by hand). nginx:alpine names no
+  # version, and `--pull` alone keeps it fresh.
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    groups:
+      docker-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
