@@ -90,6 +90,11 @@ const QUEUED = [
     "blog#93",
   ],
   [
+    "skredda-what-it-does-and-one-lesson",
+    "2027-02-16T07:00:00.000Z",
+    "blog#81",
+  ],
+  [
     "iso-pathfinder-buddy-why-we-built-it",
     "2027-02-23T07:00:00.000Z",
     "blog#82",
@@ -146,6 +151,7 @@ test("a product post links its product first", () => {
       "iso-pathfinder-buddy-why-we-built-it",
       "iso-pathfinder-buddy.lovable.app",
     ],
+    ["skredda-what-it-does-and-one-lesson", "skredda.no"],
   ]) {
     const link = firstLink(bySlug(slug).body);
     assert.equal(
@@ -154,6 +160,21 @@ test("a product post links its product first", () => {
       `${slug}: first link is ${link}, not ${product}`
     );
   }
+});
+
+// Stefan's card 4497 (blog#81): the Skredda post ends with one next step,
+// "try Skredda at skredda.no", and leaves out a line of his that he gave as
+// context, not as text for the post.
+test("the Skredda post ends by asking you to try it", () => {
+  const { body } = bySlug("skredda-what-it-does-and-one-lesson");
+  const last = body
+    .trim()
+    .split(/\n\s*\n/)
+    .at(-1)
+    .replace(/\s+/g, " ");
+  assert.match(last, /\btry Skredda\b/i, `last paragraph: ${last}`);
+  assert.match(last, /\]\(https:\/\/skredda\.no\/?\)/, `no link: ${last}`);
+  assert.doesNotMatch(body, /\btrial\b/i, "the line card 4497 cut is back");
 });
 
 // A post that says in its first three lines that AI wrote it and that Stefan
