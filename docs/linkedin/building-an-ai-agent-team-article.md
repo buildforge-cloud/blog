@@ -1,103 +1,117 @@
-# I ran Claude Code as a team of AI agents for eight weeks
+# From solo work to a team of AI agents: pros and cons
 
-On day two, my AI reviewer asked a worker agent for proof. The worker got it by loading my production server.
+For eight weeks, a team of AI agents has written and checked my code. I don't review it. I answer their questions on my phone.
 
-Written by AI, edited by me.
+AI wrote this article. I edited it.
 
-The request was fair. A test was supposed to survive a busy machine, so the worker made the machine busy: CPU burners for about ten minutes, until the load reached 12.
+This is how I got there, in four stages, and what I make of it now. I build a few small apps on my own, and AI writes all of their code. I call each piece of software I keep a project: most are apps, and one is my blog.
 
-The box has 2 CPUs and serves my websites too. Nobody broke a rule that day. I had built the reviewer to never take a worker's word, and it didn't.
+If you are thinking of letting AI agents take on more of your work, the pros and cons at the end are for you.
 
-What it lacked was any rule about what a proof may cost, or where it may run. That pattern held for eight weeks: the agents wrote code fast, and the trouble lived in the rules and checks I put around them.
+An AI agent, in this article, is an AI that works on a task by itself. It reads the code, changes it, runs commands and tests (small programs that check the code still works) and reports back. Mine run on Claude Code, an AI coding tool made by Anthropic, on the same small server that runs my apps.
 
-## How the team is wired
+## Stage one: me in the middle of every task
 
-Since late September, every project I run has Claude Code sessions in two roles.
+Before the team, each of my projects had one AI agent of its own, and every step went through me. I gave it its next task, read what it did and decided what came next.
 
-One session reviews. I call it the executive. It watches my repositories, suggests work, and decides whether a change is good enough to merge.
+The AI wrote the code, but I was still the planner, the reviewer and the one who said when something went live. A project moved only as fast as I could read.
 
-The others are workers. A worker picks up one GitHub issue, does it in a separate copy of the code, and hands back a pull request.
+It also gave me a habit I still have. Every agent reads one shared file of instructions, the same for every project, before it starts a task. Each time something went wrong, I added a rule to that file, and each rule was right on its day.
 
-Three decisions stay with me: what goes in the queue, what goes live, and anything that changes how an app looks.
+Together they piled up. Every agent reads the whole file before every task, so each new line was more to read on every task, and a rule in a long file is easier to miss. I cut the file down, and later split it.
 
-Three small tools hold it together, all started in the same week:
+The rules that apply to every task stayed in the file. The details moved into separate documents, and the file says which one to open for which kind of task.
 
-- the executive's own code;
-- a board on my phone, where the executive asks me questions as cards I answer with a tap;
-- a memory plugin that keeps the agents' notes as plain files, with no server and no embeddings.
+One of those rules came from the day one of my live apps went down.
 
-## The pace was never the problem
+A test the AI ran was meant to start its own copy of the app. It used the live app's settings file instead, the file that tells the server what to run and under which name. Starting an app under a name already in use replaces the copy that is running, so the live app went down.
 
-By 18 November, the executive's code alone had 623 merged pull requests. Its full weeks ranged from 43 merges to 114.
+I wrote a rule after that: never start an app from its live settings file, not even for a test. Remember that rule. It comes back in the cons.
 
-The median review took 11 minutes. Over the last 10 merges, a worker's start to its merge took 43 minutes at the median for work on the team's own tools, and 51 for work on my products.
+## Stage two: one agent leads, fresh agents do the work
 
-The other two tools grew alongside it: about 1,300 commits on the board, 95 on the memory plugin. Speed was the easy part. Every failure in this article sat in what I built around the code.
+In late September, eight weeks before this article, I built one AI agent to lead. It reads the list of open tasks I keep for each project, suggests what to work on next, and starts a fresh agent for each task I say yes to. Then it reviews what comes back.
 
-## Turn rules into hard checks
+Each task now gets a new agent of its own, with its own copy of the code, so two agents don't trip over each other. When it is done, it hands back the finished change with a short report of what it did and which tests it ran.
 
-The CPU burners were not my first production scare. On 7 July, before any of this, a test started one project's real Docker Compose file.
+The lead agent is more than Claude Code. It is also a set of small programs that AI wrote for it.
 
-Its container names are fixed, so the test could not run beside the live app. It took the live app's place, and my sites went down.
+They start the other agents, check the server and write down each decision, the lead agent's and mine. Those programs are a project of their own, though not an app.
 
-My first fix was a sentence in the instructions every session reads: never run a project's real compose file, not even to test.
+I didn't trust the lead agent with everything at once. Accepting a change makes it part of a project's code. Putting it live, where the people who use the app see it, is a separate step.
 
-That sentence was not enough. Since 25 September, a hook blocks the command in every repository before it can run, and no agent has to remember anything.
+At first the lead agent could accept changes only into its own project, which is not an app and never goes live. Everything else waited for me.
 
-The CPU burners got their own rule: prove timing with a fake clock or by design, never by loading production.
+## Stage three: one reviewer for the whole team
 
-## Give your instructions a budget
+Then I let the lead agent review and accept the work on every project. It never takes an agent's report at its word. It runs the tests again itself and reads every changed line against the task.
 
-Every incident adds a line to the agents' instructions. Each line makes sense on the day it is written. Together, they pile up.
+When something is off, the work goes back to the agent that did it. One of the lead agent's small programs lets at most 2 agents work at the same time, and only when the server has enough free memory and disk for them.
 
-My global instructions file loads into every Claude Code session on every project. I cut it down on 1 August. By 24 September it had swollen to 108 KB again.
+The pace surprised me. I counted one project, the lead agent's own, which also started in late September. By the middle of November it had taken in 623 finished changes, each a piece of work an agent handed back, 114 of them in its busiest week.
 
-So I split it. Rules that always apply stayed. Details moved into documents an agent opens only when it works in that area.
+Some decisions stayed with me. I choose which tasks get done at all. Anything that goes live, or changes how an app looks, waits for my yes.
 
-The executive's own file now has a hard cap of 200 lines and 12 KB. On 19 November it held 133 lines and 11,999 bytes: one byte to spare.
+## Stage four: what my days look like now
 
-## Doubt your own dashboard
+My part happens on my phone, on a simple web page my agents built for me. The lead agent posts a short question there with a few answers to pick from, and I tap one. The same page shows which agents are running.
 
-I built the executive to be suspicious. Each pull request ends with the worker's own report of what it did and which tests it ran.
+I don't review any code. The lead agent writes down each decision, its own and mine, in a log on that page. Mine are the answers I give it and the things I tell it in a chat there.
 
-The executive treats that report as a claim. It reruns the tests and reads every changed line against the issue.
+Over the eight weeks, the lead agent put thousands of small decisions in front of me: questions for me to answer, and the decisions it wrote down, its own and mine. My answers and the decisions in that log set what gets built and what goes live.
 
-When something is off, the work goes back to the worker. In the last 10 merges of each kind of work, that happened 2 times in each kind.
+This article was made the same way. An agent wrote it from a longer post on my blog, linked at the end, and I edited and approved it before posting it myself.
 
-Then my own board broke a rule. On 18 November it showed 3 workers running, with a cap of 2.
+## The pros
 
-Either a worker slipped past the limit, or the board miscounted. When I wrote this up, nobody knew which.
+The code is the fast part. From the team's first day, it came quickly. If you try this, expect it to arrive fast, and save your own time for the checks and the decisions around it.
 
-The suspicion I built into the reviewer has to cover my own tools as well.
+A reviewer that doubts the agent that did the work catches real mistakes. Work goes back for another round when the tests fail, or when the work does not match the task.
 
-## Measure the feature before you trust it
+What that means for you: never let the agent that did the work be the one that says it is done. A separate check, by a separate agent, is worth the extra minutes.
 
-The memory plugin can point an agent to related notes. When the agent opens one memory, the plugin adds a line that names its neighbours.
+My time goes to decisions, not to code. I went from reading every change to answering questions. What that means for you: your job moves from doing to deciding, so write down which decisions stay with you before you start.
 
-I measured it on 24 September. The plugin's own links gave 7.2 useful suggestions per 100 reads, and plain links written into the memories gave 3.6.
+Agents can work side by side. Each one has its own copy of the code and one task, so they don't get in each other's way. What that means for you: keep each task small and separate, and more than one can run at a time.
 
-That gap was too uncertain to rule out zero. Meanwhile the extra line showed up on 94% of reads, so I switched it off.
+## The cons: agents and rules
 
-A second run on 8 October looked much better: 20.7 against 3.4, clearly above zero.
+Agents take you literally. On its second day, the lead agent asked one of the other agents to prove that the code that agent had just written still worked while the server was busy.
 
-The line is still off by default. Switching it back on is my call, and I haven't made it yet.
+So that agent made the server busy on purpose. For about ten minutes the server was overloaded, with my live apps running on it.
 
-## Alarms need design too
+Nobody broke a rule that day, because no rule said what a proof may cost or where it may run. What that means for you: write down what is off limits, not only what you want.
 
-A script looks at each worker every 5 minutes. If a worker has stopped, or a prompt has sat waiting, for 10 minutes, it tells the executive.
+A written rule only works if every agent remembers it, every time. So the rule from stage one is now also a guard: a small program that reads each command an agent is about to run. In every project, it blocks any command that would start an app from its live settings file.
 
-On 29 September that alarm fired 31 times. Until 3 October it also fired when a worker was only waiting for my yes on a visual change, so some of those 31 may have been waiting on me.
+What that means for you: turn the rules that matter most into checks a machine enforces. Keep the written ones for everything else.
 
-The first draft of my blog post said all 31 were questions only I could answer. The executive's review of that draft caught the mistake.
+Instructions grow back. Every problem adds a line, and each line makes sense on the day you write it.
 
-## What is left for me
+The lead agent also reads a second instructions file, its own. I gave that file a fixed size limit of 12 KB, a few pages of text, and a test fails if a change would make it bigger than that, so that change cannot be accepted. In mid-November, when this was written, it was one byte under.
 
-My part happens on my phone. I read short cards, one per decision, and tap an answer.
+What that means for you: give your instructions a budget. Move the details into separate documents that an agent opens only when its task needs them.
 
-I don't review code at all: the executive does. I approve what goes live and what changes how an app looks.
+## The cons: your own tools
 
-Over eight weeks, that added up to thousands of small decisions. The blog post behind this article went the same way: a card I answered became an issue, a worker wrote it, and it waited for my yes.
+Your own tools can be wrong too. One day the page on my phone showed three agents running, when the limit was two. Either one got past the limit or the page counted wrong, and in mid-November, when this was written, nobody knew which.
+
+What that means for you: doubt your own status pages as much as your agents.
+
+Alarms need care too. Another small program tells the lead agent when an agent has sat idle for a while, for example stuck on a question nobody answered. At first it also went off for agents that were waiting, as planned, for my yes.
+
+On one day it went off more than thirty times. It could not tell the two kinds of waiting apart, so I can't say how many of those agents were truly stuck.
+
+The first draft of the blog post this article comes from said every one of them was stuck on a question only I could answer. The lead agent's review caught that.
+
+What that means for you: check what your alarms actually count. An alarm that can't tell "stuck" from "waiting as planned" sends you to the wrong place.
+
+## Where that leaves me
+
+Eight weeks in, the team is still how I work. Every problem in this article came from the setup around the agents: what they were allowed to do, what they were told, and my own tools. None came from bugs in my apps.
+
+If you are about to try this, start with the limits. Decide what the agents may never do, what they must prove, and which decisions stay with you.
 
 Every number here, with its date, is in [the full post on my blog](https://blog.buildforge.cloud/posts/building-an-ai-agent-team/).
 
-If you run AI agents on real work, what was the first rule you had to turn into a hard check?
+If you work with AI agents, which decision would you never hand over to them?
