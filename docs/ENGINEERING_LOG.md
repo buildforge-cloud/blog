@@ -1515,3 +1515,67 @@ names no part of it.
 The voice check the issue asks for is the parked comment's, in the PR body.
 `tests/posts.test.mjs` pins the date, the first link to skredda.no, and the
 last paragraph's link; a mutation of each failed its own test.
+
+## 2026-11-20: monthly Dependabot updates (#116)
+
+Stefan's card 4454 wants every site to take its package, base-image and
+Actions updates once a month, and security fixes at once. The blog had no
+`.github/dependabot.yml`. It now has one in the shape of the starter's web
+template (stages-v1.1.0, buildforge-starter#458): npm, docker and
+github-actions, each `monthly`, each with one `*-minor-and-patch` group, so
+the month's routine bumps are one PR per ecosystem and a major stays alone.
+
+What differs from the starter, and why: every entry looks in `/` (one
+`package.json`, one `Dockerfile`); no `target-branch`, since the blog has no
+staging; no pip entry (no requirements file); and no docker-compose entry,
+because `docker-compose.yml` builds the site and runs no image, so there is
+no database image whose major to ignore. The npm entry ignores astro 7.2.10
+and later: those need `@astrojs/mdx` 8 (blog#83), `tests/packages.test.mjs`
+fails on them, and in the month's group astro would turn the whole PR red.
+
+`tests/dependabot.test.mjs` (in `npm test`) reads the config. It fails on an
+ecosystem the repo has and the config lacks (or the reverse; a compose file
+that runs an `image:` adds docker-compose, a requirements file adds pip), an
+entry in a folder without its files, an entry not on `monthly`, an entry
+without exactly one group of `*` minor and patch bumps, a PR cap over 10, a
+database image in compose without a major ignore, and the astro ignore when
+it does not match mdx's major (present while mdx is on 7, gone after). It
+also fails when a Dependabot branch can start a job on an org runner: a
+workflow with one may run only on `schedule`, `workflow_dispatch`, or a push whose
+branch filter leaves out `dependabot/...` (GitHub's glob rules, `!` included).
+
+Red first on a weekly config with no groups (`every entry runs monthly` and
+the group test listed npm, docker and github-actions). Ten mutations (an
+entry dropped, a wrong folder, a cap of 11, the astro ignore dropped, a group
+taking majors, deploy on every branch, a postgres image in compose, and three
+breaks of the checkers themselves) were each killed by the test meant for
+them.
+
+From the self-review (8 findings, all fixed, each test red first or
+mutation-checked, 18 mutations in all, each killed): every entry now has a
+7-day cooldown, npm and docker too (the starter has it on Actions only); the
+docker entry ignores node 23 and 25, since Dependabot offers the newest major
+and those odd ones are never an LTS; the reach check tries one branch
+of each shape Dependabot pushes (a bump and a group, for npm, docker and
+Actions) and reads GitHub's `?`, `+` and `[...]` as GitHub does; the folder
+check covers docker-compose and pip too; the astro check reads mdx's major
+from the lockfile, not package.json's spelling of the range; and the comments
+say that an `ignore` holds back security updates as well, and that the docker
+group stays empty while the tags name a major only.
+
+Stefan's review: the node list first ran 23 to 29, but from 27 on Node ships
+one major a year and each one becomes LTS (nodejs.org, "Evolving the Node.js
+Release Schedule"), so only 23 and 25 are held; the test now wants 27, 28 and
+29 offered (red first: they were missing). And the reach check counted only
+`self-hosted`. It now counts the org's runners as the starter's
+`ORG_RUNNERS` does: `self-hosted`, `home` and `home-light` as whole labels
+(so `homebrew` is none), a `runs-on` group's labels, `${{ inputs.runner }}`,
+and a `uses:` job that passes a runner other than GitHub's, calls a local
+workflow with a job on an org runner, or calls one in another repo. The
+check is now named `no Dependabot branch or PR can start a job on an org
+runner`. 26 mutations in all, each killed; one first survived (the passed
+runner rule, also caught by reading the callee) and got a case only it
+catches.
+
+Not in the repo: vulnerability alerts and Dependabot security updates are
+repo settings, turned on with two `gh api -X PUT` calls listed in the PR.
