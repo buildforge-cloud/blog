@@ -71,6 +71,56 @@ test("every deploy run builds the site fresh, not from Docker's cache", () => {
   );
 });
 
+// blog#111. Without `--pull`, `docker compose build` starts from whatever
+// base images the runner has cached, so a security fix in `nginx:alpine` or
+// `node:22-alpine` never reaches the site. `--pull` fetches the newest base
+// image on every deploy.
+const buildLines = runs =>
+  runs
+    .split("\n")
+    .map(l => l.trim())
+    .filter(l => /^docker compose build\b/.test(l));
+
+// The build lines that lack `--pull` as a flag of its own.
+const buildsWithoutPull = runs =>
+  buildLines(runs).filter(l => !l.split(/\s+/).includes("--pull"));
+
+test("every deploy build pulls the newest base image", () => {
+  const runs = workflow("deploy.yml")
+    .jobs.deploy.steps.map(s => s.run ?? "")
+    .join("\n");
+  assert.ok(
+    buildLines(runs).length > 0,
+    "deploy.yml has no `docker compose build` line to check"
+  );
+  assert.deepEqual(
+    buildsWithoutPull(runs),
+    [],
+    "each `docker compose build` in deploy.yml needs `--pull`, or it builds on the runner's cached base image"
+  );
+});
+
+test("the pull check takes `build --pull` and refuses a build without it", () => {
+  assert.deepEqual(
+    buildsWithoutPull("docker compose build --pull blog_app"),
+    []
+  );
+  assert.deepEqual(buildsWithoutPull("docker compose build blog_app"), [
+    "docker compose build blog_app",
+  ]);
+  assert.deepEqual(
+    buildsWithoutPull(
+      "docker compose build blog_app\ndocker compose up --pull always -d"
+    ),
+    ["docker compose build blog_app"],
+    "a --pull on `up` is not a --pull on the build"
+  );
+  assert.deepEqual(
+    buildsWithoutPull("docker compose build --pull=false blog_app"),
+    ["docker compose build --pull=false blog_app"]
+  );
+});
+
 test("a push to main still deploys", () => {
   assert.deepEqual(triggers(workflow("deploy.yml")).push?.branches, ["main"]);
 });

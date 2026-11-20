@@ -68,12 +68,28 @@ published post with that slug (read as YAML, so a `draft: true` post or a
 one), "AI" in the first paragraph, the post's URL as the last line, 3 hashtags
 at most (a tag needs a letter, so `#104` is none) and no em dash. Its
 `REQUIRED` list keeps an empty folder from passing. The link answers 404 until
-the post's date, so the draft is posted after it. With a LinkedIn Article
-beside it (`<slug>-article.md`, blog#107), the draft is instead the Article's
-share text, under other rules: no URL, 80 words at most (`changes.d/107.md`
-until it is folded in). A post that opens by saying
+the post's date, so the draft is posted after it. A post that opens by saying
 AI wrote it and Stefan "edited" it goes on the list in `tests/posts.test.mjs`
 that checks its first three non-empty body lines (blog#104's post is first).
+
+**A LinkedIn Article** (blog#107) is `docs/linkedin/<slug>-article.md`, with
+its cover `<slug>-cover.png`; `ARTICLES` in `tests/linkedin.test.mjs` lists
+the ones that must exist. Then `<slug>.md` is the Article's share text, not a
+link post: the Article's hook and AI line first, 80 words at most, no URL
+(LinkedIn attaches the Article), 3 hashtags at most. The Article is new
+writing, not a cut of the post (decision 4408): at most 5 sentences word for
+word from the post, and no sub-head of the post's. `tests/linkedin.mjs` holds
+the rest: a `# ` headline of 60 characters at most, a hook of 140 at most,
+then a line of 40 at most saying "AI" and "edited", both in the first 160; a
+sub-head at least every 300 words; 3 sentences a paragraph at most (a list
+item counts alone); 1,000 to 2,500 words; a question last; absolute links
+only; no em dash; and every digit-written number also in the post (so a new number
+fails, a wrong one the post has does not). The cover is a 1920 x 1080 PNG
+whose iTXt "Title" is the headline: `node scripts/linkedin-cover.mjs <slug>`
+draws it again after a headline change. It needs `node_modules`, so a worker
+runs it in the scratchpad copy and copies the PNG back. LinkedIn's editor
+reads no Markdown: the headline goes in the title field, and each `## ` line
+is made a heading by hand.
 
 **`strategy/STRATEGY.md`** (decision 1943, blog#50) holds the blog's goal,
 readers, next three steps ("Now"), what it will not do, and how it is
@@ -449,7 +465,10 @@ It `rsync`s the worktree, without `.git`, into its scratchpad, links the main
 checkout's `node_modules` in that copy, and runs there. For a build, set
 `cacheDir` and `vite.cacheDir` in the copy's `astro.config.ts` first, or
 Astro writes its cache (`./node_modules/.astro`) through the link into the
-main checkout. A queued post can take its past date in the copy alone.
+main checkout. A queued post can take its past date in the copy alone. Run
+prettier there as `./node_modules/.bin/prettier --write <files>`: with
+`npx --no prettier --write`, npm takes `--write` as its own option, and
+prettier prints the files instead of writing them (blog#107).
 
 When an AI agent runs it, Astro 7 starts `astro dev` and `astro preview` as a
 detached background server by itself (it detects the agent). A Playwright

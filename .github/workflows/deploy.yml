@@ -51,8 +51,10 @@ jobs:
       # A new BUILD_ID on every run makes Docker re-run `npm run build` (see the
       # ARG in the Dockerfile). A re-run keeps its run_id, so run_attempt is part
       # of it too. `up` then starts that image; `up --build` would build again
-      # without the arg.
-      - run: docker compose build --build-arg BUILD_ID=${{ github.run_id }}-${{ github.run_attempt }} blog_app
+      # without the arg. `--pull` fetches the newest base images (nginx:alpine,
+      # node:22-alpine) instead of the runner's cached copies, so a security
+      # fix in one goes live at the next deploy (blog#111).
+      - run: docker compose build --pull --build-arg BUILD_ID=${{ github.run_id }}-${{ github.run_attempt }} blog_app
         timeout-minutes: 20
 
       - run: docker compose up -d blog_app
