@@ -89,6 +89,11 @@ const QUEUED = [
     "2027-02-09T07:00:00.000Z",
     "blog#93",
   ],
+  [
+    "iso-pathfinder-buddy-why-we-built-it",
+    "2027-02-23T07:00:00.000Z",
+    "blog#82",
+  ],
 ];
 
 const WEEK = 7 * 24 * 60 * 60 * 1000;
@@ -135,6 +140,10 @@ test("a product post links its product first", () => {
     ["google-stopped-showing-our-site-in-a-day", "ps-db.cloud"],
     [
       "secret-scanner-skipped-files-that-looked-like-archives",
+      "iso-pathfinder-buddy.lovable.app",
+    ],
+    [
+      "iso-pathfinder-buddy-why-we-built-it",
       "iso-pathfinder-buddy.lovable.app",
     ],
   ]) {
