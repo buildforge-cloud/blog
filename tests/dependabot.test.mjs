@@ -129,24 +129,78 @@ test("the ecosystem reader counts a compose file only when it runs an image", ()
   );
 });
 
+// The file each ecosystem reads in its folder. `has(dir, re)` says whether
+// the folder holds a file whose name matches.
+const MANIFESTS = {
+  npm: /^package\.json$/,
+  docker: /^Dockerfile/,
+  "docker-compose": /^(docker-)?compose.*\.ya?ml$/,
+  pip: /^requirements.*\.txt$|^pyproject\.toml$/,
+};
+export const folderProblems = (updates, has) =>
+  updates.flatMap(entry => {
+    const ecosystem = entry["package-ecosystem"];
+    return folders(entry)
+      .filter(dir =>
+        ecosystem === "github-actions"
+          ? dir !== "/" || !has("/.github", /^workflows$/)
+          : !MANIFESTS[ecosystem] || !has(dir, MANIFESTS[ecosystem])
+      )
+      .map(dir => `${ecosystem} ${dir}`);
+  });
+
+const hasInRepo = (dir, re) => {
+  const url = new URL(`.${dir}/`.replace("//", "/"), root);
+  return existsSync(url) && readdirSync(url).some(f => re.test(f));
+};
+
 test("each entry looks in the folder that holds its files", () => {
-  const holds = {
-    npm: dir => exists(`.${dir}/package.json`.replace("//", "/")),
-    docker: dir =>
-      readdirSync(new URL(`.${dir}/`.replace("//", "/"), root)).some(f =>
-        /^Dockerfile/.test(f)
-      ),
-    "github-actions": dir => dir === "/" && exists(".github/workflows"),
+  assert.deepEqual(folderProblems(config().updates, hasInRepo), []);
+});
+
+test("the folder check knows every ecosystem the reader can find", () => {
+  const tree = {
+    "/": ["package.json", "Dockerfile", "docker-compose.yml"],
+    "/.github": ["workflows"],
+    "/api": ["requirements.txt"],
   };
-  for (const entry of config().updates) {
-    const check = holds[entry["package-ecosystem"]];
-    assert.ok(check, `no folder check for ${entry["package-ecosystem"]}`);
-    for (const dir of folders(entry))
-      assert.ok(
-        check(dir),
-        `${entry["package-ecosystem"]}: ${dir} holds none of its files`
-      );
-  }
+  const has = (dir, re) => (tree[dir] ?? []).some(f => re.test(f));
+  const entry = (ecosystem, directory) => ({
+    "package-ecosystem": ecosystem,
+    directory,
+  });
+  assert.deepEqual(
+    folderProblems(
+      [
+        entry("npm", "/"),
+        entry("docker", "/"),
+        entry("docker-compose", "/"),
+        entry("github-actions", "/"),
+        entry("pip", "/api"),
+      ],
+      has
+    ),
+    []
+  );
+  assert.deepEqual(
+    folderProblems(
+      [
+        entry("npm", "/api"),
+        entry("docker-compose", "/api"),
+        entry("pip", "/"),
+        entry("github-actions", "/api"),
+        entry("bundler", "/"),
+      ],
+      has
+    ),
+    [
+      "npm /api",
+      "docker-compose /api",
+      "pip /",
+      "github-actions /api",
+      "bundler /",
+    ]
+  );
 });
 
 test("every entry runs monthly", () => {
@@ -203,6 +257,79 @@ test("every entry caps its open pull requests at 10", () => {
   }
 });
 
+// A hijacked release is usually caught within a week, so no entry takes one
+// younger than that. A cooldown holds back version updates only: a security
+// fix still comes at once.
+const COOLDOWN_DAYS = 7;
+export const withoutCooldown = updates =>
+  updates
+    .filter(u => !(u.cooldown?.["default-days"] >= COOLDOWN_DAYS))
+    .map(u => u["package-ecosystem"]);
+
+test("every entry waits a week before it offers a new release", () => {
+  assert.deepEqual(withoutCooldown(config().updates), []);
+});
+
+test("the cooldown check takes 7 days and refuses 6 or none", () => {
+  assert.deepEqual(
+    withoutCooldown([
+      { "package-ecosystem": "npm", cooldown: { "default-days": 7 } },
+      { "package-ecosystem": "docker", cooldown: { "default-days": 6 } },
+      { "package-ecosystem": "pip" },
+    ]),
+    ["docker", "pip"]
+  );
+});
+
+// Whether an ignore rule's `versions` hold back this major of the image.
+// Each requirement is clauses joined by commas (">= 25, < 26"), compared on
+// the major alone, which is all a `22-alpine` tag names.
+const OPS = {
+  ">=": (a, b) => a >= b,
+  ">": (a, b) => a > b,
+  "<=": (a, b) => a <= b,
+  "<": (a, b) => a < b,
+  "=": (a, b) => a === b,
+};
+export const majorIgnored = (entry, name, major) =>
+  (entry?.ignore ?? [])
+    .filter(r => r["dependency-name"] === name)
+    .flatMap(r => r.versions ?? [])
+    .some(requirement =>
+      requirement.split(",").every(clause => {
+        const m = clause.trim().match(/^(>=|<=|>|<|=)?\s*v?(\d+)/);
+        return m && OPS[m[1] ?? "="](major, Number(m[2]));
+      })
+    );
+
+// node:22-alpine names a major only, so the docker entry can offer only the
+// next major, and Dependabot takes the newest: an odd one (25), which is a
+// six-month Current release, never an LTS. The odd majors are held back, so
+// the PR it opens names the next LTS (24, 26).
+test("the docker entry offers node's LTS majors and never an odd one", () => {
+  const docker = config().updates.find(
+    u => u["package-ecosystem"] === "docker"
+  );
+  const offered = [22, 23, 24, 25, 26, 27, 28, 29].filter(
+    major => !majorIgnored(docker, "node", major)
+  );
+  assert.deepEqual(offered, [22, 24, 26, 28]);
+});
+
+test("the version reader reads a range, an exact major and no rule", () => {
+  const entry = {
+    ignore: [
+      { "dependency-name": "node", versions: [">= 25, < 26", "23"] },
+      { "dependency-name": "nginx", versions: [">= 1"] },
+    ],
+  };
+  assert.deepEqual(
+    [22, 23, 24, 25, 26].filter(m => majorIgnored(entry, "node", m)),
+    [23, 25]
+  );
+  assert.equal(majorIgnored({}, "node", 25), false);
+});
+
 test("no database image gets a major version PR", () => {
   assert.deepEqual(
     databaseMajorsProposed(config().updates, composeImages(composeTexts())),
@@ -235,29 +362,48 @@ test("the database check wants a major ignore for postgres, not for nginx", () =
 // tests/packages.test.mjs fails on them while mdx is on 7. Unignored, the
 // month's npm group would take astro along and be red every month, holding
 // every other bump back. The ignore must go when mdx 8 lifts the cap.
+// The major of a package as installed, from the lockfile, so how
+// package.json spells the range ("^7.0.8", "7.x", ">=7 <8") does not matter.
+export const lockedMajor = (lock, name) => {
+  const version = lock.packages?.[`node_modules/${name}`]?.version;
+  assert.ok(version, `${name} is not in package-lock.json`);
+  return Number(version.split(".")[0]);
+};
+
+test("the lockfile reader takes the top copy's major", () => {
+  const lock = {
+    packages: {
+      "node_modules/@astrojs/mdx": { version: "8.0.1" },
+      "node_modules/x/node_modules/@astrojs/mdx": { version: "7.0.8" },
+    },
+  };
+  assert.equal(lockedMajor(lock, "@astrojs/mdx"), 8);
+  assert.throws(() => lockedMajor({ packages: {} }, "@astrojs/mdx"));
+});
+
 test("while @astrojs/mdx is on 7, Dependabot leaves astro at 7.2.9", () => {
-  const pkg = JSON.parse(read("package.json"));
+  const lock = JSON.parse(read("package-lock.json"));
   const npm = config().updates.find(u => u["package-ecosystem"] === "npm");
   const astroRules = (npm.ignore ?? []).filter(
     r => r["dependency-name"] === "astro"
   );
-  if (/^[\^~]?7\./.test(pkg.dependencies["@astrojs/mdx"]))
+  if (lockedMajor(lock, "@astrojs/mdx") === 7)
     assert.deepEqual(astroRules, [
       { "dependency-name": "astro", versions: [">= 7.2.10"] },
     ]);
   else assert.deepEqual(astroRules, [], "mdx 8 lifts the astro cap");
 });
 
-// GitHub branch filter globs: `*` stops at `/`, `**` does not, a leading
+// GitHub branch filter globs: `*` stops at `/`, `**` does not, `?` and `+`
+// act on the sign before them as in a regex, `[...]` is a set, and a leading
 // `!` excludes what an earlier pattern took.
 const globToRegExp = glob =>
   new RegExp(
     "^" +
       glob
-        .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+        .replace(/[.^${}()|\\]/g, "\\$&")
         .replace(/\*\*/g, "\u0000")
         .replace(/\*/g, "[^/]*")
-        .replace(/\?/g, ".")
         .replace(/\u0000/g, ".*") +
       "$"
   );
@@ -269,8 +415,19 @@ const branchMatches = (patterns, branch) =>
       : taken;
   }, false);
 
-// A branch Dependabot pushes, as GitHub names them.
-const DEPENDABOT_BRANCH = "dependabot/npm_and_yarn/astro-7.3.3";
+// The branches Dependabot pushes here, one of each shape: a single bump
+// and a group's branch for each ecosystem, and a scoped package's.
+const DEPENDABOT_BRANCHES = [
+  "dependabot/npm_and_yarn/astro-7.3.3",
+  "dependabot/npm_and_yarn/@astrojs/mdx-8.0.1",
+  "dependabot/npm_and_yarn/npm-minor-and-patch-6b0a3e1c2f",
+  "dependabot/docker/node-24-alpine",
+  "dependabot/docker/docker-minor-and-patch-1f2e3d4c5b",
+  "dependabot/github_actions/actions/checkout-5",
+  "dependabot/github_actions/actions-minor-and-patch-9a8b7c6d5e",
+];
+const takesAny = (patterns, take) =>
+  DEPENDABOT_BRANCHES.some(branch => take(patterns, branch));
 
 // The events of a workflow that a Dependabot branch or PR can start. A
 // `schedule` and a `workflow_dispatch` start only from what a person chose; a
@@ -288,10 +445,12 @@ export const dependabotEvents = on => {
     .filter(([event, filter]) => {
       if (event === "schedule" || event === "workflow_dispatch") return false;
       if (event !== "push") return true;
-      if (filter?.branches)
-        return branchMatches(filter.branches, DEPENDABOT_BRANCH);
+      if (filter?.branches) return takesAny(filter.branches, branchMatches);
       if (filter?.["branches-ignore"])
-        return !branchMatches(filter["branches-ignore"], DEPENDABOT_BRANCH);
+        return takesAny(
+          filter["branches-ignore"],
+          (patterns, branch) => !branchMatches(patterns, branch)
+        );
       return !filter?.tags; // tags alone: a branch push starts nothing
     })
     .map(([event]) => event);
@@ -354,4 +513,39 @@ test("the Dependabot reach check takes main pushes and refuses wider ones", () =
   assert.deepEqual(dependabotEvents({ workflow_run: { workflows: ["CI"] } }), [
     "workflow_run",
   ]);
+});
+
+test("the reach check knows each Dependabot branch shape", () => {
+  for (const pattern of [
+    "dependabot/github_actions/**",
+    "dependabot/docker/**",
+    "dependabot/npm_and_yarn/npm-minor-and-patch-*",
+    "dependabot/npm_and_yarn/@astrojs/**",
+  ])
+    assert.deepEqual(
+      dependabotEvents({ push: { branches: ["main", pattern] } }),
+      ["push"],
+      pattern
+    );
+});
+
+// GitHub's filter signs: `?` is zero or one of the sign before it, `+` one
+// or more, `[...]` one of the set (GitHub's "Filter pattern cheat sheet").
+test("the reach check reads `?`, `+` and `[...]` as GitHub does", () => {
+  for (const pattern of [
+    "[a-z]*/**",
+    "[d]ependabot/**",
+    "dependabo+t/**",
+    "dependabott?/**",
+  ])
+    assert.deepEqual(
+      dependabotEvents({ push: { branches: [pattern] } }),
+      ["push"],
+      pattern
+    );
+  assert.deepEqual(
+    dependabotEvents({ push: { branches: ["dependabot?x/**", "[0-9]*/**"] } }),
+    [],
+    "neither pattern takes a dependabot/ branch"
+  );
 });

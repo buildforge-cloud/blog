@@ -6,7 +6,12 @@ version: 2
 # A major stays a PR of its own, since majors are the ones that break.
 # `applies-to` stays at its default (version-updates), so a security fix is
 # never held behind the month's batch: GitHub opens those at once, when the
-# repo setting "Dependabot security updates" is on.
+# repo setting "Dependabot security updates" is on. Every entry waits a week
+# before it offers a new release (cooldown): a hijacked release is usually
+# caught by then. The cooldown holds back version updates only.
+#
+# ⚠️ An `ignore` below holds back security updates too: while it stands, a
+# security fix only in an ignored version gets no PR, and is moved by hand.
 #
 # No `target-branch`: the blog has no staging, so PRs go to main, and CI runs
 # on GitHub's own runner. A Dependabot branch can start no self-hosted job
@@ -25,6 +30,8 @@ updates:
     schedule:
       interval: monthly
     open-pull-requests-limit: 10
+    cooldown:
+      default-days: 7
     groups:
       npm-minor-and-patch:
         patterns:
@@ -35,14 +42,13 @@ updates:
     # blog#83: astro 7.2.10 and later need @astrojs/mdx 8, a major move done
     # by hand. tests/packages.test.mjs fails on them while mdx is on 7, so in
     # the month's group astro would turn the whole PR red. Remove this when
-    # mdx 8 lands: tests/dependabot.test.mjs then fails until it goes.
+    # mdx 8 lands: tests/dependabot.test.mjs then fails until it goes. Until
+    # then an astro security fix comes from blog#83's move, not a PR here.
     ignore:
       - dependency-name: astro
         versions:
           - ">= 7.2.10"
   # Every workflow runs another repo's action by tag (actions/checkout@v4).
-  # A release waits a week first (cooldown): a hijacked one is usually caught
-  # by then.
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -61,12 +67,27 @@ updates:
   # so a new image of the same tag arrives on its own. node:22-alpine names a
   # major only, so what this moves is the major (node 22 -> 24, a PR of its
   # own; ci.yml's `node-version` moves with it by hand). nginx:alpine names no
-  # version, and `--pull` alone keeps it fresh.
+  # version, and `--pull` alone keeps it fresh. So today the group below
+  # never fills: it is there for a tag that names a minor, and so that a new
+  # base image's routine bumps share one PR.
   - package-ecosystem: docker
     directory: /
     schedule:
       interval: monthly
     open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+    # Dependabot offers the newest major, and an odd node major (25) is a
+    # six-month Current release, never an LTS. Held back, the PR names the
+    # next LTS (24, 26) instead. Add the next odd major before node 31 ships
+    # (tests/dependabot.test.mjs checks up to 29).
+    ignore:
+      - dependency-name: node
+        versions:
+          - ">= 23, < 24"
+          - ">= 25, < 26"
+          - ">= 27, < 28"
+          - ">= 29, < 30"
     groups:
       docker-minor-and-patch:
         patterns:
