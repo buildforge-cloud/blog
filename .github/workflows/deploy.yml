@@ -45,7 +45,7 @@ jobs:
       # hang there fails that step, and `up` never runs. So the job's bound
       # always leaves 5 minutes for `up` and the health check (8s at most in
       # the same runs), and does not stop a deploy halfway through `up`.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         timeout-minutes: 5
 
       # A new BUILD_ID on every run makes Docker re-run `npm run build` (see the
