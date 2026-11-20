@@ -303,17 +303,19 @@ export const majorIgnored = (entry, name, major) =>
     );
 
 // node:22-alpine names a major only, so the docker entry can offer only the
-// next major, and Dependabot takes the newest: an odd one (25), which is a
-// six-month Current release, never an LTS. The odd majors are held back, so
-// the PR it opens names the next LTS (24, 26).
-test("the docker entry offers node's LTS majors and never an odd one", () => {
+// next major, and Dependabot takes the newest. 23 and 25 are odd majors, six
+// months of Current and never an LTS, so they are held back and the PR names
+// 24 or 26. From 27 on, Node ships one major a year and each one becomes LTS
+// (nodejs.org, "Evolving the Node.js Release Schedule"), so 27 and later are
+// offered.
+test("the docker entry offers node's LTS majors and never 23 or 25", () => {
   const docker = config().updates.find(
     u => u["package-ecosystem"] === "docker"
   );
   const offered = [22, 23, 24, 25, 26, 27, 28, 29].filter(
     major => !majorIgnored(docker, "node", major)
   );
-  assert.deepEqual(offered, [22, 24, 26, 28]);
+  assert.deepEqual(offered, [22, 24, 26, 27, 28, 29]);
 });
 
 test("the version reader reads a range, an exact major and no rule", () => {
@@ -456,22 +458,135 @@ export const dependabotEvents = on => {
     .map(([event]) => event);
 };
 
+// The org's own runners, by the label a job names, as buildforge-starter's
+// ORG_RUNNERS (test_deploy_workflows.py): `self-hosted` is the server beside
+// production that runs every deploy; `home` and `home-light` are Stefan's
+// home machine, which takes test jobs and runs them with sudo. A
+// `${{ inputs.runner }}` lets the caller pick, so it counts as one too.
+const ORG_RUNNERS = ["self-hosted", "home", "home-light"];
+
+// A whole label, not a substring: `home` is an ordinary word, and
+// `homebrew` or `inputs.home` is no runner.
+const namesLabel = (runsOn, label) =>
+  Array.isArray(runsOn)
+    ? runsOn.some(item => String(item).trim() === label)
+    : new RegExp(`(?<![\\w.-])${label.replace(/[-]/g, "\\-")}(?![\\w.-])`).test(
+        String(runsOn ?? "")
+      );
+
+export const onOrgRunner = runsOn => {
+  // `runs-on: {group, labels}`: the labels decide.
+  const value =
+    runsOn && typeof runsOn === "object" && !Array.isArray(runsOn)
+      ? [runsOn.labels ?? []].flat()
+      : runsOn;
+  return (
+    ORG_RUNNERS.some(label => namesLabel(value, label)) ||
+    /inputs\.runner/.test(String(value ?? ""))
+  );
+};
+
+// The jobs of a workflow that run on an org runner. A `uses:` job runs the
+// called workflow's jobs, so it counts when the `runner` it passes is not
+// GitHub's, as in the starter, or when the callee, read with
+// `readCallee(path)`, has a job on an org runner with that `runner`. A
+// callee in another repo cannot be read here, so it counts.
+export const orgRunnerJobs = (wf, readCallee) =>
+  Object.entries(wf.jobs ?? {})
+    .filter(([, job]) => {
+      if (!job.uses) return onOrgRunner(job["runs-on"]);
+      const runner = job.with?.runner ?? "ubuntu-latest";
+      if (String(runner).trim() !== "ubuntu-latest") return true;
+      if (!job.uses.startsWith("./")) return true;
+      return Object.values(readCallee(job.uses).jobs ?? {}).some(callee =>
+        onOrgRunner(
+          String(JSON.stringify(callee["runs-on"] ?? "")).replace(
+            /\$\{\{\s*inputs\.runner\s*\}\}/g,
+            runner
+          )
+        )
+      );
+    })
+    .map(([id]) => id);
+
+test("the runner check counts self-hosted, home and home-light, as whole labels", () => {
+  for (const runsOn of [
+    "self-hosted",
+    "home",
+    "home-light",
+    ["self-hosted", "linux"],
+    ["home"],
+    "${{ inputs.runner }}",
+    { group: "org", labels: ["home-light"] },
+    { group: "org", labels: "self-hosted" },
+  ])
+    assert.equal(onOrgRunner(runsOn), true, JSON.stringify(runsOn));
+  for (const runsOn of [
+    "ubuntu-latest",
+    "homebrew",
+    "${{ inputs.home }}",
+    ["ubuntu-latest"],
+    { group: "hosted", labels: ["ubuntu-latest"] },
+    undefined,
+  ])
+    assert.equal(onOrgRunner(runsOn), false, JSON.stringify(runsOn));
+});
+
+test("the runner check follows a uses: job to the runner it passes and its callee", () => {
+  const callees = {
+    "./.github/workflows/gates.yml": {
+      jobs: { test: { "runs-on": "${{ inputs.runner }}" } },
+    },
+    "./.github/workflows/hosted.yml": {
+      jobs: { test: { "runs-on": "ubuntu-latest" } },
+    },
+    "./.github/workflows/deploy.yml": {
+      jobs: { deploy: { "runs-on": "self-hosted" } },
+    },
+  };
+  const wf = {
+    jobs: {
+      own: { "runs-on": "home" },
+      hosted: { "runs-on": "ubuntu-latest" },
+      passesHome: {
+        uses: "./.github/workflows/gates.yml",
+        with: { runner: "home" },
+      },
+      passesHosted: {
+        uses: "./.github/workflows/gates.yml",
+        with: { runner: "ubuntu-latest" },
+      },
+      callsHosted: { uses: "./.github/workflows/hosted.yml" },
+      // The input is the decision, as in the starter: a callee that ignores
+      // it today can read it tomorrow.
+      passesHomeToHosted: {
+        uses: "./.github/workflows/hosted.yml",
+        with: { runner: "home" },
+      },
+      callsDeploy: { uses: "./.github/workflows/deploy.yml" },
+      remote: { uses: "someone/repo/.github/workflows/x.yml@v1" },
+    },
+  };
+  assert.deepEqual(
+    orgRunnerJobs(wf, path => callees[path]),
+    ["own", "passesHome", "passesHomeToHosted", "callsDeploy", "remote"]
+  );
+});
+
 // This is a public repo, and a Dependabot PR is a bump nobody has read yet.
-// A self-hosted job runs on the shared server that holds every project.
-test("no Dependabot branch or PR can start a self-hosted job", () => {
+// An org runner holds every project (`self-hosted`) or runs jobs with sudo
+// on Stefan's machine (`home`, `home-light`).
+test("no Dependabot branch or PR can start a job on an org runner", () => {
+  const readCallee = path => parse(read(path.replace(/^\.\//, "")));
   for (const name of workflowFiles()) {
     const wf = parse(read(`.github/workflows/${name}`));
-    const selfHosted = Object.entries(wf.jobs ?? {})
-      .filter(([, job]) =>
-        JSON.stringify(job["runs-on"]).includes("self-hosted")
-      )
-      .map(([id]) => id);
-    if (selfHosted.length === 0) continue;
+    const onOrg = orgRunnerJobs(wf, readCallee);
+    if (onOrg.length === 0) continue;
     const events = dependabotEvents(wf.on ?? wf[true] ?? {});
     assert.deepEqual(
       events,
       [],
-      `${name}: ${events.join(", ")} can start self-hosted job(s) ${selfHosted.join(", ")} from a Dependabot branch`
+      `${name}: ${events.join(", ")} can start org-runner job(s) ${onOrg.join(", ")} from a Dependabot branch`
     );
   }
 });

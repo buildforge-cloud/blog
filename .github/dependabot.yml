@@ -77,17 +77,16 @@ updates:
     open-pull-requests-limit: 5
     cooldown:
       default-days: 7
-    # Dependabot offers the newest major, and an odd node major (25) is a
-    # six-month Current release, never an LTS. Held back, the PR names the
-    # next LTS (24, 26) instead. Add the next odd major before node 31 ships
-    # (tests/dependabot.test.mjs checks up to 29).
+    # Dependabot offers the newest major. 23 and 25 are odd majors, six-month
+    # Current releases and never an LTS, so they are held back and the PR
+    # names 24 or 26 instead. From 27 on, Node ships one major a year and
+    # each one becomes LTS (nodejs.org, "Evolving the Node.js Release
+    # Schedule"), so this list ends at 25.
     ignore:
       - dependency-name: node
         versions:
           - ">= 23, < 24"
           - ">= 25, < 26"
-          - ">= 27, < 28"
-          - ">= 29, < 30"
     groups:
       docker-minor-and-patch:
         patterns:
