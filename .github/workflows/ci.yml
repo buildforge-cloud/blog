@@ -78,7 +78,7 @@ jobs:
 
       - name: "🗄️ Restore the Playwright browser"
         id: playwright-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         timeout-minutes: 3
         continue-on-error: true
         with:
@@ -99,7 +99,7 @@ jobs:
 
       - name: "🗄️ Save the Playwright browser"
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         timeout-minutes: 3
         continue-on-error: true
         with:
