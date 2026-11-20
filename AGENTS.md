@@ -357,8 +357,11 @@ pins what the workflows must keep doing: the 07:05 UTC cron, the
 per-run `BUILD_ID`, deploy on push to `main`, no `cancel-in-progress` on the
 production deploy, no workflow where a `pull_request` can start a
 `self-hosted` job, a `timeout-minutes` on every job that runs steps, a 20 to
-30 minute bound on the deploy job, one concurrency group that queues, and
-`ci.yml` running `npm run test:pages` after `npm run build`. A
+30 minute bound on the deploy job, one concurrency group that queues,
+`ci.yml` running `npm run test:pages` after `npm run build`, and `--pull` on
+every `docker compose build` in `deploy.yml` (blog#111): without it the build
+starts from the runner's cached `nginx:alpine` and `node:22-alpine`, and a
+base-image security fix never goes live. A
 workflow only runs on GitHub, so without this a cron typo stays silent until
 the morning a post fails to appear.
 
