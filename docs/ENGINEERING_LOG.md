@@ -1377,3 +1377,34 @@ after `up -d` has replaced the container.
 Also folded `changes.d/107.md` into AGENTS.md: the LinkedIn Article rules
 under "Writing a post", and the prettier call under "Building from a
 worktree".
+
+## 2026-11-20 — #82: a post on why ISO 27001 Buddy was built
+
+`src/content/posts/iso-pathfinder-buddy-why-we-built-it.md`, queued for
+2027-02-23T07:00:00Z. The issue asked for 2 Feb, one week after the Skredda
+post (blog#81). Since then blog#106 moved the queue a week, and 2 Feb and
+9 Feb now hold blog#92 and blog#93. Skredda has no post or date yet, so it
+can take 16 Feb, the first free week, and this one is a week later.
+
+The story is Stefan's answers on the issue (2026-11-10, and decision 4457):
+why he built it, that nothing went wrong, that Lovable's speed surprised
+him, and that he learned the standard by having to approve what the AI
+built. He answered "later" to when it was built, whether it is still worked
+on, and who uses it, so the post says nothing on any of those: no date, no
+move off Lovable, no users or plans. A first draft took dates from the app's
+own git history; the executive's review cut them, as facts Stefan had not
+given. The post names the app ISO 27001 Buddy (the review's call); its slug
+keeps the issue's file name.
+
+The post links the Lovable host at its root (the issue's default for
+question 5) and `/roadmap` as the deep link. The app also serves at
+iso.buildforge.no. Which host the blog should name is for Stefan:
+`about.md`, the blog-post skill, the blog#92 post and this one all name the
+Lovable host today.
+
+Tests: the post joins `QUEUED` and "a product post links its product
+first" in `tests/posts.test.mjs`, and STRATEGY.md's Now step 5. Red first
+("no post with slug iso-pathfinder-buddy-why-we-built-it", "Now does not
+name blog#82"). A mutation (Lovable's own site as the first link, the date on
+16 Feb) failed both tests. A build of the scratch copy, with the post dated
+in the past, gave the page and its OG image.
