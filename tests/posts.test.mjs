@@ -90,6 +90,11 @@ const QUEUED = [
     "blog#93",
   ],
   [
+    "skredda-what-it-does-and-one-lesson",
+    "2027-02-16T07:00:00.000Z",
+    "blog#81",
+  ],
+  [
     "iso-pathfinder-buddy-why-we-built-it",
     "2027-02-23T07:00:00.000Z",
     "blog#82",
@@ -146,6 +151,7 @@ test("a product post links its product first", () => {
       "iso-pathfinder-buddy-why-we-built-it",
       "iso-pathfinder-buddy.lovable.app",
     ],
+    ["skredda-what-it-does-and-one-lesson", "skredda.no"],
   ]) {
     const link = firstLink(bySlug(slug).body);
     assert.equal(
