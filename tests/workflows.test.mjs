@@ -75,11 +75,18 @@ test("every deploy run builds the site fresh, not from Docker's cache", () => {
 // base images the runner has cached, so a security fix in `nginx:alpine` or
 // `node:22-alpine` never reaches the site. `--pull` fetches the newest base
 // image on every deploy.
+// A line wrapped with `\` is read as one command. A build is `docker compose`
+// or `docker-compose` with `build` as a word of its own after it, so global
+// flags (`-f`, `-p`) and a `sudo` in front still count, and `--build-arg` or
+// `up --build` do not.
 const buildLines = runs =>
   runs
+    .replace(/\\\n\s*/g, "")
     .split("\n")
     .map(l => l.trim())
-    .filter(l => /^docker compose build\b/.test(l));
+    .filter(l =>
+      /^(?:sudo\s+)?docker(?: |-)compose\b.*\sbuild(?:\s|$)/.test(l)
+    );
 
 // The build lines that lack `--pull` as a flag of its own.
 const buildsWithoutPull = runs =>
@@ -118,6 +125,37 @@ test("the pull check takes `build --pull` and refuses a build without it", () =>
   assert.deepEqual(
     buildsWithoutPull("docker compose build --pull=false blog_app"),
     ["docker compose build --pull=false blog_app"]
+  );
+});
+
+test("the pull check finds a build written with global flags or the old CLI", () => {
+  for (const line of [
+    "docker compose -f docker-compose.yml build blog_app",
+    "docker-compose build blog_app",
+    "sudo docker compose -p blog build blog_app",
+  ])
+    assert.deepEqual(buildsWithoutPull(line), [line], line);
+  assert.deepEqual(
+    buildsWithoutPull("docker compose -f docker-compose.yml build --pull x"),
+    []
+  );
+  assert.deepEqual(
+    buildsWithoutPull(
+      "docker compose up -d --build blog_app\ndocker compose build --pull --build-arg A=1 x"
+    ),
+    [],
+    "`up --build` and `--build-arg` are not a build subcommand"
+  );
+});
+
+test("the pull check reads a build wrapped over lines with a backslash", () => {
+  assert.deepEqual(
+    buildsWithoutPull("docker compose build \\\n  --pull blog_app"),
+    []
+  );
+  assert.deepEqual(
+    buildsWithoutPull("docker compose build \\\n  --build-arg A=1 blog_app"),
+    ["docker compose build --build-arg A=1 blog_app"]
   );
 });
 

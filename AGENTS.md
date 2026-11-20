@@ -76,18 +76,21 @@ that checks its first three non-empty body lines (blog#104's post is first).
 its cover `<slug>-cover.png`; `ARTICLES` in `tests/linkedin.test.mjs` lists
 the ones that must exist. Then `<slug>.md` is the Article's share text, not a
 link post: the Article's hook and AI line first, 80 words at most, no URL
-(LinkedIn attaches the Article), 3 hashtags at most. The Article is new
+(LinkedIn attaches the Article), 3 hashtags at most, no em dash. The Article is new
 writing, not a cut of the post (decision 4408): at most 5 sentences word for
 word from the post, and no sub-head of the post's. `tests/linkedin.mjs` holds
 the rest: a `# ` headline of 60 characters at most, a hook of 140 at most,
 then a line of 40 at most saying "AI" and "edited", both in the first 160; a
 sub-head at least every 300 words; 3 sentences a paragraph at most (a list
 item counts alone); 1,000 to 2,500 words; a question last; absolute links
-only; no em dash; and every digit-written number also in the post (so a new number
-fails, a wrong one the post has does not). The cover is a 1920 x 1080 PNG
-whose iTXt "Title" is the headline: `node scripts/linkedin-cover.mjs <slug>`
-draws it again after a headline change. It needs `node_modules`, so a worker
-runs it in the scratchpad copy and copies the PNG back. LinkedIn's editor
+only; no em dash; and every number also in the post's title, description
+or body. That check reads digits only ("ten" is not checked), skips link
+addresses and reads 1,000 as 1000, so a new number fails and a wrong one the
+post has does not. The cover is a 1920 x 1080 PNG whose iTXt "Title" is the
+headline: `node scripts/linkedin-cover.mjs <slug>` draws it again after a
+headline change. It finds its files from its own path, so it runs from any
+folder, but it needs `node_modules`: a worker runs it in the scratchpad copy
+and copies the PNG back. LinkedIn's editor
 reads no Markdown: the headline goes in the title field, and each `## ` line
 is made a heading by hand.
 
