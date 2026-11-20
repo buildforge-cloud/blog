@@ -53,7 +53,7 @@ Mistral's model had been told not to do that, and did it anyway. Given
 nothing real to work with, it would rather hand back something that looked
 right than say no.
 
-The whole point of the tool is a CV a consultant can send to a client. A
+The whole point of the tool is a CV a consultant can send to a buyer. A
 made-up line on it is the worst bug it can have.
 
 The coding agent's fix came in two parts. Skredda now refuses text too short
@@ -69,29 +69,30 @@ agent tested a bad fit on purpose. It gave Skredda a sample CV of a frontend
 developer, all React and TypeScript and nothing on the backend, and a job ad
 for a senior backend developer.
 
-The tailored CV came back well written. It also had Python in the skills
-list. And it said the developer had broad full-stack experience and had
-worked closely with backend systems. None of that was in the CV.
+The tailored CV had Python in the skills list. And it said the developer had
+broad full-stack experience and had worked closely with backend systems.
+None of that was in the CV.
 
 A real CV against a job that does not quite fit is what a real user sends.
-A consultant could have sent that to a client with skills on it they did not
+A consultant could have sent that to a buyer with skills on it they did not
 have.
 
 The coding agent offered me a few ways out, one of them a stronger prompt. I
 did not take any of them. I asked the coding agent to write a plan first.
 And I asked whether Skredda should first pull the CV apart into plain facts,
-before the AI wrote anything at all.
+before the AI wrote anything at all. The part that writes the tailored CV,
+which I will call the writer, would then see those facts, not the CV.
 
 ## The writer never sees the CV
 
-The plan said yes: pull the facts out first. It became the fix the same day.
-Skredda now asks Mistral's model two separate questions, one after the
-other.
+The plan said yes: pull the facts out first. Skredda now splits the work
+into two separate questions to Mistral's model, one after the other. That
+split became the fix the same day.
 
 In the first, the model sees only the CV and lists the facts in it: skills,
-jobs, education. It never sees the job ad. In the second, which I will call
-the writer, the model writes the tailored CV and the cover note from that
-list of facts and the job ad. It never sees the original CV text.
+jobs, education. It never sees the job ad. In the second, the writer, the
+model writes the tailored CV and the cover note from that list of facts and
+the job ad. It never sees the original CV text.
 
 Then a skill check in Skredda's own code, with no AI in it, compares every
 skill in the new CV with the list of facts. If a skill is not on the list,
@@ -107,25 +108,24 @@ from the writer having only the real facts to work from.
 
 ## The fix broke the language
 
-Skredda writes for Norwegian buyers, so its prompt talks about Norway,
-Norwegian tenders and Norwegian buyers all the way through. Earlier that
-day, an English test CV had come back in English, as it should. After the
-split, the same English test came back in Norwegian.
+Skredda is made for Norway, and the prompt it sends with every question had
+a Nordic flavor. Earlier that day, an English test CV had come back in
+English, as it should. After the split into two questions,
+the same English test came back in Norwegian.
 
 The writer no longer saw the English sentences of the CV. It saw only the
 list of facts, and those are mostly names of tools and companies, which look
 the same in every language. The strongest hint of a language it had left was
-the many mentions of Norway in Skredda's prompt, so it wrote Norwegian.
-The fix: the first question, which does see the whole CV, now also writes
-down the CV's language as one more fact, and the writer gets it with the
-others.
+Skredda's Nordic-flavored prompt, so it wrote Norwegian. The fix: the first
+question, which does see the whole CV, now also writes down the CV's
+language as one more fact, and the writer gets it with the others.
 
 ## What the check still misses
 
 The skill check reads only the skills list. In the run after the split, the
-one with no Python, the cover note still said the developer had worked
-closely with backend teams. The CV said nothing of the
-kind. Catching that needs a check that reads the sentences of
+one with no Python, the cover note with the true Python sentence also said
+the developer had worked closely with backend teams. The CV said
+nothing of the kind. Catching that needs a check that reads the sentences of
 the cover note, not only the list. That gap was still open when the day
 ended.
 

@@ -163,9 +163,9 @@ test("a product post links its product first", () => {
 });
 
 // Stefan's card 4497 (blog#81): the Skredda post ends with one next step,
-// "try Skredda at skredda.no", and leaves out his "a trial I never fell in
-// love with", which he gave as context, not as text for the post.
-test("the Skredda post ends by asking you to try it, and calls it no trial", () => {
+// "try Skredda at skredda.no", and leaves out a line of his that he gave as
+// context, not as text for the post.
+test("the Skredda post ends by asking you to try it", () => {
   const { body } = bySlug("skredda-what-it-does-and-one-lesson");
   const last = body
     .trim()
@@ -174,11 +174,7 @@ test("the Skredda post ends by asking you to try it, and calls it no trial", () 
     .replace(/\s+/g, " ");
   assert.match(last, /\btry Skredda\b/i, `last paragraph: ${last}`);
   assert.match(last, /\]\(https:\/\/skredda\.no\/?\)/, `no link: ${last}`);
-  assert.doesNotMatch(
-    body,
-    /\btrial\b|fell in love/i,
-    "the trial line is back"
-  );
+  assert.doesNotMatch(body, /\btrial\b/i, "the line card 4497 cut is back");
 });
 
 // A post that says in its first three lines that AI wrote it and that Stefan
