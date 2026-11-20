@@ -75,7 +75,9 @@ that checks its first three non-empty body lines (blog#104's post is first).
 **A LinkedIn Article** (blog#107) is `docs/linkedin/<slug>-article.md`, with
 its cover `<slug>-cover.png`; `ARTICLES` in `tests/linkedin.test.mjs` lists
 the ones that must exist. Then `<slug>.md` is the Article's share text, not a
-link post: the Article's hook and AI line first, 80 words at most, no URL
+link post: the Article's hook first, then an AI line of its own that names
+both texts ("AI wrote this and the article. I edited."; the Article's own
+line left a cold reader unsure which text it meant), 80 words at most, no URL
 (LinkedIn attaches the Article), 3 hashtags at most, no em dash. The Article is new
 writing, not a cut of the post (decision 4408): at most 5 sentences word for
 word from the post, and no sub-head of the post's. `tests/linkedin.mjs` holds
@@ -86,7 +88,22 @@ item counts alone); 1,000 to 2,500 words; a question last; absolute links
 only; no em dash; and every number also in the post's title, description
 or body. That check reads digits only ("ten" is not checked), skips link
 addresses and reads 1,000 as 1000, so a new number fails and a wrong one the
-post has does not. The cover is a 1920 x 1080 PNG whose iTXt "Title" is the
+post has does not.
+
+An Article's reader knows nothing of the setup, and it tells a journey with
+its pros and cons, not single deliveries (decisions 4424, 4425, blog#109).
+So `articleProblems` also fails on more than 5 different numbers, on a date
+(a day with its month in either order, an ordinal or "Sept" too, or an ISO
+date; a month alone passes), and, like `shareProblems`, on an in-house word.
+Those are `IN_HOUSE` in `tests/linkedin.mjs`: whole words, plurals too, in
+any case except `Touches`; a hyphen joins words, so "co-worker" passes. Name
+the role in plain words instead ("the lead agent"). Both checks skip a
+link's address, as LinkedIn shows none. No rule sees what a reader cannot
+follow, so before merge a fresh subagent gets only the Article and the share
+text, pasted into its prompt, and lists every word or reference it cannot
+follow; fix each and ask a new reader until one lists none.
+
+The cover is a 1920 x 1080 PNG whose iTXt "Title" is the
 headline: `node scripts/linkedin-cover.mjs <slug>` draws it again after a
 headline change. It finds its files from its own path, so it runs from any
 folder, but it needs `node_modules`: a worker runs it in the scratchpad copy

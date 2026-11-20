@@ -725,6 +725,24 @@ test("each LinkedIn draft belongs to a post and keeps the rules", () => {
   }
 });
 
+// blog#114: since October the agents run on a small server at Stefan's
+// home, and the live apps on a rented one (Stefan, card 4436). The Article
+// said they shared one server, which was true only in the first weeks.
+test("the agent-team Article says where the agents run now", () => {
+  const text = readFileSync(
+    new URL("building-an-ai-agent-team-article.md", DRAFTS),
+    "utf8"
+  ).replace(/\s+/g, " ");
+  assert.ok(
+    !/same small server that runs my apps/.test(text),
+    "it still says the agents run on the live apps' server"
+  );
+  assert.ok(
+    /since October they run on a small server at home/.test(text),
+    "it does not say the agents run at home since October"
+  );
+});
+
 test("each LinkedIn Article keeps the rules, with its cover and share text", () => {
   for (const slug of ARTICLES)
     assert.ok(
