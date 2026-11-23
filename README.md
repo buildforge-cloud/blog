@@ -40,8 +40,9 @@ run with no score for another category names it on its line, and a category
 no run scored prints `-`, never 0.
 
 The nginx test skips unless `NGINX_RIG=1`. With it, it serves the real
-`nginx.conf` over a stub site, on Ubuntu's nginx 1.24 extracted into
-`~/.cache/nginx_rig/` (no docker, no install), and checks the cache headers,
+`nginx.conf` over a stub site, on the nginx of the machine's own apt (Debian
+13's 1.26.3 on this host) extracted into `~/.cache/nginx_rig/` (no docker, no
+install), and checks the cache headers,
 the 404 page, the hidden-file block, and the security headers on every kind
 of answer.
 
