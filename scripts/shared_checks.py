@@ -36,15 +36,15 @@ A project made by `scripts/init.py` already holds the lock and the release it
 names. A repo with no lock yet adopts with these commands:
 
     gh api -H "Accept: application/vnd.github.raw" \\
-      "repos/buildforge-cloud/buildforge-starter/contents/scripts/shared_checks.py?ref=shared_checks-v1.13.3" \\
+      "repos/buildforge-cloud/buildforge-starter/contents/scripts/shared_checks.py?ref=shared_checks-v1.13.6" \\
       > scripts/shared_checks.py
-    python3 scripts/shared_checks.py update shared_checks 1.13.3 \\
+    python3 scripts/shared_checks.py update shared_checks 1.13.6 \\
       --source https://github.com/buildforge-cloud/buildforge-starter.git
     python3 scripts/shared_checks.py update shell_reader 1.0.0
     python3 scripts/shared_checks.py update fetch_first 1.10.1
     python3 scripts/shared_checks.py update gitleaks_pin 1.3.1
     python3 scripts/shared_checks.py update gitleaks_run 1.0.0
-    python3 scripts/shared_checks.py update secret_rules 1.10.0
+    python3 scripts/shared_checks.py update secret_rules 1.10.1
     python3 scripts/shared_checks.py update check_secrets 2.5.1
     python3 scripts/shared_checks.py update secrets 2.0.1
     python3 scripts/shared_checks.py update pre-commit 1.0.1
@@ -164,6 +164,11 @@ Since then a project `init.py` made pins `status`, `test_init_script` and
 `test_secrets` too, which move with the scanner; other repos hold none.
 Since 1.13.2 also the `initlib` helpers `status` imports, which take no
 `--into`, and a pin with no version is no release (buildforge-starter#415, #416).
+Since 1.13.5 also `tests/_pinned.py`, `_pinned`, which decides which of the
+scanner's cases a project skips: they need it, and it takes no `--into`
+(buildforge-starter#423, from agent-os#511).
+Since 1.13.6 also `audit_gate`, which the web template's `test-gates.yml`
+runs at `parts/audit_gate.py` (buildforge-starter#448).
 
 ⚠️ **`update shared_checks` is run by the OLD copy**, which writes the pin
 as the old release knew it (buildforge-starter#172): 1.5.0 knew no
@@ -213,7 +218,7 @@ import sys
 import tempfile
 import types
 
-__version__ = "1.13.3"
+__version__ = "1.13.6"
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 LOCK = ROOT / "scripts" / "shared-checks.lock"
@@ -433,11 +438,14 @@ PARTS = ((SHELL_PART, SHELL_MODULE, "which reads each step's script for the fetc
 # places them with `--into tools` (docs/SHARED_PARTS.md). And the scanner's
 # tests and `status`, which a pinned workflow, pytest and `init.py` find at
 # theirs (buildforge-starter#352). And every block of `init.py` that is a part,
-# `status` and the helpers it imports (buildforge-starter#415).
+# `status` and the helpers it imports (buildforge-starter#415). And the skip
+# rule the scanner's tests import as `tests._pinned` (buildforge-starter#423).
+# And `audit_gate`, which the web template's frontend audit runs from
+# `frontend/` as `../parts/audit_gate.py` (buildforge-starter#448).
 LOADED_AT_ITS_PATH = ("scripts/secretslib/", "scripts/check_secrets.py", "scripts/secret_rules.toml",
                       "scripts/shared_checks.py", ".githooks/", ".github/workflows/", "parts/security_scan.py",
                       "tests/_runner_switch.py", "parts/runner_tools.py", "tests/test_secrets.py",
-                      "tests/test_init_script.py", "scripts/initlib/")
+                      "tests/test_init_script.py", "scripts/initlib/", "tests/_pinned.py", "parts/audit_gate.py")
 
 
 def _loaded_at_its_path(relative: str) -> bool:

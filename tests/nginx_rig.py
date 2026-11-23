@@ -59,11 +59,14 @@ rig (buildforge-starter#96).
   itself: CPython's Popen does not stop a child it started when its own
   start is cut short.
 - `serve_dir(conf, site, port, replaces=(), binary=None)`: the four above, for
-  a project's server config over a built folder. It makes `listen 80;` the
-  port on 127.0.0.1 and `root /usr/share/nginx/html;` the folder, quoted,
+  a project's server config over a built folder. It makes the config's one
+  `listen <port>;` with a port alone (`listen 80;`, or the web template's
+  `listen 8080;` since its nginx runs as a user that is not root, 1.2.0) the
+  port on 127.0.0.1, and `root /usr/share/nginx/html;` the folder, quoted,
   then each extra replace, in a scratch folder that is gone after the
-  `with`. A replace that misses raises before nginx runs. `binary` defaults
-  to `fetch()`'s. ⚠️ nginx reads a `$` in `root` as a variable, quoted or not.
+  `with`. No such listen, or two, and a replace that misses each raise before
+  nginx runs. `binary` defaults to `fetch()`'s. ⚠️ nginx reads a `$` in
+  `root` as a variable, quoted or not.
 - `serve-dir`, the same from the command line: it prints `serving <site> at
   <url>` once nginx is ready, and serves until SIGTERM or SIGINT. Either one
   stops nginx and waits for it, and from then on both are ignored, so a
@@ -78,7 +81,8 @@ answers 403 for a folder with no index file, so the folder stays 403 with its
 was still 403 and `/tests/page-health.spec.js` was 200 (profile-homepage#28).
 
 ⚠️ **This is the nginx of the machine's own apt, not the image's**: Debian 13's
-1.26 on this host (measured 2026-11-06), and `nginx:alpine`, 1.31, on staging.
+1.26 on this host (measured 2026-11-06), and the image's 1.31 on staging
+(`nginx:alpine`, or the web template's `nginxinc/nginx-unprivileged:alpine`).
 A directive newer than the machine's fails `nginx -t` here even where the image
 takes it: `add_header_inherit` came in 1.29.3. A test of such a config cannot
 run on this rig.
@@ -88,7 +92,7 @@ run on this rig.
 A shared part, pinned like `access_stub`: a release of buildforge-starter,
 byte for byte, never edited in place. It goes beside the tests that use it:
 
-    python3 scripts/shared_checks.py update nginx_rig 1.1.1 --into <its tests folder>
+    python3 scripts/shared_checks.py update nginx_rig 1.2.0 --into <its tests folder>
 
 A browser suite meets the real nginx headers (the CSP among them) with
 `serve-dir` as Playwright's server, in `playwright.config`:
@@ -118,6 +122,7 @@ from __future__ import annotations
 
 import argparse
 import fcntl
+import io
 import os
 import queue
 import re
@@ -134,7 +139,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager, suppress
 from pathlib import Path
 
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 BINARY, MIME_TYPES = "usr/sbin/nginx", "etc/nginx/mime.types"
 TEMP_PATHS = ("client_body", "proxy", "fastcgi", "uwsgi", "scgi")
@@ -324,12 +329,10 @@ def serve(conf: str, scratch: Path, binary: Path) -> Iterator[str]:
         process = subprocess.Popen(
             [str(binary), *options, "-g", "daemon off;"],
             stderr=subprocess.PIPE,
-            text=True,
-            errors="replace",
             start_new_session=True,
         )
-        try:
-            handed.put(process.stderr)
+        try:  # the wrapper text=True would make; Popen(errors=) is a high find in the weekly Semgrep scan
+            handed.put(io.TextIOWrapper(process.stderr, errors="replace"))
             _wait_until_ready(lines, log)
             yield url
         except BaseException:
@@ -345,6 +348,17 @@ def serve(conf: str, scratch: Path, binary: Path) -> Iterator[str]:
             process.stderr.close()
 
 
+def _listen_port(conf: str) -> str:
+    """The config's one `listen <port>;`, a port alone, as an image's server config has it: its
+    exact text as render() reads the config, so the replace that follows finds it once."""
+    found = re.findall(r"\blisten[ \t]+\d+[ \t]*;", render(conf, []))
+    if len(found) != 1:
+        raise ValueError(
+            f"serve_dir moves the one `listen <port>;` (a port alone) to 127.0.0.1, and the config has {len(found)}: {found}"
+        )
+    return found[0]
+
+
 @contextmanager
 def serve_dir(conf: str, site: Path, port: int, replaces=(), binary: Path | None = None) -> Iterator[str]:
     """A project's server config serving the folder `site` at 127.0.0.1:`port`; yields its URL."""
@@ -353,7 +367,7 @@ def serve_dir(conf: str, site: Path, port: int, replaces=(), binary: Path | None
         raise NotADirectoryError(f"{site} is not a folder")
     server_conf = render(
         conf,
-        [("listen 80;", f"listen 127.0.0.1:{port};"), ("root /usr/share/nginx/html;", f"root {_quoted(site)};"), *replaces],
+        [(_listen_port(conf), f"listen 127.0.0.1:{port};"), ("root /usr/share/nginx/html;", f"root {_quoted(site)};"), *replaces],
     )
     binary = Path(binary) if binary else fetch()
     with (
@@ -439,7 +453,7 @@ def main(argv=None) -> int:
         action="append",
         default=[],
         metavar="OLD NEW [COUNT]",
-        help="one more replace, made after `listen 80;` and the root; repeatable",
+        help="one more replace, made after the listen and the root; repeatable",
     )
     command.add_argument("--nginx", type=Path, help="the nginx binary (default: fetch()'s)")
     args = parser.parse_args(argv)

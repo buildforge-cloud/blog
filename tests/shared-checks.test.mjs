@@ -13,9 +13,14 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../", import.meta.url));
 
 // The oldest release each part may be pinned at: a downgrade fails here.
-// shared_checks 1.13.3 (blog#102) is the starter's current pin tool; since
+// shared_checks 1.13.6 (blog#133) is the starter's current pin tool; since
 // 1.13.2 it refuses a pin with no version (buildforge-starter#416).
-const FLOORS = { "scripts/shared_checks.py": "1.13.3" };
+// nginx_rig 1.2.0 (blog#133) serves as a user that is not root
+// (buildforge-starter#433).
+const FLOORS = {
+  "scripts/shared_checks.py": "1.13.6",
+  "tests/nginx_rig.py": "1.2.0",
+};
 
 const parts = v => [0, 1, 2].map(i => Number(v.split(".")[i] ?? 0));
 const atLeast = (have, floor) => {
