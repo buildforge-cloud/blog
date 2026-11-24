@@ -131,9 +131,10 @@ November, with both changes in it, and the replies fix below.
 The extension still has limits. It stops asking for more after 400 batches, or
 when nothing new arrives for about 6 seconds. On a very busy video YouTube
 itself stops sending after roughly one to three thousand comments, and the bar
-says so. And Chrome on Android and iPhone runs no extensions at all, so on an
-Android phone it needs a browser that does, like Vivaldi. The last two limits
-are also on its [store
+says so. And Chrome on Android and iPhone runs no extensions at all, so on a
+phone it needs a browser that does. Vivaldi for Android is one, and it has
+been tested there. The store listing names none for iPhone. The last two
+limits are also on its [store
 listing](https://chromewebstore.google.com/detail/comment-finder-for-youtub/pfmklefdjlkanjehfipnmhffjkkakcnb).
 
 The extension also has a switch that searches the replies under each comment.

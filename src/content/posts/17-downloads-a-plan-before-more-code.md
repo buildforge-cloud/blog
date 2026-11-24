@@ -13,7 +13,8 @@ description: My home maintenance app Vedlikeholdsloggen had 17 first-time App St
 
 On 31 October I opened App Store Connect and read one number. 17 first-time
 downloads, from launch on 18 September to 30 October. The goal was 300 or
-more. This post is what I knew that day, and the plan that came out of it.
+more. This post is what I knew that day, and the plan that came out of it. A
+few facts were added when I checked it again on 24 November.
 
 The app is [Vedlikeholdsloggen](https://vedlikeholdsloggen.buildforge.no/), a
 Norwegian app that reminds me when to do the upkeep on a house or a cabin, and
@@ -122,8 +123,8 @@ Two things on Apple's pages changed how I read it. A tap on a link in Chrome
 counts as the Chrome app, under app referrers, not as a website. And Apple
 shows these metrics only once the app has [at least
 five](https://developer.apple.com/help/app-store-connect/reference/app-metrics)
-first-time downloads or pre-orders in all. So where Apple shows nothing, the
-plan writes "not shown", never 0.
+first-time downloads or pre-orders in all. Where Apple shows nothing, the plan
+writes "not shown", never 0.
 
 The plan reads that screen in two passes. First the shares: if they still look
 like 1 October, about 39% from impression to page and 27% from page to

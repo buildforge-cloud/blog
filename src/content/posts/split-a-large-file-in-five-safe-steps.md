@@ -166,6 +166,6 @@ The plan also named a sixth step. `games.py` was under 800 after five, and
 when I last checked, on 24 November, step 6 had no GitHub issue yet. It is
 still needed. To stay within the files its issue listed, step 5 put two
 helpers the games routes use into `routers/similar.py`, so the games router
-now imports from the similar-games router. That is backwards, and `similar.py`
-had only 22 lines left under the limit. Step 6 gives those helpers a home of
-their own. It has no date yet.
+now imports from the similar-games router. That is backwards, and after step 5
+`similar.py` had only 22 lines left under the limit. Step 6 gives those
+helpers a home of their own. It has no date yet.
