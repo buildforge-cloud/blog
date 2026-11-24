@@ -384,14 +384,19 @@ the morning a post fails to appear.
 
 **Dependabot (blog#116, Stefan's card 4454).** `.github/dependabot.yml` has
 three ecosystems (npm, the Dockerfile's base images, the Actions), each
-`monthly`, with a 7-day cooldown and its minor and patch bumps grouped in one
-PR; a major comes on its own. Security fixes come at once, from the repo
-settings rather than the file, but an `ignore` holds them back too. Two
+`monthly`, with a 7-day cooldown and two groups named the same everywhere
+(blog#135, Stefan 4807): `minor-and-patch` and `majors`. So an ecosystem
+opens two version PRs a month at most, and a major never rides in the routine
+one. A group's branch is `dependabot/<ecosystem>/<group>-<hash>`. Security
+fixes come at once, one PR each and ungrouped (no group sets `applies-to`),
+from the repo settings rather than the file, but an `ignore` holds them back
+too. Two
 ignores exist: astro 7.2.10 and later while `@astrojs/mdx` is on 7 (blog#83;
 the PR that moves mdx to 8 drops it), and node 23 and 25, odd majors that
 never reach LTS. From 27 on Node ships one LTS major a year, so nothing after
 25 is held. `tests/dependabot.test.mjs` fails on a missing or extra
-ecosystem, an entry not `monthly` or without its group or cooldown, the astro
+ecosystem, an entry not `monthly` or without both groups or its cooldown, a
+group of another name or with `applies-to: security-updates`, the astro
 ignore out of step with mdx, node 23 or 25 offered or 27 and later held, and
 any job on an org runner (`self-hosted`, `home`, `home-light`, or a `uses:`
 job that passes or calls one) that a `dependabot/` branch could start. A
