@@ -3,7 +3,8 @@ version: 2
 # buildforge-starter's web template (stages-v1.1.0, buildforge-starter#458):
 # one update round a month, and each ecosystem's routine (minor and patch)
 # bumps in ONE pull request, so the blog takes them in a few deploys a month.
-# A major stays a PR of its own, since majors are the ones that break.
+# The month's majors come in a second PR, the `majors` group (Stefan 4807,
+# blog#135), apart from the routine one, since majors are the ones that break.
 # `applies-to` stays at its default (version-updates), so a security fix is
 # never held behind the month's batch: GitHub opens those at once, when the
 # repo setting "Dependabot security updates" is on. Every entry waits a week
@@ -23,22 +24,28 @@ version: 2
 # are scripts with no requirements file.
 #
 # tests/dependabot.test.mjs fails on a missing or extra ecosystem, an entry
-# that is not monthly, or one without its minor-and-patch group.
+# that is not monthly, one without its minor-and-patch and majors groups, or
+# a group that takes security fixes.
 updates:
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: monthly
     open-pull-requests-limit: 10
-    cooldown:
-      default-days: 7
     groups:
-      npm-minor-and-patch:
+      minor-and-patch:
         patterns:
           - "*"
         update-types:
           - "minor"
           - "patch"
+      majors:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+    cooldown:
+      default-days: 7
     # blog#83: astro 7.2.10 and later need @astrojs/mdx 8, a major move done
     # by hand. tests/packages.test.mjs fails on them while mdx is on 7, so in
     # the month's group astro would turn the whole PR red. Remove this when
@@ -54,27 +61,44 @@ updates:
     schedule:
       interval: monthly
     open-pull-requests-limit: 10
-    cooldown:
-      default-days: 7
     groups:
-      actions-minor-and-patch:
+      minor-and-patch:
         patterns:
           - "*"
         update-types:
           - "minor"
           - "patch"
+      majors:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+    cooldown:
+      default-days: 7
   # The Dockerfile's base images. deploy.yml builds with `--pull` (blog#111),
   # so a new image of the same tag arrives on its own. node:22-alpine names a
-  # major only, so what this moves is the major (node 22 -> 24, a PR of its
-  # own; ci.yml's `node-version` moves with it by hand). nginx:alpine names no
-  # version, and `--pull` alone keeps it fresh. So today the group below
-  # never fills: it is there for a tag that names a minor, and so that a new
-  # base image's routine bumps share one PR.
+  # major only, so what this moves is the major (node 22 -> 24, in the majors
+  # group's PR; ci.yml's `node-version` moves with it by hand). nginx:alpine
+  # names no version, and `--pull` alone keeps it fresh. So today the
+  # minor-and-patch group never fills: it is there for a tag that names a
+  # minor, and so that a new base image's routine bumps share one PR.
   - package-ecosystem: docker
     directory: /
     schedule:
       interval: monthly
     open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      majors:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
     cooldown:
       default-days: 7
     # Dependabot offers the newest major. 23 and 25 are odd majors, six-month
@@ -87,10 +111,3 @@ updates:
         versions:
           - ">= 23, < 24"
           - ">= 25, < 26"
-    groups:
-      docker-minor-and-patch:
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"

@@ -405,7 +405,8 @@ and `tools/psi.py` are buildforge-starter releases, pinned byte for byte in
 tool and fails on a hand edit. Take a fix with
 `python3 scripts/shared_checks.py update <name> <version>`.
 `tests/shared-checks.test.mjs` also fails when a pin falls below its
-`FLOORS` entry (blog#87; shared_checks 1.13.3 since blog#102). Raise the floor
+`FLOORS` entry (blog#87; shared_checks 1.13.6 and nginx_rig 1.2.0 since
+blog#133). Raise the floor
 in the PR that takes a release the repo must keep. blog pins no
 `check_secrets`, `secret_rules`, `secrets` or `pre-commit`, so the scanner
 steps a shared_checks release lists after `update` do not apply here. That
@@ -422,7 +423,10 @@ serves the real `nginx.conf` on a real nginx with the part's `serve_dir()`,
 only with `NGINX_RIG=1` (never in CI): run it after any `nginx.conf` change.
 `NGINX_RIG=1 npm run test:pages` serves `dist/` the same way, with the
 part's `serve-dir` as Playwright's server; there is no serve script of this
-repo's own. The rig's nginx comes from the machine's own apt: 1.26.3 on this
+repo's own. Both move `nginx.conf`'s one port-only `listen <port>;` to the
+test port (nginx_rig 1.2.0), and stop before nginx starts when it has none
+or two: a second port-only listen, such as `listen 443;`, stops both runs
+(`listen [::]:80;` does not count). The rig's nginx comes from the machine's own apt: 1.26.3 on this
 host (Debian 13, measured 2026-11-07), and it may not match what another
 machine's apt offers. A newer directive (such as `add_header_inherit`, 1.29.3)
 fails `nginx -t` there even where the image's nginx takes it. A rig run on a
