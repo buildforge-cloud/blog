@@ -30,7 +30,7 @@ Source: the user stories in the issues named above.
 Each post goes live at the 07:05 UTC deploy on its day; check it on the site.
 1. 24 Nov, 1 Dec, 8 Dec: eight weeks of a Claude Code agent team, the Goal's record part (blog#104), AI-written tests (blog#58), visitor input in logs (blog#59).
 2. 15, 22, 29 Dec: copied text (blog#60), tests that skipped a file (blog#68), the weekly usage limit (blog#69).
-3. 5, 12, 19 Jan: Comment Finder 1.9.1 (blog#70), splitting a large file (blog#72), 17 downloads (blog#73).
+3. 5, 12, 19 Jan: Comment Finder's desktop search (blog#70), splitting a large file (blog#72), 17 downloads (blog#73).
 4. Before 19 Jan: add Vedlikeholdsloggen 1.3's 1 Dec reading to blog#73's post; before 26 Jan, ps·db's 11 and 25 Nov readings to blog#75's; before 9 Feb, the 26 Nov backup reading to blog#93's.
 5. 26 Jan, 2 Feb, 9 Feb, 16 Feb, 23 Feb: Google stopped showing ps·db (blog#75), a secret scanner that skipped files (blog#92), nightly backups with a write-only key (blog#93), Skredda's made-up CV content (blog#81), why I built ISO 27001 Buddy (blog#82).
 
