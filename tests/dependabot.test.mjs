@@ -65,16 +65,44 @@ export const notMonthly = updates =>
     .map(u => u["package-ecosystem"]);
 
 // The entries with no group that takes every minor and patch bump of the
-// folder, so the month's routine bumps are one PR, not one each. A major
-// stays a PR of its own: those are the ones that break.
-const routineGroup = group =>
+// folder, so the month's routine bumps are one PR, not one each. The majors
+// get a group of their own (blog#135, Stefan 4807): those are the ones that
+// break, so they never ride in the routine PR, but a month's majors are one
+// PR, not one each.
+const takesAll = (group, types) =>
   JSON.stringify(group.patterns) === '["*"]' &&
   JSON.stringify([...(group["update-types"] ?? [])].sort()) ===
-    '["minor","patch"]';
-export const ungrouped = updates =>
+    JSON.stringify(types);
+const routineGroup = group => takesAll(group, ["minor", "patch"]);
+const majorsGroup = group => takesAll(group, ["major"]);
+const withoutOne = test => updates =>
+  updates
+    .filter(u => Object.values(u.groups ?? {}).filter(test).length !== 1)
+    .map(u => u["package-ecosystem"]);
+export const ungrouped = withoutOne(routineGroup);
+export const majorsUngrouped = withoutOne(majorsGroup);
+
+// Every ecosystem's groups carry the same two names, so the month's PRs
+// read alike ("Bump the majors group ...") whatever they move.
+const GROUP_NAMES = ["majors", "minor-and-patch"];
+export const misnamedGroups = updates =>
   updates
     .filter(
-      u => Object.values(u.groups ?? {}).filter(routineGroup).length !== 1
+      u =>
+        JSON.stringify(Object.keys(u.groups ?? {}).sort()) !==
+        JSON.stringify(GROUP_NAMES)
+    )
+    .map(u => u["package-ecosystem"]);
+
+// A group with `applies-to: security-updates` would put a security fix in a
+// batch PR. Left at its default (version-updates), each fix comes at once,
+// as a PR of its own.
+export const groupsSecurity = updates =>
+  updates
+    .filter(u =>
+      Object.values(u.groups ?? {}).some(
+        g => (g["applies-to"] ?? "version-updates") !== "version-updates"
+      )
     )
     .map(u => u["package-ecosystem"]);
 
@@ -244,6 +272,84 @@ test("the group check refuses no group, a group that takes majors, or two", () =
       },
     ]),
     ["docker", "pip", "github-actions", "docker-compose"]
+  );
+});
+
+test("every entry puts the month's majors in one group of their own", () => {
+  assert.deepEqual(majorsUngrouped(config().updates), []);
+});
+
+test("the majors check refuses no group, one that takes minor, two, or a narrow one", () => {
+  const majors = { patterns: ["*"], "update-types": ["major"] };
+  const routine = { patterns: ["*"], "update-types": ["minor", "patch"] };
+  assert.deepEqual(
+    majorsUngrouped([
+      { "package-ecosystem": "npm", groups: { a: routine, b: majors } },
+      { "package-ecosystem": "docker", groups: { a: routine } },
+      {
+        "package-ecosystem": "pip",
+        groups: { a: { ...majors, "update-types": ["major", "minor"] } },
+      },
+      {
+        "package-ecosystem": "github-actions",
+        groups: { a: majors, b: majors },
+      },
+      {
+        "package-ecosystem": "docker-compose",
+        groups: { a: { ...majors, patterns: ["astro*"] } },
+      },
+    ]),
+    ["docker", "pip", "github-actions", "docker-compose"]
+  );
+});
+
+test("every entry names its groups minor-and-patch and majors", () => {
+  assert.deepEqual(misnamedGroups(config().updates), []);
+});
+
+test("the name check refuses a missing, an extra or an ecosystem-named group", () => {
+  const g = { patterns: ["*"] };
+  assert.deepEqual(
+    misnamedGroups([
+      {
+        "package-ecosystem": "npm",
+        groups: { "minor-and-patch": g, majors: g },
+      },
+      { "package-ecosystem": "docker", groups: { "minor-and-patch": g } },
+      {
+        "package-ecosystem": "pip",
+        groups: { "minor-and-patch": g, majors: g, extra: g },
+      },
+      {
+        "package-ecosystem": "github-actions",
+        groups: { "actions-minor-and-patch": g, majors: g },
+      },
+      { "package-ecosystem": "docker-compose" },
+    ]),
+    ["docker", "pip", "github-actions", "docker-compose"]
+  );
+});
+
+test("no group holds a security fix back in the month's batch", () => {
+  assert.deepEqual(groupsSecurity(config().updates), []);
+});
+
+test("the security check takes version-updates or none, and refuses security-updates", () => {
+  const g = { patterns: ["*"] };
+  assert.deepEqual(
+    groupsSecurity([
+      { "package-ecosystem": "npm", groups: { a: g } },
+      {
+        "package-ecosystem": "docker",
+        groups: { a: { ...g, "applies-to": "version-updates" } },
+      },
+      {
+        "package-ecosystem": "pip",
+        groups: { a: g, b: { ...g, "applies-to": "security-updates" } },
+      },
+      { "package-ecosystem": "github-actions" },
+    ]),
+    ["pip"]
   );
 });
 
@@ -418,15 +524,19 @@ const branchMatches = (patterns, branch) =>
   }, false);
 
 // The branches Dependabot pushes here, one of each shape: a single bump
-// and a group's branch for each ecosystem, and a scoped package's.
+// (a security fix) and both groups' branches for each ecosystem, and a
+// scoped package's.
 const DEPENDABOT_BRANCHES = [
   "dependabot/npm_and_yarn/astro-7.3.3",
   "dependabot/npm_and_yarn/@astrojs/mdx-8.0.1",
-  "dependabot/npm_and_yarn/npm-minor-and-patch-6b0a3e1c2f",
+  "dependabot/npm_and_yarn/minor-and-patch-6b0a3e1c2f",
+  "dependabot/npm_and_yarn/majors-3c4d5e6f7a",
   "dependabot/docker/node-24-alpine",
-  "dependabot/docker/docker-minor-and-patch-1f2e3d4c5b",
+  "dependabot/docker/minor-and-patch-1f2e3d4c5b",
+  "dependabot/docker/majors-0a1b2c3d4e",
   "dependabot/github_actions/actions/checkout-5",
-  "dependabot/github_actions/actions-minor-and-patch-9a8b7c6d5e",
+  "dependabot/github_actions/minor-and-patch-9a8b7c6d5e",
+  "dependabot/github_actions/majors-5e6f7a8b9c",
 ];
 const takesAny = (patterns, take) =>
   DEPENDABOT_BRANCHES.some(branch => take(patterns, branch));
@@ -634,7 +744,8 @@ test("the reach check knows each Dependabot branch shape", () => {
   for (const pattern of [
     "dependabot/github_actions/**",
     "dependabot/docker/**",
-    "dependabot/npm_and_yarn/npm-minor-and-patch-*",
+    "dependabot/npm_and_yarn/minor-and-patch-*",
+    "dependabot/docker/majors-*",
     "dependabot/npm_and_yarn/@astrojs/**",
   ])
     assert.deepEqual(
