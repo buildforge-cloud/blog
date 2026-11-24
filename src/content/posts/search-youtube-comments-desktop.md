@@ -25,8 +25,8 @@ YouTube's page for more as it goes.
 
 ## Found while testing something else
 
-I wasn't looking for this. On 5 October an AI coding agent, which is how I
-build most things, was testing a feature I had wanted for a while: buttons
+I wasn't looking for this. On 5 October 2026 an AI coding agent, which is how
+I build most things, was testing a feature I had wanted for a while: buttons
 that jump to the next and the previous match. The idea had been on my list for
 the extension since September. On one video I had found 48 matches in 740
 comments, and the only way to get from one to the next was to scroll.
@@ -63,8 +63,8 @@ site, opened in the same test browser, the same test went far past 60 within
 new threads. The best guess written in the issue was that YouTube now put new
 threads somewhere the extension didn't read.
 
-The threads were in another place, as the issue guessed, but the extension had
-put them there, not YouTube.
+The threads were in another place, as the issue guessed. But YouTube had put
+them there because the extension asked it to.
 
 ## Two comment lists, one hidden
 
@@ -107,7 +107,7 @@ longer works, so the extension now looks the list up again before every batch.
 And a hidden list can hold comment threads too, so when two lists hold
 threads, the one on screen now wins.
 
-## Up to 360 comments in 20 seconds
+## 360 comments in 20 seconds on a desktop video
 
 Before the fix, a search stopped somewhere between 60 and 100, depending on
 the run. In the run below it was 100. Measured for the fix's pull request,
@@ -116,7 +116,7 @@ word, at 6, 12 and 20 seconds:
 
 - Before the fix: 100, 100 and 100 searched. 340 threads in the hidden panel.
 - After the fix: 140, 240 and 360 searched. No threads in the hidden panel.
-  Two runs, the same both times.
+  The fix was run twice, with the same numbers both times.
 - After the fix, on a desktop Short: all 460 comments that had loaded.
 - After the fix, on the phone site: 240, 400 and 561, about the same as the
   old code there.
@@ -126,14 +126,14 @@ videos and phone Shorts. Enter and Shift+Enter in the box do the same.
 
 Neither change went to the store on its own. The buttons were version 1.9.0
 and the desktop fix 1.9.1. The store went from 1.8.1 straight to 1.9.2 on 3
-November, with both changes in it.
+November, with both changes in it, and the replies fix below.
 
 The extension still has limits. It stops asking for more after 400 batches, or
 when nothing new arrives for about 6 seconds. On a very busy video YouTube
 itself stops sending after roughly one to three thousand comments, and the bar
 says so. And Chrome on Android and iPhone runs no extensions at all, so on an
-Android phone it needs a browser that does, like Vivaldi. Both limits are also
-on its [store
+Android phone it needs a browser that does, like Vivaldi. The last two limits
+are also on its [store
 listing](https://chromewebstore.google.com/detail/comment-finder-for-youtub/pfmklefdjlkanjehfipnmhffjkkakcnb).
 
 The extension also has a switch that searches the replies under each comment.

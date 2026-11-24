@@ -66,7 +66,7 @@ gets users first.
 
 The agent read my launch plan and notes and wrote the new plan, in Norwegian,
 with a source after each number. Where a number had not been read, it says
-"ikke lest", not read. It never writes an unknown as 0.
+"ikke lest", not read.
 
 What it found, as of 31 October:
 
@@ -85,8 +85,8 @@ What it found, as of 31 October:
 - The local paper: not tried. Instagram: parked, since it needs a post every
   week.
 
-The ranks came from Apple's public search API for Norway, a stand-in for the
-App Store's own search:
+The ranks, read on 31 October, came from Apple's public search API for Norway,
+a stand-in for the App Store's own search:
 
 - `boligvedlikehold` (home maintenance): 2nd of 5 apps. Not listed at all on 4
   October, before 1.2's keywords.
@@ -136,7 +136,7 @@ less thrown off by that than a count, so I compare only the shares with them,
 and only roughly.
 
 That first reading, split by source, was not done when the plan was written.
-Every cell in the plan's table for it says not read.
+Every cell in the plan's table of numbers by source says not read.
 
 ## Two readings and one e-mail
 

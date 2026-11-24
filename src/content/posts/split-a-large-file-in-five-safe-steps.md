@@ -32,8 +32,8 @@ limit had cost about $123 in 30 days.
 
 Most of `games.py` was not routing. About 1,800 lines built the HTML that
 search crawlers and link previews get, plus the sitemap. Another 640 or so
-(723, once its helpers went along in step 5) served the similar games, the row
-of related games under a game page like [Elden
+(723, counting the helpers that went with it) served the similar games, the
+row of related games under a game page like [Elden
 Ring's](https://ps-db.cloud/games/elden-ring).
 
 The work was done by AI agents, each a Claude Code session. A worker takes one
@@ -42,8 +42,8 @@ the executive, reviews each pull request, runs the checks again and merges it.
 I decide what goes in the queue.
 
 I didn't want one big pull request. Each step would be its own issue and its
-own pull request, with at most four source files and no change in what the
-site does:
+own pull request, touching at most four source files, and no change in what
+the site does:
 
 1. The helpers that write the preview text: titles and descriptions.
 2. The functions that build the preview HTML from that text.
@@ -63,12 +63,12 @@ with a new test that imported the moved names from their new home and checked
 that each was the same object `games.py` still exports. It failed first, while
 the new module was missing or empty. Then the code moved.
 
-The real proof was comparing answers. In step 1 only the executive did that.
-From step 2 on, the worker did it too: it saved the pages and responses the
-moved code serves, on the test data, before and after the move, and compared
-them byte for byte. Then it changed one letter or one word in the moved code
-and ran the comparison again, to see it fail. If it can't fail, the comparison
-shows nothing.
+The real proof was comparing what the app sends back: its pages and API
+responses. In step 1 only the executive did that. From step 2 on, the worker
+did it too: it saved the pages and responses the moved code serves, on the
+test data, before and after the move, and compared them byte for byte. Then it
+changed one letter or one word in the moved code and ran the comparison again,
+to see it fail. If it can't fail, the comparison shows nothing.
 
 - Step 2, the preview HTML: 76 pages, all identical. One planted letter, in
   the function that builds 6 of those pages, made exactly those 6 differ.
@@ -112,8 +112,9 @@ patched the new module. The review then noticed the fix had replaced the old
 patch rather than added to it, so another route's clock was no longer frozen.
 Now it patches both.
 
-Each of these was a test that looked for code in a fixed place. Most of them
-kept passing after the code had moved out of it.
+Each of these was a test that looked for code in a fixed place. The clock test
+at least went red. The others kept passing after the code had moved out of
+them.
 
 ## Four more files, the same shape
 
@@ -162,9 +163,9 @@ because those can stop seeing the code and still pass. That last check belongs
 in the plan before step 1, not left for each step's review to find.
 
 The plan also named a sixth step. `games.py` was under 800 after five, and
-when I last checked, on 24 November, step 6 had no issue. It is still needed.
-To stay within the files its issue listed, step 5 put two helpers the games
-routes use into `routers/similar.py`, so the games router now imports from the
-similar-games router. That is backwards, and `similar.py` had only 22 lines
-left under the limit. Step 6 gives those helpers a home of their own. It has
-no date yet.
+when I last checked, on 24 November, step 6 had no GitHub issue yet. It is
+still needed. To stay within the files its issue listed, step 5 put two
+helpers the games routes use into `routers/similar.py`, so the games router
+now imports from the similar-games router. That is backwards, and `similar.py`
+had only 22 lines left under the limit. Step 6 gives those helpers a home of
+their own. It has no date yet.
