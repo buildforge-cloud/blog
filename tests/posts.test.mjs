@@ -10,6 +10,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { parse } from "yaml";
+import { PRODUCTS, retiredIn } from "./products.mjs";
 
 const POSTS = new URL("../src/content/posts/", import.meta.url);
 const PAGES = new URL("../src/content/pages/", import.meta.url);
@@ -145,12 +146,9 @@ test("a product post links its product first", () => {
     ["google-stopped-showing-our-site-in-a-day", "ps-db.cloud"],
     [
       "secret-scanner-skipped-files-that-looked-like-archives",
-      "iso-pathfinder-buddy.lovable.app",
+      "iso.buildforge.no",
     ],
-    [
-      "iso-pathfinder-buddy-why-we-built-it",
-      "iso-pathfinder-buddy.lovable.app",
-    ],
+    ["iso-pathfinder-buddy-why-we-built-it", "iso.buildforge.no"],
     ["skredda-what-it-does-and-one-lesson", "skredda.no"],
   ]) {
     const link = firstLink(bySlug(slug).body);
@@ -199,24 +197,38 @@ test("no post or page has an em dash", () => {
   }
 });
 
-// The products STRATEGY.md's Goal names, each at its public page. The blog-post
-// skill's link list is read only when a post is written, so the About page can
-// go stale unseen (blog#1, blog#79). The name must be the link's own text.
+// The products STRATEGY.md's Goal names, each at its public page
+// (`tests/products.mjs`). The blog-post skill's link list is read only when a
+// post is written, so the About page can go stale unseen (blog#1, blog#79).
+// The name must be the link's own text.
 test("the About page links each public product", () => {
   const { body } = read(new URL("about.md", PAGES));
-  for (const [name, url] of [
-    ["ps·db", "https://ps-db.cloud"],
-    [
-      "ISO Pathfinder Buddy",
-      "https://iso-pathfinder-buddy.lovable.app/roadmap",
-    ],
-    ["Skredda", "https://skredda.no"],
-    ["Vedlikeholdsloggen", "https://vedlikeholdsloggen.buildforge.no/"],
-  ])
+  for (const [name, url] of PRODUCTS)
     assert.ok(
       body.includes(`[${name}](${url})`),
-      `about.md: no link to ${name}`
+      `about.md: no link to ${name} at ${url}`
     );
+});
+
+// A product's old name or old host (`RETIRED` in `tests/products.mjs`). The
+// ISO app was renamed, and left a copy under its old name on Lovable, after
+// two queued posts had linked it there (blog#147). A LinkedIn draft is pasted
+// as it is, so it is read too. Any mention fails, a historical one as well:
+// a post that must name an old one on purpose needs an exception here first.
+const LINKEDIN = new URL("../docs/linkedin/", import.meta.url);
+
+test("no post, page, LinkedIn draft or STRATEGY.md uses a retired product name or host", () => {
+  for (const { name, data, body } of [...posts(), ...markdownIn(PAGES)]) {
+    const text = `${data.title}\n${data.description ?? ""}\n${body}`;
+    assert.deepEqual(retiredIn(text), [], name);
+  }
+  for (const name of readdirSync(LINKEDIN).filter(n => n.endsWith(".md")))
+    assert.deepEqual(
+      retiredIn(readFileSync(new URL(name, LINKEDIN), "utf8")),
+      [],
+      `docs/linkedin/${name}`
+    );
+  assert.deepEqual(retiredIn(strategy), [], "strategy/STRATEGY.md");
 });
 
 test("no post links to a private repo", () => {
