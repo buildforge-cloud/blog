@@ -12,13 +12,17 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 export const ADVISORIES = [
-  // critical GHSA-26w7-cxv4-gfx2. astro's moderate and low ones need 7.3.3,
-  // which needs @astrojs/mdx 8, a major update (blog#83's PR says why not yet).
-  { name: "astro", from: "0.0.0", fixed: "7.2.8" },
+  // critical GHSA-26w7-cxv4-gfx2 was fixed in 7.2.8 (blog#83). Its moderate
+  // and low ones needed @astrojs/mdx 8, which came in blog#145: the newest,
+  // medium GHSA-r3h5-4585-7x3w, is fixed in 7.4.7, and every older one below.
+  { name: "astro", from: "0.0.0", fixed: "7.4.7" },
   { name: "brace-expansion", from: "4.0.0", fixed: "5.0.12" },
   { name: "devalue", from: "0.0.0", fixed: "5.9.3" },
   { name: "fast-uri", from: "3.0.0", fixed: "3.1.9" },
   { name: "js-yaml", from: "4.0.0", fixed: "4.3.2" },
+  // medium GHSA-wx4j-mvgx-mqwp, satori's SVG serialization; it draws the OG
+  // images. Its own Dependabot PR (blog#142) went in with blog#145's batch.
+  { name: "satori", from: "0.0.27", fixed: "0.33.5" },
   { name: "sharp", from: "0.0.0", fixed: "0.35.5" },
   { name: "source-map-js", from: "1.0.0", fixed: "1.2.2" },
   { name: "svgo", from: "4.0.0", fixed: "4.1.0" },
@@ -57,8 +61,8 @@ export function copies(lock, name) {
 
 test("the last vulnerable version is out and the first fixed one is in", () => {
   const astro = ADVISORIES.find(a => a.name === "astro");
-  assert.equal(vulnerable("7.2.7", astro), true, "7.2.7 should be vulnerable");
-  assert.equal(vulnerable("7.2.8", astro), false, "7.2.8 should be safe");
+  assert.equal(vulnerable("7.4.6", astro), true, "7.4.6 should be vulnerable");
+  assert.equal(vulnerable("7.4.7", astro), false, "7.4.7 should be safe");
 });
 
 test("a version below the advisory's range is safe", () => {
