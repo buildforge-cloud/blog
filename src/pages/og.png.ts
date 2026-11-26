@@ -44,6 +44,9 @@ export const GET: APIRoute = async context => {
                 position: "absolute",
                 top: "-1px",
                 right: "-1px",
+                // satori 0.26 sized every box with its border inside it;
+                // 0.63 adds the border outside, like a browser.
+                boxSizing: "border-box",
                 border: "4px solid #141a22",
                 background: "#efeade",
                 opacity: "0.9",
@@ -60,6 +63,12 @@ export const GET: APIRoute = async context => {
             type: "div",
             props: {
               style: {
+                // Positioned, so it is painted after the shadow above it:
+                // satori 0.63 paints a positioned or see-through box
+                // after the boxes in normal flow, like a browser
+                // (blog#145).
+                position: "relative",
+                boxSizing: "border-box",
                 border: "4px solid #141a22",
                 background: "#f5f2ea",
                 borderRadius: "0px",
@@ -95,17 +104,25 @@ export const GET: APIRoute = async context => {
                           textAlign: "center",
                         },
                         children: [
+                          // Not a <p>'s default margin (1em, as in a
+                          // browser), but the 32 px that keeps the two
+                          // lines as far apart as satori 0.26 drew them
+                          // before blog#145.
                           {
                             type: "p",
                             props: {
-                              style: { fontSize: 72, fontWeight: "bold" },
+                              style: {
+                                margin: 0,
+                                fontSize: 72,
+                                fontWeight: "bold",
+                              },
                               children: config.site.title,
                             },
                           },
                           {
                             type: "p",
                             props: {
-                              style: { fontSize: 28 },
+                              style: { margin: "32px 0 0 0", fontSize: 28 },
                               children: config.site.description,
                             },
                           },

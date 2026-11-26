@@ -45,13 +45,11 @@ const date = datetime.format("D MMM, YYYY");
       { "scale-90": size === "sm" },
     ]}
   />
-  {
-    isModified && (
-      <span class:list={["label-mono", { "sm:text-sm": size === "lg" }]}>
-        {t.post.updatedAt}:
-      </span>
-    )
-  }
+  {isModified && (
+    <span class:list={["label-mono", { "sm:text-sm": size === "lg" }]}>
+      {t.post.updatedAt}:
+    </span>
+  )}
   <time
     class:list={["label-mono", { "sm:text-sm": size === "lg" }]}
     datetime={datetime.toISOString()}

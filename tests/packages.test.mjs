@@ -12,13 +12,22 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 export const ADVISORIES = [
-  // critical GHSA-26w7-cxv4-gfx2. astro's moderate and low ones need 7.3.3,
-  // which needs @astrojs/mdx 8, a major update (blog#83's PR says why not yet).
-  { name: "astro", from: "0.0.0", fixed: "7.2.8" },
+  // critical GHSA-26w7-cxv4-gfx2 was fixed in 7.2.8 (blog#83). Its moderate
+  // and low ones needed @astrojs/mdx 8, which came in blog#145: the newest,
+  // medium GHSA-r3h5-4585-7x3w, is fixed in 7.4.7, and every older one below.
+  { name: "astro", from: "0.0.0", fixed: "7.4.7" },
   { name: "brace-expansion", from: "4.0.0", fixed: "5.0.12" },
   { name: "devalue", from: "0.0.0", fixed: "5.9.3" },
   { name: "fast-uri", from: "3.0.0", fixed: "3.1.9" },
+  // moderate GHSA-px8p-9vwx-vf98, in unzipSync. satori 0.63 pins fflate
+  // 0.7.3 (it calls inflateSync only), so package.json's `overrides` gives
+  // it 0.7.5 (blog#145). Drop the override once satori takes 0.7.5 or later.
+  { name: "fflate", from: "0.7.0", fixed: "0.7.5" },
+  { name: "fflate", from: "0.8.0", fixed: "0.8.3" },
   { name: "js-yaml", from: "4.0.0", fixed: "4.3.2" },
+  // medium GHSA-wx4j-mvgx-mqwp, satori's SVG serialization; it draws the OG
+  // images. Its own Dependabot PR (blog#142) went in with blog#145's batch.
+  { name: "satori", from: "0.0.27", fixed: "0.33.5" },
   { name: "sharp", from: "0.0.0", fixed: "0.35.5" },
   { name: "source-map-js", from: "1.0.0", fixed: "1.2.2" },
   { name: "svgo", from: "4.0.0", fixed: "4.1.0" },
@@ -57,8 +66,8 @@ export function copies(lock, name) {
 
 test("the last vulnerable version is out and the first fixed one is in", () => {
   const astro = ADVISORIES.find(a => a.name === "astro");
-  assert.equal(vulnerable("7.2.7", astro), true, "7.2.7 should be vulnerable");
-  assert.equal(vulnerable("7.2.8", astro), false, "7.2.8 should be safe");
+  assert.equal(vulnerable("7.4.6", astro), true, "7.4.6 should be vulnerable");
+  assert.equal(vulnerable("7.4.7", astro), false, "7.4.7 should be safe");
 });
 
 test("a version below the advisory's range is safe", () => {
@@ -117,6 +126,39 @@ test("while @astrojs/mdx is on major 7, astro is pinned below 7.2.10", () => {
   if (!/^[\^~]?7\./.test(mdx)) return; // mdx 8 lifts the cap
   assert.match(astro, /^\d+\.\d+\.\d+$/, `astro "${astro}" is a range`);
   assert.equal(compare(astro, "7.2.10"), -1, `astro ${astro} needs mdx 8`);
+});
+
+// Whether a package asks for `name` at one exact version that an advisory
+// above names. npm cannot move such a pin, so only an `overrides` entry can.
+export const pinsVulnerable = (asked, name) =>
+  /^\d+\.\d+\.\d+$/.test(asked ?? "") &&
+  ADVISORIES.some(a => a.name === name && vulnerable(asked, a));
+
+test("an exact vulnerable pin needs an override, a safe pin or a range does not", () => {
+  assert.equal(pinsVulnerable("0.7.3", "fflate"), true, "0.7.3 is in range");
+  assert.equal(pinsVulnerable("0.7.5", "fflate"), false, "0.7.5 is fixed");
+  assert.equal(pinsVulnerable("^0.7.3", "fflate"), false, "npm moves a range");
+  assert.equal(pinsVulnerable(undefined, "fflate"), false, "no ask at all");
+});
+
+// satori 0.63 pins fflate 0.7.3, and package.json's `overrides` gives it
+// 0.7.5 (blog#145). Once satori asks for anything else, npm would still
+// force 0.7.5 under it, even past an fflate API satori comes to need, so
+// the override must go then.
+test("the fflate override stands only while satori pins a vulnerable fflate", () => {
+  const pkg = JSON.parse(
+    readFileSync(new URL("../package.json", import.meta.url), "utf8")
+  );
+  const asked = lock.packages["node_modules/satori"]?.dependencies?.fflate;
+  const override = pkg.overrides?.satori?.fflate;
+  if (pinsVulnerable(asked, "fflate"))
+    assert.ok(override, `satori pins fflate ${asked}: keep the override`);
+  else
+    assert.equal(
+      override,
+      undefined,
+      `satori asks for fflate ${asked} now: drop the override`
+    );
 });
 
 for (const advisory of ADVISORIES) {

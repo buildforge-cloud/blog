@@ -17,25 +17,23 @@ const currentYear = new Date().getFullYear();
   class:list={["app-layout", { "mt-auto": !noMarginTop }, className]}
   {...attrs}
 >
-  <div
-    class="border-t-accent-fill text-muted-foreground flex flex-col items-center justify-between border-t-[5px] py-6 text-sm sm:flex-row-reverse sm:py-4"
-  >
+  <div class="border-t-accent-fill text-muted-foreground flex flex-col items-center justify-between border-t-[5px] py-6 text-sm sm:flex-row-reverse sm:py-4">
     <Socials />
     <div class="my-2 flex flex-col items-center whitespace-nowrap sm:flex-row">
-      <span>{t.footer.copyright} &#169; {currentYear}</span>
+      <span>
+        {t.footer.copyright} &#169; {currentYear}
+      </span>
       <span class="hidden sm:inline">&nbsp;|&nbsp;</span>
       <span>{t.footer.allRightsReserved}</span>
       <span class="hidden sm:inline">&nbsp;|&nbsp;</span>
-      {
-        /*
+      {/*
         Site-wide link home to the studio. Nothing on this blog linked to
         buildforge.cloud before 2026-09-10, which is the whole point: a link in
         the footer is on every page, where an about-page mention is on one.
-      */
-      }
-      <a class="hover:text-accent" href="https://buildforge.cloud"
-        >{t.footer.partOf}</a
-      >
+      */}
+      <a class="hover:text-accent" href="https://buildforge.cloud">
+        {t.footer.partOf}
+      </a>
     </div>
   </div>
 </footer>
