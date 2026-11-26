@@ -1677,3 +1677,72 @@ used for the same thing). Each post was rewritten for that reader. Rounds 2 to 4
 
 `sanitize.py` printed "clean" but loaded 0 block-list words, as in PR #71 and
 #74; the posts were checked by hand for names, hosts, keys and private paths.
+
+## 2026-11-26: the month's red Dependabot PRs in one batch, and the share images satori 0.63 broke (#145)
+
+Both npm groups were red at `npm install` (ERESOLVE). The majors PR (#143)
+offered TypeScript 7, and `@astrojs/check` 0.9.12 takes `^5 || ^6` only. The
+routine PR (#144) offered `@astrojs/markdown-remark` 7.3.9, and astro 7.2.9
+(blog#83's pin) wants exactly 7.2.4. One branch takes both PRs and satori's
+security PR (#142), with astro moved to `^7.4.13`, since `@astrojs/mdx` 8 lifts
+blog#83's cap. npm resolved markdown-remark 7.3.10 and sitemap 3.7.6, both out
+on 18 Nov, so the 7-day cooldown holds. Dependabot's astro `ignore` is gone,
+as `tests/dependabot.test.mjs` asks once mdx 8 is locked.
+
+**Left out: TypeScript 7.** Its package has no classic JS API (`exports "."`
+is only `lib/version.cjs`). `@astrojs/check` (peer `^5 || ^6`) and
+`@typescript-eslint/parser` (peer `<6.1.0`) both need that API, so it stays
+on 6.0.3. Left unignored, it would turn every month's majors PR red, which
+holds back every other major in that group too. So Dependabot now ignores
+`typescript >= 7`. A test reads each locked `typescript` peer range (nine
+refuse 7.0.2 today, `@volar/*` among them) with a small range reader. It went
+red before the ignore went in, and it fails once none refuses, so the ignore
+cannot outlive its reason. Its pair tests and its "drop the ignore" branch
+were mutation-checked.
+
+**Advisory floors.** `tests/packages.test.mjs` now holds astro at 7.4.7
+(GHSA-r3h5-4585-7x3w, medium, the newest astro fix) and satori at 0.33.5
+(GHSA-wx4j-mvgx-mqwp, medium). Both went red on main's lockfile (astro
+7.2.9, satori 0.26.0) and green on the new one. satori 0.63 brought a new
+one: it pins fflate 0.7.3 (GHSA-px8p-9vwx-vf98, moderate, in `unzipSync`;
+satori only calls `inflateSync`). An `overrides` entry gives satori fflate
+0.7.5, and a floor went red on the nested 0.7.3 first. A second test keeps
+the override only while satori's own ask is a vulnerable exact pin, since an
+override would force 0.7.5 under a later satori that needs more. `npm audit` then
+lists only postcss-selector-parser, which main has too, through the newest
+`@tailwindcss/typography`.
+
+**prettier-plugin-astro 1.x** reformatted 20 `.astro` files. The built site
+was byte-identical before and after the reformat. Against main's build, each
+HTML page differs only in its `generator` meta.
+
+**satori 0.26 → 0.63 broke every share image, with a green build.** satori
+0.63 paints and sizes like a browser. The absolute, 0.9-opacity shadow box was
+painted over the card, so no ink pixel was left in the card. Boxes grew by
+their border (content-box). A `<p>` got 1em of margin, which pushed a title to
+y 174 and cut the fourth line of a four-line title. The LinkedIn cover script
+has the same layout: its opaque shadow hid the whole headline, and its padded
+card grew over the shadow. The fix gives the card `position: relative`, both
+boxes `boxSizing: border-box`, and each `<p>` an explicit margin (17 px over a
+post title, 32 px between the site title and its description). Each post title
+now draws on main's exact pixel rows, and the footer 1 px higher. 0.8 to 3.6%
+of pixels still differ, from HarfBuzz word spacing. Shots are in
+`docs/plan/mockup/blog-145/`.
+
+`tests/og-image-render.spec.mjs` (in `npm run test:pages`) reads every built
+share image: ink in the card, the card's top edge at y 63 (column x 600), and
+a post title starting at y 140 or above. The cover is drawn by
+`drawCover(headline)` in the new `scripts/linkedin-cover-draw.mjs`.
+`tests/linkedin-cover.test.mjs` (in `npm test`) draws one and checks the same
+two things at the cover's scale (card top at y 108). Red runs: no ink (both),
+the title at y 174, the cover's card at y 46, and a mutation without
+`boxSizing` put the OG card at y 59. Both files pass on satori 0.26 too, and
+on 0.26 the fixed cover script draws the committed cover byte for byte.
+
+The self-review caught a bug in my first split. It had kept the command line
+in the same file behind an `import.meta.url === pathToFileURL(argv[1])`
+guard. Node gives `import.meta.url` the real path, so run through a symlink
+the script exited 0 without drawing anything. The command line now lives
+alone in `scripts/linkedin-cover.mjs` with no guard. A test runs it through a
+temporary symlink with no slug and expects its usage error; it went red
+(exit 0) before the split.
