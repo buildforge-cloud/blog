@@ -19,6 +19,11 @@ export const ADVISORIES = [
   { name: "brace-expansion", from: "4.0.0", fixed: "5.0.12" },
   { name: "devalue", from: "0.0.0", fixed: "5.9.3" },
   { name: "fast-uri", from: "3.0.0", fixed: "3.1.9" },
+  // moderate GHSA-px8p-9vwx-vf98, in unzipSync. satori 0.63 pins fflate
+  // 0.7.3 (it calls inflateSync only), so package.json's `overrides` gives
+  // it 0.7.5 (blog#145). Drop the override once satori takes 0.7.5 or later.
+  { name: "fflate", from: "0.7.0", fixed: "0.7.5" },
+  { name: "fflate", from: "0.8.0", fixed: "0.8.3" },
   { name: "js-yaml", from: "4.0.0", fixed: "4.3.2" },
   // medium GHSA-wx4j-mvgx-mqwp, satori's SVG serialization; it draws the OG
   // images. Its own Dependabot PR (blog#142) went in with blog#145's batch.
