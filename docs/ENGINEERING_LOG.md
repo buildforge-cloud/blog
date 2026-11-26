@@ -1746,3 +1746,53 @@ the script exited 0 without drawing anything. The command line now lives
 alone in `scripts/linkedin-cover.mjs` with no guard. A test runs it through a
 temporary symlink with no slug and expects its usage error; it went red
 (exit 0) before the split.
+
+## 2026-11-26: the five February posts checked for voice, facts and a cold read (#147)
+
+The 26 Jan, 2, 9, 16 and 23 Feb posts (blog#75, #92, #93, #81, #82, merged
+in PR #76, #94, #117 and #113) were checked against their issues and PRs.
+Their dates already matched STRATEGY.md's Now 5, one a week in its order, and
+`QUEUED` in `tests/posts.test.mjs` already pinned each date, `draft: false`
+and `featured: false`.
+
+**The ISO app's name and host were stale.** Since Stefan's decision 4458
+(iso-pathfinder-buddy#25, #70) the app is ISO 27001 Buddy, live at
+`https://iso.buildforge.no`. The Lovable host still answers, with an older
+copy titled "ISO 27001 Guide". The 2 Feb post called the app ISO Pathfinder
+Buddy and the 23 Feb post ISO 27001 Buddy, and both linked the Lovable copy,
+as did `about.md` and the blog-post skill's identity block that new posts copy
+their links from. All now use the live name and host. `tests/products.mjs`
+holds the product list the About test and a new skill test share, and a
+`RETIRED` list (the ISO app's old name and Lovable host, ps·db's old
+`ps-db.buildforge.cloud`). A new test fails when a post, a page, a LinkedIn
+draft or STRATEGY.md uses one; the self-review added the drafts, which are
+pasted as they are. Its first version missed a name wrapped over two lines, which is
+how STRATEGY.md and the 2 Feb post held it; a plant showed that, and it now
+matches across line breaks.
+
+**Other facts fixed.** The 9 Feb post said "I did the setup steps on both
+machines", next to a second app whose run was red for a key never made; it now
+names the first app's server and home machine. The 23 Feb title said the app
+was built "to learn ISO 27001 myself", where Stefan's answer gave that as the
+second of two reasons; it is now "Why I built an ISO 27001 guide with Lovable,
+and what it taught me". The 26 Jan post's "that Monday" sat after "27
+October", a Tuesday; it now says Monday 26 October.
+
+**Voice.** The 24, 17 and 10 Nov posts close sections on composed lines ("A
+written rule was not enough." under a heading that says the same, "'Before
+the checkout' had meant...", "Right browser, right language... Wrong part of
+the page"), and two of them end on a reflective twist line, not the next
+step. The same habits came out of the February posts: the ranked high/medium/
+low list and the numbered fixes in the 26 Jan post are prose now, with each
+rating word kept; "The day fits the hour", the scanner post's "So the fix
+started as..." summing-up and the backups post's "one small job and one hard
+question" set-up are cut.
+
+**Cold read.** Fresh readers given only one post each listed 8 to 37 points
+in round 1 (Skredda 8, ISO 13, scanner 19, backups 27, Google 37), most of
+them in-house words (the agent, the write-up, pinned, shared part), missing
+years and a few real jumps. Rounds 2 and 3 told each reader who the post is
+for, from STRATEGY.md's Users. Round 2 gave 8 to 25, round 3 gave 10 to 30:
+each fresh reader found new points, so the count did not converge, as in
+#140. Each round's real gaps were fixed and the post re-read; the points
+left are in the PR's Known limits.
