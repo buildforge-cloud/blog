@@ -48,6 +48,16 @@ updates:
       default-days: 7
     # No astro ignore since blog#145: @astrojs/mdx 8 lifted blog#83's cap,
     # and tests/dependabot.test.mjs fails if the ignore comes back.
+    #
+    # blog#145: TypeScript 7 has dropped the JS API that @astrojs/check
+    # (peer ^5 || ^6) and @typescript-eslint/parser (peer <6.1.0) use, so in
+    # the month's majors group it turns the whole PR red at npm install.
+    # tests/dependabot.test.mjs fails once no locked peer range refuses 7:
+    # then this goes. Until then a TypeScript fix only in 7 is moved by hand.
+    ignore:
+      - dependency-name: typescript
+        versions:
+          - ">= 7"
   # Every workflow runs another repo's action by tag (actions/checkout@v4).
   - package-ecosystem: github-actions
     directory: /

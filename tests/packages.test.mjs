@@ -128,6 +128,39 @@ test("while @astrojs/mdx is on major 7, astro is pinned below 7.2.10", () => {
   assert.equal(compare(astro, "7.2.10"), -1, `astro ${astro} needs mdx 8`);
 });
 
+// Whether a package asks for `name` at one exact version that an advisory
+// above names. npm cannot move such a pin, so only an `overrides` entry can.
+export const pinsVulnerable = (asked, name) =>
+  /^\d+\.\d+\.\d+$/.test(asked ?? "") &&
+  ADVISORIES.some(a => a.name === name && vulnerable(asked, a));
+
+test("an exact vulnerable pin needs an override, a safe pin or a range does not", () => {
+  assert.equal(pinsVulnerable("0.7.3", "fflate"), true, "0.7.3 is in range");
+  assert.equal(pinsVulnerable("0.7.5", "fflate"), false, "0.7.5 is fixed");
+  assert.equal(pinsVulnerable("^0.7.3", "fflate"), false, "npm moves a range");
+  assert.equal(pinsVulnerable(undefined, "fflate"), false, "no ask at all");
+});
+
+// satori 0.63 pins fflate 0.7.3, and package.json's `overrides` gives it
+// 0.7.5 (blog#145). Once satori asks for anything else, npm would still
+// force 0.7.5 under it, even past an fflate API satori comes to need, so
+// the override must go then.
+test("the fflate override stands only while satori pins a vulnerable fflate", () => {
+  const pkg = JSON.parse(
+    readFileSync(new URL("../package.json", import.meta.url), "utf8")
+  );
+  const asked = lock.packages["node_modules/satori"]?.dependencies?.fflate;
+  const override = pkg.overrides?.satori?.fflate;
+  if (pinsVulnerable(asked, "fflate"))
+    assert.ok(override, `satori pins fflate ${asked}: keep the override`);
+  else
+    assert.equal(
+      override,
+      undefined,
+      `satori asks for fflate ${asked} now: drop the override`
+    );
+});
+
 for (const advisory of ADVISORIES) {
   test(`no locked copy of ${advisory.name} is below ${advisory.fixed}`, () => {
     const bad = copies(lock, advisory.name).filter(([, version]) =>

@@ -10,8 +10,13 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import { mkdtempSync, rmSync, symlinkSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import sharp from "sharp";
-import { drawCover } from "../scripts/linkedin-cover.mjs";
+import { drawCover } from "../scripts/linkedin-cover-draw.mjs";
 
 const HEADLINE = "From solo work to a team of AI agents: pros and cons";
 // The card's inside, clear of both boxes' borders, above the ember rule.
@@ -53,10 +58,13 @@ const cardTop = image => {
   return top;
 };
 
-const cover = drawCover(HEADLINE).then(pixels);
+// Drawn once, by the first test that asks, so a failed draw is that test's
+// failure and not a rejection left unhandled at import.
+let drawn;
+const cover = () => (drawn ??= drawCover(HEADLINE).then(pixels));
 
 test("a cover draws its headline in ink, over the card's shadow", async () => {
-  const rows = inkRows(await cover);
+  const rows = inkRows(await cover());
   assert.ok(
     rows.length > 0,
     "no ink in the card: its shadow is painted over it"
@@ -64,9 +72,30 @@ test("a cover draws its headline in ink, over the card's shadow", async () => {
 });
 
 test("a cover's card has its top edge where the committed cover has it", async () => {
-  const top = cardTop(await cover);
+  const top = cardTop(await cover());
   assert.ok(
     top !== undefined && Math.abs(top - CARD_TOP) <= 1,
     `the card's top edge is at y ${top}, not ${CARD_TOP}: the card is sized or painted otherwise`
   );
+});
+
+// Run by hand through a path with a symlink in it, the script must still
+// run. A guard that compared `process.argv[1]` with `import.meta.url` (the
+// real path) skipped the run and exited 0, so a cover was never redrawn and
+// nothing said so. Without a slug it stops before it reads or writes a file.
+test("the script, run through a symlinked path without a slug, stops with its usage line", () => {
+  const dir = mkdtempSync(join(tmpdir(), "linkedin-cover-"));
+  try {
+    const scripts = fileURLToPath(new URL("../scripts", import.meta.url));
+    symlinkSync(scripts, join(dir, "scripts"));
+    const run = spawnSync(
+      process.execPath,
+      [join(dir, "scripts", "linkedin-cover.mjs")],
+      { encoding: "utf8", timeout: 60_000 }
+    );
+    assert.notEqual(run.status, 0, "it exited 0 without drawing a cover");
+    assert.match(run.stderr, /usage: node scripts\/linkedin-cover\.mjs <slug>/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

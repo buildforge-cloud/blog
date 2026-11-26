@@ -489,7 +489,7 @@ test("the lockfile reader takes the top copy's major", () => {
   assert.throws(() => lockedMajor({ packages: {} }, "@astrojs/mdx"));
 });
 
-test("while @astrojs/mdx is on 7, Dependabot leaves astro at 7.2.9", () => {
+test("the astro ignore stands only while @astrojs/mdx is on 7", () => {
   const lock = JSON.parse(read("package-lock.json"));
   const npm = config().updates.find(u => u["package-ecosystem"] === "npm");
   const astroRules = (npm.ignore ?? []).filter(
@@ -500,6 +500,108 @@ test("while @astrojs/mdx is on 7, Dependabot leaves astro at 7.2.9", () => {
       { "dependency-name": "astro", versions: [">= 7.2.10"] },
     ]);
   else assert.deepEqual(astroRules, [], "mdx 8 lifts the astro cap");
+});
+
+// Whether `version` (x.y.z) meets an npm range as peer ranges write them:
+// `||` alternatives of space-separated comparators, each `^`, `~`, `>=`,
+// `>`, `<=`, `<`, `=` or none before a version, which may lack its patch or
+// minor ("<7" is "<7.0.0"). `*` or `x` alone takes any version. Any other
+// form throws, so a range this cannot read fails the test, never passes.
+const versionParts = v => {
+  const p = v.split(".").map(Number);
+  return [p[0], p[1] ?? 0, p[2] ?? 0];
+};
+const compareParts = (a, b) => {
+  for (let i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i] < b[i] ? -1 : 1;
+  return 0;
+};
+const meets = (v, comparator) => {
+  const m = comparator.match(
+    /^(\^|~|>=|<=|>|<|=)?v?(\d+(?:\.\d+){0,2}|[x*])$/i
+  );
+  if (!m) throw new Error(`cannot read the range part "${comparator}"`);
+  const [, op = "=", bound] = m;
+  if (/^[x*]$/i.test(bound)) return true;
+  if (op === "=" && bound.split(".").length < 3)
+    throw new Error(`cannot read the range part "${comparator}"`);
+  const b = versionParts(bound);
+  const c = compareParts(v, b);
+  if (op === ">=") return c >= 0;
+  if (op === ">") return c > 0;
+  if (op === "<=") return c <= 0;
+  if (op === "<") return c < 0;
+  if (op === "^")
+    return (
+      c >= 0 &&
+      compareParts(v, b[0] > 0 ? [b[0] + 1, 0, 0] : [0, b[1] + 1, 0]) < 0
+    );
+  if (op === "~") return c >= 0 && compareParts(v, [b[0], b[1] + 1, 0]) < 0;
+  return c === 0;
+};
+export const satisfies = (version, range) =>
+  range.split("||").some(alt =>
+    alt
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .every(c => meets(versionParts(version), c))
+  );
+
+test("the range reader takes and refuses as npm does, at each edge", () => {
+  const cases = [
+    ["6.0.3", "^5.0.0 || ^6.0.0", true],
+    ["7.0.2", "^5.0.0 || ^6.0.0", false],
+    ["6.0.9", ">=4.8.4 <6.1.0", true],
+    ["6.1.0", ">=4.8.4 <6.1.0", false],
+    ["6.9.9", "<7", true],
+    ["7.0.0", "<7", false],
+    ["4.8.4", ">=4.8.4", true],
+    ["4.8.3", ">=4.8.4", false],
+    ["1.2.9", "~1.2.3", true],
+    ["1.3.0", "~1.2.3", false],
+    ["0.7.9", "^0.7.3", true],
+    ["0.8.0", "^0.7.3", false],
+    ["7.0.2", "*", true],
+    ["7.0.2", "7.0.2", true],
+    ["7.0.3", "7.0.2", false],
+  ];
+  for (const [version, range, takes] of cases)
+    assert.equal(satisfies(version, range), takes, `${version} in "${range}"`);
+  assert.throws(() => satisfies("7.0.2", "7.x"), /cannot read/);
+  assert.throws(() => satisfies("7.0.2", "7"), /cannot read/);
+});
+
+// TypeScript 7 has dropped the JS API that @astrojs/check and
+// @typescript-eslint/parser use, and their peer ranges refuse it, so in the
+// month's majors group it turns the whole PR red at `npm install`
+// (blog#145). The ignore stands while a locked package's peer range refuses
+// 7.0.2, the 7 Dependabot first offered, and must go once none does.
+const TYPESCRIPT_7 = "7.0.2";
+
+test("Dependabot holds TypeScript 7 back only while a locked peer range refuses it", () => {
+  const lock = JSON.parse(read("package-lock.json"));
+  const refusing = Object.entries(lock.packages)
+    .filter(([, entry]) => entry.peerDependencies?.typescript !== undefined)
+    .filter(
+      ([, entry]) => !satisfies(TYPESCRIPT_7, entry.peerDependencies.typescript)
+    )
+    .map(([path]) => path.replace(/^.*node_modules\//, ""));
+  const npm = config().updates.find(u => u["package-ecosystem"] === "npm");
+  const rules = (npm.ignore ?? []).filter(
+    r => r["dependency-name"] === "typescript"
+  );
+  if (refusing.length > 0)
+    assert.deepEqual(
+      rules,
+      [{ "dependency-name": "typescript", versions: [">= 7"] }],
+      `${refusing.join(", ")} refuse TypeScript ${TYPESCRIPT_7}`
+    );
+  else
+    assert.deepEqual(
+      rules,
+      [],
+      "every peer range takes TypeScript 7: drop the ignore"
+    );
 });
 
 // GitHub branch filter globs: `*` stops at `/`, `**` does not, `?` and `+`

@@ -34,6 +34,9 @@ const CARD_TOP = 63;
 // four-line title lost its last line.
 const TITLE_TOP_MAX = 140;
 
+// The site image and each post's, one folder deep. A post in a subfolder of
+// src/content/posts would have its image deeper and be missed, but
+// tests/og-image-date.spec.mjs fails while any such post exists.
 const images = () => {
   const posts = existsSync("dist/posts")
     ? readdirSync("dist/posts")
