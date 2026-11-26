@@ -65,6 +65,9 @@ export const GET: APIRoute = async ({ props, url }) => {
                 position: "absolute",
                 top: "-1px",
                 right: "-1px",
+                // satori 0.26 sized every box with its border inside it;
+                // 0.63 adds the border outside, like a browser.
+                boxSizing: "border-box",
                 border: "4px solid #141a22",
                 background: "#efeade",
                 opacity: "0.9",
@@ -81,6 +84,12 @@ export const GET: APIRoute = async ({ props, url }) => {
             type: "div",
             props: {
               style: {
+                // Positioned, so it is painted after the shadow above it:
+                // satori 0.63 paints a positioned or see-through box
+                // after the boxes in normal flow, like a browser
+                // (blog#145).
+                position: "relative",
+                boxSizing: "border-box",
                 border: "4px solid #141a22",
                 background: "#f5f2ea",
                 borderRadius: "0px",
@@ -106,6 +115,12 @@ export const GET: APIRoute = async ({ props, url }) => {
                       type: "p",
                       props: {
                         style: {
+                          // Not a <p>'s default margin (1em, as in a
+                          // browser), which pushes a four-line title past
+                          // its clip edge, but the 17 px satori 0.26 left
+                          // above the first line, so the card looks as it
+                          // did before blog#145.
+                          margin: "17px 0 0 0",
                           fontSize: 72,
                           fontWeight: "bold",
                           maxHeight: "84%",
