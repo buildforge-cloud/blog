@@ -212,12 +212,22 @@ test("the About page links each public product", () => {
 
 // A product's old name or old host (`RETIRED` in `tests/products.mjs`). The
 // ISO app was renamed, and left a copy under its old name on Lovable, after
-// two queued posts had linked it there (blog#147).
-test("no post, page or STRATEGY.md uses a retired product name or host", () => {
+// two queued posts had linked it there (blog#147). A LinkedIn draft is pasted
+// as it is, so it is read too. Any mention fails, a historical one as well:
+// a post that must name an old one on purpose needs an exception here first.
+const LINKEDIN = new URL("../docs/linkedin/", import.meta.url);
+
+test("no post, page, LinkedIn draft or STRATEGY.md uses a retired product name or host", () => {
   for (const { name, data, body } of [...posts(), ...markdownIn(PAGES)]) {
     const text = `${data.title}\n${data.description ?? ""}\n${body}`;
     assert.deepEqual(retiredIn(text), [], name);
   }
+  for (const name of readdirSync(LINKEDIN).filter(n => n.endsWith(".md")))
+    assert.deepEqual(
+      retiredIn(readFileSync(new URL(name, LINKEDIN), "utf8")),
+      [],
+      `docs/linkedin/${name}`
+    );
   assert.deepEqual(retiredIn(strategy), [], "strategy/STRATEGY.md");
 });
 
