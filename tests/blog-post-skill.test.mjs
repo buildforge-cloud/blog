@@ -8,6 +8,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { PRODUCTS, retiredIn } from "./products.mjs";
 
 const skill = readFileSync(
   new URL("../.claude/skills/blog-post/SKILL.md", import.meta.url),
@@ -54,6 +55,18 @@ test("the kept rules are still in the identity", () => {
   assert.match(identity, /transparent about struggles/i);
   assert.match(identity, /numbered parts/i);
   assert.match(identity, /First person/i);
+});
+
+// The identity's product links are the ones each new post copies, so a stale
+// one here reaches the posts (blog#147: two queued posts linked the ISO app's
+// old Lovable copy from it).
+test("the identity links each product at its live address", () => {
+  for (const [name, url] of PRODUCTS)
+    assert.ok(
+      identity.includes(`[${name}](${url})`),
+      `the identity has no link to ${name} at ${url}`
+    );
+  assert.deepEqual(retiredIn(identity), [], "a retired name or host");
 });
 
 test("the identity block has no em dash", () => {

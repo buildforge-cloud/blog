@@ -19,8 +19,8 @@ those CVs filled in on its own CV form, and every buyer's form is different.
 There was no common structure to any of those forms, and that always struck
 me as weird.
 
-So I built [Skredda](https://skredda.no). You give it the folder of tender
-documents. It reads them, finds the requirements that apply to the
+So I built [Skredda](https://skredda.no). A consultant gives it the folder
+of tender documents. It reads them, finds the requirements that apply to the
 consultant, and fills in the buyer's own CV form. The writing is done by a
 language model from Mistral AI, a French company that hosts it in the EU. A
 CV is personal data, so that choice was part of the point.
@@ -85,9 +85,9 @@ which I will call the writer, would then see those facts, not the CV.
 
 ## The writer never sees the CV
 
-The plan said yes: pull the facts out first. Skredda now splits the work
+The coding agent's plan said yes: pull the facts out first. Skredda now splits the work
 into two separate questions to Mistral's model, one after the other. That
-split became the fix the same day.
+split went in the same day.
 
 In the first, the model sees only the CV and lists the facts in it: skills,
 jobs, education. It never sees the job ad. In the second, the writer, the
@@ -109,8 +109,9 @@ from the writer having only the real facts to work from.
 ## The fix broke the language
 
 Skredda is made for Norway, and the prompt it sends with every question had
-a Nordic flavor. Earlier that day, an English test CV had come back in
-English, as it should. After the split into two questions,
+a Nordic flavor: it was written with Norway in mind. Earlier that day,
+before the split, an English test CV had also been tried, and it came
+back in English, as it should. After the split into two questions,
 the same English test came back in Norwegian.
 
 The writer no longer saw the English sentences of the CV. It saw only the
@@ -122,19 +123,19 @@ language as one more fact, and the writer gets it with the others.
 
 ## What the check still misses
 
-The skill check reads only the skills list. In the run after the split, the
-one with no Python, the cover note with the true Python sentence also said
-the developer had worked closely with backend teams. The CV said
-nothing of the kind. Catching that needs a check that reads the sentences of
+The skill check reads only the skills list. Back to the run after the
+split. Its skills list had no Python, and its cover note had the true
+sentence about Python. But that same note also said the developer had worked closely with backend teams. The
+CV said nothing of the kind. Catching that needs a check that reads the sentences of
 the cover note, not only the list. That gap was still open when the day
 ended.
 
 What I took from that day: the rule against invented facts was in the prompt
-the whole time, and Mistral's model broke it twice. What worked was taking
-away the material it could invent from, and checking the result with code
-that does not guess.
+the whole time, and Mistral's model broke it twice. What stopped the made-up
+skills was taking away the material it could invent from, and checking the
+skills list in code with no AI in it.
 
-Skredda now reads the whole folder of tender documents, not a pasted job
-ad. It is in closed beta and lets a few people in at a time, and you can ask
+Since that first version, Skredda has moved from a pasted job ad to the
+whole folder of tender documents. It is in closed beta and lets a few people in at a time, and you can ask
 for access on its front page. If you write CVs for public tenders, try
 Skredda at [skredda.no](https://skredda.no).

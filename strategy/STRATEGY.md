@@ -6,7 +6,7 @@ month (decision 1943, blog#50). How it is built is in `CLAUDE.md`.
 ## Goal
 
 Get BuildForge's products seen: ps·db, Vedlikeholdsloggen, Skredda and ISO
-Pathfinder Buddy. Each post must still read as a person wrote it: a title in
+27001 Buddy. Each post must still read as a person wrote it: a title in
 the words a searcher types, the product linked at its first mention, short
 plain sentences, no em dash. The blog is also Stefan's record of building
 apps with AI agents, told with the wrong turns left in.

@@ -107,7 +107,11 @@ The cover is a 1920 x 1080 PNG whose iTXt "Title" is the
 headline: `node scripts/linkedin-cover.mjs <slug>` draws it again after a
 headline change. It finds its files from its own path, so it runs from any
 folder, but it needs `node_modules`: a worker runs it in the scratchpad copy
-and copies the PNG back. LinkedIn's editor
+and copies the PNG back. The drawing itself is `drawCover(headline)` in
+`scripts/linkedin-cover-draw.mjs`, which `tests/linkedin-cover.test.mjs`
+calls. The command file has no run-as-script guard: one that compared
+`process.argv[1]` with `import.meta.url` exited 0 without drawing when the
+path held a symlink, so the test runs it through one (blog#145). LinkedIn's editor
 reads no Markdown: the headline goes in the title field, and each `## ` line
 is made a heading by hand.
 
@@ -211,6 +215,16 @@ React anywhere in the project. Tried once (2026-08-07), reverted. **Don't re-add
 `@astrojs/react`/`@giscus/react` without first either disabling
 `features.dynamicOgImage` or finding a real fix for that type conflict** — it's not
 a one-off fluke, it's structural to how this theme's OG image generation works.
+Since blog#145, satori 0.63 paints and sizes boxes as a browser does, and 0.26
+did not. The share images (`src/pages/og.png.ts`,
+`src/pages/posts/[...slug]/index.png.ts`) and the LinkedIn cover keep their
+look only with `position: relative` on the card (or its absolute shadow is
+painted over it), `boxSizing: border-box` on both boxes, and a margin set on
+each `<p>`. A satori bump can break them while the build stays green, so
+the pixels are checked: `tests/og-image-render.spec.mjs` (in
+`npm run test:pages`) and `tests/linkedin-cover.test.mjs` (in `npm test`).
+A layout change made on purpose moves their constants (the card's top edge
+at y 63 and y 108).
 `Comments.astro` used to carry a live light/dark theme sync via giscus's own
 `postMessage` API; that is gone as of 2026-09-10, because the site is paper-only
 and giscus is pinned to its `light` theme (see "Design" below).
@@ -391,13 +405,18 @@ one. A group's branch is `dependabot/<ecosystem>/<group>-<hash>`. Security
 fixes come at once, one PR each and ungrouped (no group sets `applies-to`),
 from the repo settings rather than the file, but an `ignore` holds them back
 too. Two
-ignores exist: astro 7.2.10 and later while `@astrojs/mdx` is on 7 (blog#83;
-the PR that moves mdx to 8 drops it), and node 23 and 25, odd majors that
-never reach LTS. From 27 on Node ships one LTS major a year, so nothing after
+ignores exist. TypeScript 7 and later is one (blog#145): TS 7 dropped the
+classic JS API that `@astrojs/check`, `@typescript-eslint/parser` and
+`@volar/*` still need, so in the majors group it would turn the whole PR
+red at `npm install`. The test reads every locked `typescript` peer range
+(its small range reader throws on a form it cannot read) and fails once
+none refuses 7.0.2: then the ignore goes. The other is node 23 and 25, odd
+majors that never reach LTS. The old astro ignore is gone, and the test
+fails if it comes back while mdx is on 8. From 27 on Node ships one LTS major a year, so nothing after
 25 is held. `tests/dependabot.test.mjs` fails on a missing or extra
 ecosystem, an entry not `monthly` or without both groups or its cooldown, a
-group of another name or with `applies-to: security-updates`, the astro
-ignore out of step with mdx, node 23 or 25 offered or 27 and later held, and
+group of another name or with `applies-to: security-updates`, an astro
+ignore while mdx is on 8, node 23 or 25 offered or 27 and later held, and
 any job on an org runner (`self-hosted`, `home`, `home-light`, or a `uses:`
 job that passes or calls one) that a `dependabot/` branch could start. A
 compose file that runs an `image:` needs a `docker-compose` entry, and a
@@ -533,16 +552,18 @@ Without the flag Playwright deletes every other cached browser version as
 "unused", and the host's other projects download theirs again (blog#28 lost
 `chromium-1248` that way; blog#35 kept it).
 
-**astro is pinned at exactly 7.2.9 for now (blog#83).** astro 7.2.10 and
-later need `@astrojs/markdown-remark` ^7.3, but every `@astrojs/mdx` 7.x pins
-7.2.x. A newer astro therefore needs `@astrojs/mdx` 8, which is a major
-update. With a `^` range, `npm update` and `npm audit fix` reach for the newest
-astro and stop with ERESOLVE, and the rest of that run updates nothing. Never
-use `--force`. `tests/packages.test.mjs` (in `npm test`) fails while mdx is
-on 7 and astro is a range or 7.2.10 or later. It also fails when the lockfile
-holds a copy of a package, nested copies included, in a range a known advisory
-names. When a new critical or high alert is fixed, add its package, the start
-of its range and the fixed version there.
+**astro and `@astrojs/mdx` move together.** astro 7.2.10 and later need
+`@astrojs/markdown-remark` ^7.3, which no `@astrojs/mdx` 7.x allows, so astro
+sat pinned at 7.2.9 (blog#83) until blog#145 moved mdx to 8 and astro to
+`^7.4.13`. `tests/packages.test.mjs` (in `npm test`) binds the pin again only
+if mdx goes back to 7. Never use `--force`. The same test fails when the
+lockfile holds a copy of a package, nested copies included, in a range a
+known advisory names; its list holds astro at 7.4.7, satori at 0.33.5 and
+fflate at 0.7.5. When a new critical or high alert is fixed, add its
+package, the start of its range and the fixed version there. satori 0.63
+pins fflate 0.7.3 (GHSA-px8p-9vwx-vf98), so `package.json` has the repo's
+first `overrides` entry, satori's fflate at 0.7.5. A test fails once satori
+asks for anything but a vulnerable exact fflate: then the override goes.
 
 ## Documentation
 

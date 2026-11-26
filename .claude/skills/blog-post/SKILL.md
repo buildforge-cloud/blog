@@ -20,7 +20,7 @@ format rules come from blog#30. If a line further down disagrees, this block win
   [ps·db](https://ps-db.cloud),
   [Vedlikeholdsloggen](https://vedlikeholdsloggen.buildforge.no/),
   [Skredda](https://skredda.no) and
-  [ISO Pathfinder Buddy](https://iso-pathfinder-buddy.lovable.app/roadmap).
+  [ISO 27001 Buddy](https://iso.buildforge.no/roadmap).
   A post does that by being worth reading, not by pitching. The blog is also
   Stefan's record of building apps with AI agents, with the wrong turns left in.
 - **What "doing this well" means**: a person who searched for the problem finds
@@ -400,7 +400,9 @@ post" section — re-read it if unsure, don't assume the schema from memory):
   subdomain only 301s now), Vedlikeholdsloggen
   (`https://vedlikeholdsloggen.buildforge.no/`, and its App Store page), Skredda
   (`https://skredda.no`), ISO
-  Pathfinder Buddy (`https://iso-pathfinder-buddy.lovable.app/roadmap`) and
+  27001 Buddy (`https://iso.buildforge.no/roadmap`; it was ISO Pathfinder
+  Buddy on `iso-pathfinder-buddy.lovable.app` until Stefan's decision 4458,
+  and that copy keeps the old app) and
   Comment Finder for YouTube (`https://commentfinder.buildforge.no/`, and its
   Chrome Web Store page; its repo is private, blog#70). The identity block's
   product links use the first four.
